@@ -1,0 +1,8 @@
+| Nivel | Nombre           | Descripción                                            |
+| ----- | ---------------- | ------------------------------------------------------ |
+| 🟢 1  | **General**      | Acceso estándar al evento                              |
+| 🔵 2  | **Preferencial** | Mejor ubicación que la zona general                    |
+| 🟣 3  | **Exclusiva**    | Zona con acceso limitado y beneficios adicionales      |
+| 🟡 4  | **VIP**          | Ubicación privilegiada y beneficios especiales         |
+| 🔴 5  | **Premium**      | Experiencia de mayor nivel, con beneficios adicionales |
+
