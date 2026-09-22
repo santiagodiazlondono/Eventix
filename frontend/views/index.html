@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Eventix: encuentra conciertos, obras y espectáculos en tu ciudad y reserva tus entradas en línea.">
+  <title>Eventix · Reserva entradas para eventos y espectáculos</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/styles.css">
+  <script src="../controllers/carrusel.js" defer></script>
+  <script src="../controllers/filtros.js" defer></script>
+</head>
+<body>
+
+  <!-- Iconos reutilizables (mismo estilo outline del set de Eventix) -->
+  <svg class="sprite" aria-hidden="true">
+    <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21Z"/><circle cx="12" cy="9.5" r="2.5"/></symbol>
+    <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></symbol>
+    <symbol id="i-prev" viewBox="0 0 24 24"><path d="m14.5 6-6 6 6 6"/></symbol>
+    <symbol id="i-next" viewBox="0 0 24 24"><path d="m9.5 6 6 6-6 6"/></symbol>
+    <symbol id="i-filter" viewBox="0 0 24 24"><path d="M3.5 5h17l-6.5 8v5.5l-4 2V13Z"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+    <symbol id="i-ticket" viewBox="0 0 24 24"><path d="M3.5 7.5a2 2 0 0 0 0 4v5a1.5 1.5 0 0 0 1.5 1.5h14a1.5 1.5 0 0 0 1.5-1.5v-5a2 2 0 0 0 0-4v-1A1.5 1.5 0 0 0 19 5H5a1.5 1.5 0 0 0-1.5 1.5Z"/><path d="M15 5v2M15 10.5v2M15 16v2"/></symbol>
+  </svg>
+
+  <a class="skip-link" href="#contenido">Saltar al contenido</a>
+
+  <!-- ============ ENCABEZADO ============ -->
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="index.html" aria-label="Eventix, inicio">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M3 5h1v14H3zM6 5h2v14H6zM10 5h1v14h-1zM13 5h2v14h-2zM17 5h1v14h-1zM20 5h1v14h-1z"/></svg>
+        </span>
+        <span class="brand-name">Eventix</span>
+      </a>
+
+      <!-- Menú móvil sin JavaScript: checkbox + label -->
+      <input type="checkbox" id="menu-toggle" class="menu-toggle" aria-label="Abrir menú">
+      <label for="menu-toggle" class="menu-button" aria-hidden="true">
+        <span></span><span></span><span></span>
+      </label>
+
+      <nav class="main-nav" aria-label="Navegación principal">
+        <ul class="nav-links">
+          <li><a href="#eventos">Eventos</a></li>
+          <li><a href="#como-reservar">Cómo reservar</a></li>
+          <li><a href="#ciudades">Ciudades</a></li>
+          <li><a href="#organizadores">Para organizadores</a></li>
+        </ul>
+        <div class="nav-actions">
+          <a class="btn btn-ghost" href="login.html">Iniciar sesión</a>
+          <a class="btn btn-primary" href="registro.html">Crear cuenta</a>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main id="contenido">
+
+    <!-- ============ HERO ============ -->
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="container hero-grid">
+        <div class="hero-copy">
+          <h1 id="hero-title">Tu próxima función empieza con una boleta.</h1>
+          <p class="hero-lead">Conciertos, obras de teatro, stand up y festivales en Tuluá, Cali y Bogotá. Elige el evento, reserva tus entradas y sigue el estado de tu reserva desde tu cuenta.</p>
+
+          <form class="search" id="hero-search" action="#eventos" role="search" aria-label="Buscar eventos">
+            <div class="search-field search-field--text">
+              <label for="q">Evento</label>
+              <div class="input-icon">
+                <svg aria-hidden="true"><use href="#i-search"/></svg>
+                <input id="q" name="q" type="search" placeholder="Artista, obra o recinto">
+              </div>
+            </div>
+            <div class="search-field">
+              <label for="ciudad">Ciudad</label>
+              <select id="ciudad" name="ciudad">
+                <option value="">Todas las ciudades</option>
+                <option value="Tuluá">Tuluá</option>
+                <option value="Cali">Cali</option>
+                <option value="Bogotá">Bogotá</option>
+              </select>
+            </div>
+            <div class="search-field">
+              <label for="fecha">Fecha</label>
+              <input id="fecha" name="fecha" type="date">
+            </div>
+            <button class="btn btn-primary search-submit" type="submit">Buscar eventos</button>
+          </form>
+        </div>
+
+        <!-- Boleta destacada: el elemento protagonista de la página -->
+        <article class="ticket" aria-label="Evento destacado">
+          <div class="ticket-main">
+            <img class="ticket-img" src="../assets/eventos/noche-sinfonica.svg" alt="Ilustración de un violín y notas musicales bajo un cielo estrellado" width="400" height="225">
+            <p class="ticket-code">EVT-0142</p>
+            <h2 class="ticket-title">Noche Sinfónica de Verano</h2>
+            <p class="ticket-org">Orquesta Filarmónica del Valle</p>
+            <dl class="ticket-data">
+              <div><dt>Lugar</dt><dd>Teatro Municipal, Tuluá</dd></div>
+              <div><dt>Fecha</dt><dd><time datetime="2026-11-14T20:00">14 nov 2026, 8:00 p. m.</time></dd></div>
+              <div><dt>Desde</dt><dd class="ticket-price">$85.000</dd></div>
+            </dl>
+          </div>
+          <div class="ticket-perforation" aria-hidden="true"></div>
+          <div class="ticket-stub">
+            <span class="badge badge-boleteria">En boletería</span>
+            <div class="barcode" aria-hidden="true"></div>
+            <a class="btn btn-primary btn-block" href="detalle-evento.html">Reservar entradas</a>
+          </div>
+        </article>
+      </div>
+    </section>
+
+
+    <!-- ============ CARRUSEL DE EVENTOS (solo HTML5 + CSS3, con scroll-snap) ============ -->
+    <section class="section carousel-section" id="destacados" aria-labelledby="destacados-title">
+      <div class="container">
+        <div class="section-head">
+          <h2 id="destacados-title">En cartelera</h2>
+          <p class="carousel-hint">Cambia cada 5 segundos. Se detiene al pasar el cursor o tocarlo.</p>
+        </div>
+
+        <div class="carousel" role="region" aria-roledescription="carrusel" aria-label="Eventos en cartelera">
+          <ul class="carousel-track">
+            <li class="slide" id="slide-1" aria-roledescription="diapositiva" aria-label="1 de 6: Noche Sinfónica de Verano">
+              <article class="slide-card">
+                <div class="slide-media">
+                  <img src="../assets/eventos/noche-sinfonica.svg" alt="Ilustración de un violín y notas musicales bajo un cielo estrellado" width="400" height="225" loading="lazy">
+                  <a class="slide-arrow slide-arrow--prev" href="#slide-6" aria-label="Evento anterior"><svg aria-hidden="true"><use href="#i-prev"/></svg></a>
+                  <a class="slide-arrow slide-arrow--next" href="#slide-2" aria-label="Evento siguiente"><svg aria-hidden="true"><use href="#i-next"/></svg></a>
+                </div>
+                <div class="slide-info">
+                  <span class="badge badge-boleteria">En boletería</span>
+                  <h3>Noche Sinfónica de Verano</h3>
+                  <p class="slide-desc">La Orquesta Filarmónica del Valle presenta piezas clásicas y contemporáneas en una velada para toda la familia.</p>
+                  <p class="event-meta"><svg aria-hidden="true"><use href="#i-pin"/></svg>Teatro Municipal, Tuluá</p>
+                  <p class="event-meta"><svg aria-hidden="true"><use href="#i-cal"/></svg><time datetime="2026-11-14T20:00">14 nov 2026, 8:00 p. m.</time></p>
+                  <div class="slide-foot">
+                    <span class="event-price">$85.000</span>
+                    <a class="btn btn-primary" href="detalle-evento.html">Ver evento</a>
+                  </div>
+                </div>
+              </article>
+            </li>
+            <li class="slide" id="slide-2" aria-roledescription="diapositiva" aria-label="2 de 6: Obra: El Jardín de los Espejos">
+              <article class="slide-card">
+                <div class="slide-media">
+                  <img src="../assets/eventos/jardin-espejos.svg" alt="Ilustración de un espejo ovalado rodeado de enredaderas entre telones de teatro" width="400" height="225" loading="lazy">
+                  <a class="slide-arrow slide-arrow--prev" href="#slide-1" aria-label="Evento anterior"><svg aria-hidden="true"><use href="#i-prev"/></svg></a>
+                  <a class="slide-arrow slide-arrow--next" href="#slide-3" aria-label="Evento siguiente"><svg aria-hidden="true"><use href="#i-next"/></svg></a>
+                </div>
+                <div class="slide-info">
+                  <span class="badge badge-boleteria">En boletería</span>
+                  <h3>Obra: El Jardín de los Espejos</h3>
+                  <p class="slide-desc">Una familia descubre que los espejos de su jardín muestran lo que cada uno calla. Drama con humor para mayores de 12 años.</p>
+                  <p class="event-meta"><svg aria-hidden="true"><use href="#i-pin"/></svg>Teatro Jorge Isaacs, Cali</p>
+                  <p class="event-meta"><svg aria-hidden="true"><use href="#i-cal"/></svg><time datetime="2026-12-12T19:30">12 dic 2026, 7:30 p. m.</time></p>
+                  <div class="slide-foot">
+                    <span class="event-price">$60.000</span>
+                    <a class="btn btn-primary" href="detalle-evento.html">Ver evento</a>
+                  </div>
+                </div>
+              </article>
+            </li>
+            <li class="slide" id="slide-3" aria-roledescription="diapositiva" aria-label="3 de 6: Stand Up: Noche de Comedia">
+              <article class="slide-card">
+                <div class="slide-media">
+                  <img src="../assets/eventos/stand-up.svg" alt="Ilustración de un micrófono bajo un reflector frente a una pared de ladrillo" width="400" height="225" loading="lazy">
+                  <a class="slide-arrow slide-arrow--prev" href="#slide-2" aria-label="Evento anterior"><svg aria-hidden="true"><use href="#i-prev"/></svg></a>
+                  <a class="slide-arrow slide-arrow--next" href="#slide-4" aria-label="Evento siguiente"><svg aria-hidden="true"><use href="#i-next"/></svg></a>
+                </div>
+                <div class="slide-info">
+                  <span class="badge badge-envivo">En vivo</span>
+                  <h3>Stand Up: Noche de Comedia</h3>
+                  <p class="slide-desc">Cuatro comediantes del Valle suben al escenario con rutinas sobre la vida universitaria, la familia y el tráfico.</p>
+                  <p class="event-meta"><svg aria-hidden="true"><use href="#i-pin"/></svg>Auditorio Uceva, Tuluá</p>
+                  <p class="event-meta"><svg aria-hidden="true"><use href="#i-cal"/></svg><time datetime="2026-11-08T19:00">08 nov 2026, 7:00 p. m.</time></p>
+                  <div class="slide-foot">
+                    <span class="event-price">$45.000</span>
+                    <a class="btn btn-primary" href="detalle-evento.html">Ver evento</a>
+                  </div>
+                </div>
+              </article>
+            </li>
+            <li class="slide" id="slide-4" aria-roledescription="diapositiva" aria-label="4 de 6: Festival Ritmos del Pacífico">
+              <article class="slide-card">
+                <div class="slide-media">
+                  <img src="../assets/eventos/ritmos-pacifico.svg" alt="Ilustración de una marimba y un tambor cununo frente al mar del Pacífico al atardecer" width="400" height="225" loading="lazy">
+                  <a class="slide-arrow slide-arrow--prev" href="#slide-3" aria-label="Evento anterior"><svg aria-hidden="true"><use href="#i-prev"/></svg></a>
+                  <a class="slide-arrow slide-arrow--next" href="#slide-5" aria-label="Evento siguiente"><svg aria-hidden="true"><use href="#i-next"/></svg></a>
+                </div>
+                <div class="slide-info">
+                  <span class="badge badge-programado">Programado</span>
+                  <h3>Festival Ritmos del Pacífico</h3>
+                  <p class="slide-desc">Marimba, cununos y cantos tradicionales con agrupaciones de Buenaventura, Guapi y Tumaco.</p>
+                  <p class="event-meta"><svg aria-hidden="true"><use href="#i-pin"/></svg>Coliseo El Cacique, Cali</p>
+                  <p class="event-meta"><svg aria-hidden="true"><use href="#i-cal"/></svg><time datetime="2026-11-22T18:30">22 nov 2026, 6:30 p. m.</time></p>
+                  <div class="slide-foot">
+                    <span class="event-price">$120.000</span>
+                    <a class="btn btn-primary" href="detalle-evento.html">Ver evento</a>
+                  </div>
+                </div>
+              </article>
+            </li>
+            <li class="slide" id="slide-5" aria-roledescription="diapositiva" aria-label="5 de 6: Concierto Tributo Rock 90s">
+              <article class="slide-card">
+                <div class="slide-media">
+                  <img src="../assets/eventos/rock-90s.svg" alt="Ilustración de una guitarra eléctrica roja con luces de escenario y público" width="400" height="225" loading="lazy">
+                  <a class="slide-arrow slide-arrow--prev" href="#slide-4" aria-label="Evento anterior"><svg aria-hidden="true"><use href="#i-prev"/></svg></a>
+                  <a class="slide-arrow slide-arrow--next" href="#slide-6" aria-label="Evento siguiente"><svg aria-hidden="true"><use href="#i-next"/></svg></a>
+                </div>
+                <div class="slide-info">
+                  <span class="badge badge-programado">Programado</span>
+                  <h3>Concierto Tributo Rock 90s</h3>
+                  <p class="slide-desc">Tres bandas tributo recorren los himnos del rock en español e inglés de los años noventa.</p>
+                  <p class="event-meta"><svg aria-hidden="true"><use href="#i-pin"/></svg>Plaza de Toros, Bogotá</p>
+                  <p class="event-meta"><svg aria-hidden="true"><use href="#i-cal"/></svg><time datetime="2026-12-05T20:00">05 dic 2026, 8:00 p. m.</time></p>
+                  <div class="slide-foot">
+                    <span class="event-price">$150.000</span>
+                    <a class="btn btn-primary" href="detalle-evento.html">Ver evento</a>
+                  </div>
+                </div>
+              </article>
+            </li>
+            <li class="slide" id="slide-6" aria-roledescription="diapositiva" aria-label="6 de 6: Feria Gastronómica y Cultural">
+              <article class="slide-card">
+                <div class="slide-media">
+                  <img src="../assets/eventos/feria-gastronomica.svg" alt="Ilustración de un puesto de comida con toldo a rayas, banderines y una olla humeante" width="400" height="225" loading="lazy">
+                  <a class="slide-arrow slide-arrow--prev" href="#slide-5" aria-label="Evento anterior"><svg aria-hidden="true"><use href="#i-prev"/></svg></a>
+                  <a class="slide-arrow slide-arrow--next" href="#slide-1" aria-label="Evento siguiente"><svg aria-hidden="true"><use href="#i-next"/></svg></a>
+                </div>
+                <div class="slide-info">
+                  <span class="badge badge-programado">Programado</span>
+                  <h3>Feria Gastronómica y Cultural</h3>
+                  <p class="slide-desc">Cocineros tradicionales, música en vivo y talleres para niños durante todo el día.</p>
+                  <p class="event-meta"><svg aria-hidden="true"><use href="#i-pin"/></svg>Parque Ciudad de Tuluá</p>
+                  <p class="event-meta"><svg aria-hidden="true"><use href="#i-cal"/></svg><time datetime="2026-12-19T10:00">19 dic 2026, 10:00 a. m.</time></p>
+                  <div class="slide-foot">
+                    <span class="event-price">$20.000</span>
+                    <a class="btn btn-primary" href="detalle-evento.html">Ver evento</a>
+                  </div>
+                </div>
+              </article>
+            </li>
+          </ul>
+          <div class="carousel-controls">
+            <div class="carousel-progress" aria-hidden="true"><span></span></div>
+            <p class="carousel-status">En pausa mientras lo miras</p>
+          </div>
+          <ol class="carousel-dots" aria-label="Elegir evento">
+            <li><a href="#slide-1" aria-label="Ir al evento 1: Noche Sinfónica de Verano"></a></li>
+            <li><a href="#slide-2" aria-label="Ir al evento 2: Obra: El Jardín de los Espejos"></a></li>
+            <li><a href="#slide-3" aria-label="Ir al evento 3: Stand Up: Noche de Comedia"></a></li>
+            <li><a href="#slide-4" aria-label="Ir al evento 4: Festival Ritmos del Pacífico"></a></li>
+            <li><a href="#slide-5" aria-label="Ir al evento 5: Concierto Tributo Rock 90s"></a></li>
+            <li><a href="#slide-6" aria-label="Ir al evento 6: Feria Gastronómica y Cultural"></a></li>
+          </ol>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ PRÓXIMOS EVENTOS ============ -->
+    <section class="section section-flush" id="eventos" aria-labelledby="eventos-title">
+      <div class="container">
+        <div class="section-head">
+          <h2 id="eventos-title">Próximos eventos</h2>
+          <a class="link-more" href="catalogo.html">Ver catálogo completo</a>
+        </div>
+
+        <div class="events-toolbar">
+          <div class="chips" role="group" aria-label="Filtrar por estado">
+            <button type="button" class="chip is-active" data-estado="" aria-pressed="true">Todos</button>
+            <button type="button" class="chip" data-estado="boleteria" aria-pressed="false">En boletería</button>
+            <button type="button" class="chip" data-estado="programado" aria-pressed="false">Programados</button>
+            <button type="button" class="chip" data-estado="envivo" aria-pressed="false">En vivo</button>
+          </div>
+          <button type="button" class="btn btn-ghost filter-btn" id="open-filters" aria-haspopup="dialog" aria-controls="filter-dialog" hidden>
+            <svg aria-hidden="true"><use href="#i-filter"/></svg>
+            Filtrar
+            <span class="filter-count" hidden>0</span>
+          </button>
+        </div>
+
+        <div class="results-bar" hidden>
+          <p class="results-count" aria-live="polite"></p>
+          <ul class="active-filters" aria-label="Filtros aplicados"></ul>
+        </div>
+
+        <ul class="event-grid">
+          <li class="event-item" data-ciudad="Cali" data-fecha="2026-11-22" data-categoria="Concierto" data-estado="programado" data-titulo="Festival Ritmos del Pacífico">
+            <article class="event-card">
+              <div class="event-thumb thumb-music"><img src="../assets/eventos/ritmos-pacifico.svg" alt="Ilustración de una marimba y un tambor cununo frente al mar del Pacífico al atardecer" width="400" height="225" loading="lazy"><span class="event-kind">Concierto</span></div>
+              <div class="event-body">
+                <h3><a href="detalle-evento.html">Festival Ritmos del Pacífico</a></h3>
+                <p class="event-meta"><svg aria-hidden="true"><use href="#i-pin"/></svg>Coliseo El Cacique, Cali</p>
+                <p class="event-meta"><svg aria-hidden="true"><use href="#i-cal"/></svg><time datetime="2026-11-22T18:30">22 nov 2026, 6:30 p. m.</time></p>
+                <div class="event-foot">
+                  <span class="event-price">$120.000</span>
+                  <span class="badge badge-programado">Programado</span>
+                </div>
+              </div>
+            </article>
+          </li>
+          <li class="event-item" data-ciudad="Tuluá" data-fecha="2026-11-08" data-categoria="Stand up" data-estado="envivo" data-titulo="Stand Up: Noche de Comedia">
+            <article class="event-card">
+              <div class="event-thumb thumb-comedy"><img src="../assets/eventos/stand-up.svg" alt="Ilustración de un micrófono bajo un reflector frente a una pared de ladrillo" width="400" height="225" loading="lazy"><span class="event-kind">Stand up</span></div>
+              <div class="event-body">
+                <h3><a href="detalle-evento.html">Stand Up: Noche de Comedia</a></h3>
+                <p class="event-meta"><svg aria-hidden="true"><use href="#i-pin"/></svg>Auditorio Uceva, Tuluá</p>
+                <p class="event-meta"><svg aria-hidden="true"><use href="#i-cal"/></svg><time datetime="2026-11-08T19:00">08 nov 2026, 7:00 p. m.</time></p>
+                <div class="event-foot">
+                  <span class="event-price">$45.000</span>
+                  <span class="badge badge-envivo">En vivo</span>
+                </div>
+              </div>
+            </article>
+          </li>
+          <li class="event-item" data-ciudad="Bogotá" data-fecha="2026-12-05" data-categoria="Concierto" data-estado="programado" data-titulo="Concierto Tributo Rock 90s">
+            <article class="event-card">
+              <div class="event-thumb thumb-rock"><img src="../assets/eventos/rock-90s.svg" alt="Ilustración de una guitarra eléctrica roja con luces de escenario y público" width="400" height="225" loading="lazy"><span class="event-kind">Concierto</span></div>
+              <div class="event-body">
+                <h3><a href="detalle-evento.html">Concierto Tributo Rock 90s</a></h3>
+                <p class="event-meta"><svg aria-hidden="true"><use href="#i-pin"/></svg>Plaza de Toros, Bogotá</p>
+                <p class="event-meta"><svg aria-hidden="true"><use href="#i-cal"/></svg><time datetime="2026-12-05T20:00">05 dic 2026, 8:00 p. m.</time></p>
+                <div class="event-foot">
+                  <span class="event-price">$150.000</span>
+                  <span class="badge badge-programado">Programado</span>
+                </div>
+              </div>
+            </article>
+          </li>
+          <li class="event-item" data-ciudad="Cali" data-fecha="2026-12-12" data-categoria="Teatro" data-estado="boleteria" data-titulo="Obra: El Jardín de los Espejos">
+            <article class="event-card">
+              <div class="event-thumb thumb-theatre"><img src="../assets/eventos/jardin-espejos.svg" alt="Ilustración de un espejo ovalado rodeado de enredaderas entre telones de teatro" width="400" height="225" loading="lazy"><span class="event-kind">Teatro</span></div>
+              <div class="event-body">
+                <h3><a href="detalle-evento.html">Obra: El Jardín de los Espejos</a></h3>
+                <p class="event-meta"><svg aria-hidden="true"><use href="#i-pin"/></svg>Teatro Jorge Isaacs, Cali</p>
+                <p class="event-meta"><svg aria-hidden="true"><use href="#i-cal"/></svg><time datetime="2026-12-12T19:30">12 dic 2026, 7:30 p. m.</time></p>
+                <div class="event-foot">
+                  <span class="event-price">$60.000</span>
+                  <span class="badge badge-boleteria">En boletería</span>
+                </div>
+              </div>
+            </article>
+          </li>
+          <li class="event-item" data-ciudad="Tuluá" data-fecha="2026-11-14" data-categoria="Concierto" data-estado="boleteria" data-titulo="Noche Sinfónica de Verano">
+            <article class="event-card">
+              <div class="event-thumb thumb-classic"><img src="../assets/eventos/noche-sinfonica.svg" alt="Ilustración de un violín y notas musicales bajo un cielo estrellado" width="400" height="225" loading="lazy"><span class="event-kind">Concierto</span></div>
+              <div class="event-body">
+                <h3><a href="detalle-evento.html">Noche Sinfónica de Verano</a></h3>
+                <p class="event-meta"><svg aria-hidden="true"><use href="#i-pin"/></svg>Teatro Municipal, Tuluá</p>
+                <p class="event-meta"><svg aria-hidden="true"><use href="#i-cal"/></svg><time datetime="2026-11-14T20:00">14 nov 2026, 8:00 p. m.</time></p>
+                <div class="event-foot">
+                  <span class="event-price">$85.000</span>
+                  <span class="badge badge-boleteria">En boletería</span>
+                </div>
+              </div>
+            </article>
+          </li>
+          <li class="event-item" data-ciudad="Tuluá" data-fecha="2026-12-19" data-categoria="Feria" data-estado="programado" data-titulo="Feria Gastronómica y Cultural">
+            <article class="event-card">
+              <div class="event-thumb thumb-fair"><img src="../assets/eventos/feria-gastronomica.svg" alt="Ilustración de un puesto de comida con toldo a rayas, banderines y una olla humeante" width="400" height="225" loading="lazy"><span class="event-kind">Feria</span></div>
+              <div class="event-body">
+                <h3><a href="detalle-evento.html">Feria Gastronómica y Cultural</a></h3>
+                <p class="event-meta"><svg aria-hidden="true"><use href="#i-pin"/></svg>Parque Ciudad de Tuluá</p>
+                <p class="event-meta"><svg aria-hidden="true"><use href="#i-cal"/></svg><time datetime="2026-12-19T10:00">19 dic 2026, 10:00 a. m.</time></p>
+                <div class="event-foot">
+                  <span class="event-price">$20.000</span>
+                  <span class="badge badge-programado">Programado</span>
+                </div>
+              </div>
+            </article>
+          </li>
+        </ul>
+
+        <div class="empty-state" hidden>
+          <svg aria-hidden="true"><use href="#i-filter"/></svg>
+          <h3>No hay eventos con estos filtros</h3>
+          <p>Prueba con otra ciudad, otra fecha o una categoría diferente.</p>
+          <button type="button" class="btn btn-primary" data-clear-filters>Quitar filtros</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ CÓMO RESERVAR ============ -->
+    <section class="section section-alt" id="como-reservar" aria-labelledby="pasos-title">
+      <div class="container">
+        <div class="section-head">
+          <h2 id="pasos-title">Cómo reservar</h2>
+        </div>
+        <ol class="steps">
+          <li class="step">
+            <h3>Elige el evento</h3>
+            <p>Filtra por ciudad, fecha o estado y revisa el recinto, el horario y la capacidad antes de decidir.</p>
+          </li>
+          <li class="step">
+            <h3>Reserva tus entradas</h3>
+            <p>Indica cuántas entradas necesitas. Verás el valor total antes de enviar la reserva.</p>
+          </li>
+          <li class="step">
+            <h3>Recibe la confirmación</h3>
+            <p>El organizador revisa tu reserva y la confirma. Consulta su estado en cualquier momento desde Mis reservas.</p>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- ============ CIUDADES ============ -->
+    <section class="section" id="ciudades" aria-labelledby="ciudades-title">
+      <div class="container">
+        <div class="section-head">
+          <h2 id="ciudades-title">Eventos por ciudad</h2>
+        </div>
+        <ul class="city-list">
+          <li><a class="city" data-ciudad="Tuluá" href="catalogo.html?ciudad=tulua"><span class="city-name">Tuluá</span><span class="city-region">Valle del Cauca</span><span class="city-count">73 eventos</span></a></li>
+          <li><a class="city" data-ciudad="Cali" href="catalogo.html?ciudad=cali"><span class="city-name">Cali</span><span class="city-region">Valle del Cauca</span><span class="city-count">61 eventos</span></a></li>
+          <li><a class="city" data-ciudad="Bogotá" href="catalogo.html?ciudad=bogota"><span class="city-name">Bogotá</span><span class="city-region">Cundinamarca</span><span class="city-count">28 eventos</span></a></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ ORGANIZADORES ============ -->
+    <section class="section section-flush" id="organizadores" aria-labelledby="org-title">
+      <div class="container">
+        <div class="org-band">
+          <div class="org-copy">
+            <h2 id="org-title">¿Organizas eventos?</h2>
+            <p>Crea una cuenta de agente para publicar tus eventos, actualizar su estado y confirmar o cancelar las reservas de tus asistentes desde un solo panel.</p>
+          </div>
+          <a class="btn btn-accent" href="registro.html?rol=agente">Registrarme como agente</a>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+
+  <!-- ============ PANEL DE FILTROS ============ -->
+  <dialog class="filter-dialog" id="filter-dialog" aria-labelledby="filter-title">
+    <form method="dialog" class="filter-form">
+      <header class="filter-head">
+        <h2 id="filter-title">Filtrar eventos</h2>
+        <button type="submit" value="cancel" class="icon-btn" aria-label="Cerrar filtros">
+          <svg aria-hidden="true"><use href="#i-close"/></svg>
+        </button>
+      </header>
+
+      <div class="filter-body">
+        <div class="filter-field">
+          <label for="f-ciudad">Ciudad</label>
+          <select id="f-ciudad" name="ciudad"><option value="">Todas las ciudades</option></select>
+        </div>
+
+        <div class="filter-field">
+          <label for="f-categoria">Categoría</label>
+          <select id="f-categoria" name="categoria"><option value="">Todas las categorías</option></select>
+        </div>
+
+        <div class="filter-field">
+          <label for="f-cuando">Fecha</label>
+          <select id="f-cuando" name="cuando">
+            <option value="">Cualquier fecha</option>
+            <option value="rango">Elegir un rango de fechas</option>
+          </select>
+        </div>
+
+        <fieldset class="filter-range" hidden>
+          <legend>Rango de fechas</legend>
+          <div class="filter-field">
+            <label for="f-desde">Desde</label>
+            <input type="date" id="f-desde" name="desde">
+          </div>
+          <div class="filter-field">
+            <label for="f-hasta">Hasta</label>
+            <input type="date" id="f-hasta" name="hasta">
+          </div>
+        </fieldset>
+      </div>
+
+      <footer class="filter-foot">
+        <button type="button" class="btn btn-ghost" data-reset-draft>Limpiar</button>
+        <button type="submit" value="apply" class="btn btn-primary" id="apply-filters">Ver eventos</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <!-- ============ PIE DE PÁGINA ============ -->
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div class="footer-brand">
+        <a class="brand" href="index.html">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M3 5h1v14H3zM6 5h2v14H6zM10 5h1v14h-1zM13 5h2v14h-2zM17 5h1v14h-1zM20 5h1v14h-1z"/></svg>
+          </span>
+          <span class="brand-name">Eventix</span>
+        </a>
+        <p>Plataforma de boletería para eventos y espectáculos.</p>
+      </div>
+      <nav class="footer-nav" aria-label="Enlaces del pie de página">
+        <h2>Explorar</h2>
+        <ul>
+          <li><a href="catalogo.html">Catálogo de eventos</a></li>
+          <li><a href="#como-reservar">Cómo reservar</a></li>
+          <li><a href="#ciudades">Ciudades</a></li>
+        </ul>
+      </nav>
+      <nav class="footer-nav" aria-label="Cuenta">
+        <h2>Tu cuenta</h2>
+        <ul>
+          <li><a href="login.html">Iniciar sesión</a></li>
+          <li><a href="registro.html">Crear cuenta de cliente</a></li>
+          <li><a href="registro.html?rol=agente">Crear cuenta de agente</a></li>
+        </ul>
+      </nav>
+    </div>
+    <div class="container footer-base">
+      <p>Proyecto Integrador, IV semestre, Facultad de Ingeniería de Sistemas, UCEVA. 2026.</p>
+      <p>Santiago Rodríguez Díaz, Santiago Díaz Londoño, Noé Miguel Moreno y Brayan Castaño.</p>
+    </div>
+  </footer>
+
+</body>
+</html>
