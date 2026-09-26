@@ -1304,3 +1304,296 @@ input, select, button { font: inherit; color: inherit; }
   from { transform: translateY(12px) scale(.98); opacity: 0; }
   to   { transform: none; opacity: 1; }
 }
+
+/* ==========================================================================
+   ESTILOS GENERALES Y PANEL DE RESERVA (DETALLE DE EVENTO)
+   ========================================================================== */
+
+/* Píldora de Estado (Superior) */
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #2563eb; /* Azul primario */
+  color: #ffffff;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-weight: 500;
+  font-size: 0.85rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.status-dot-blue {
+  width: 8px;
+  height: 8px;
+  background-color: #ffffff;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* Contenedor Principal (Grid de 2 Columnas) */
+.event-reservation-container {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 2.5rem;
+  background-color: #0b0f17;
+  color: #f3f4f6;
+  border-top: 1px solid #1f2937;
+  padding-top: 2rem;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* --- Columna Izquierda: Detalles del Evento --- */
+.event-main-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 1.8rem;
+  letter-spacing: -0.02em;
+}
+
+.event-info-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem 1rem;
+  margin-bottom: 2rem;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.info-label {
+  font-size: 0.7rem;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.info-value {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #e5e7eb;
+}
+
+.description-label {
+  display: block;
+  color: #10b981; /* Verde neón/acento */
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-bottom: 8px;
+}
+
+.event-description p {
+  color: #9ca3af;
+  line-height: 1.6;
+  font-size: 0.92rem;
+}
+
+/* --- Columna Derecha: Panel de Reserva --- */
+.reservation-card-col {
+  border-left: 1px solid #1f2937;
+  padding-left: 2rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.reserve-title {
+  color: #10b981;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  margin-bottom: 1.2rem;
+}
+
+.zone-section-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #10b981;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-bottom: 0.8rem;
+}
+
+.zone-section-label svg {
+  stroke: #10b981;
+}
+
+/* Tarjetas de Selección de Zonas */
+.zones-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 1.5rem;
+}
+
+.zone-card {
+  background-color: #111827;
+  border: 1px solid #1f2937;
+  border-radius: 8px;
+  padding: 10px 6px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.zone-card:hover {
+  border-color: #3b82f6;
+  background-color: #1f2937;
+}
+
+.zone-card.active {
+  background-color: #1e3a8a;
+  border-color: #3b82f6;
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
+}
+
+.zone-name {
+  font-size: 0.75rem;
+  color: #e5e7eb;
+  font-weight: 600;
+}
+
+.zone-price {
+  font-size: 0.85rem;
+  color: #10b981;
+  font-weight: 700;
+  margin: 4px 0;
+}
+
+.zone-stock {
+  font-size: 0.65rem;
+  color: #6b7280;
+}
+
+/* Selector de Cantidad */
+.quantity-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.8rem;
+}
+
+.qty-label {
+  color: #9ca3af;
+  font-size: 0.85rem;
+  text-transform: lowercase;
+}
+
+.qty-controls {
+  display: inline-flex;
+  align-items: center;
+  background-color: #111827;
+  border: 1px solid #1f2937;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.qty-btn {
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  padding: 6px 14px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: background-color 0.15s ease;
+}
+
+.qty-btn:hover {
+  background-color: #1f2937;
+}
+
+.qty-number {
+  padding: 0 10px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #ffffff;
+}
+
+/* Desglose de Precios */
+.price-summary {
+  margin-bottom: 1.8rem;
+}
+
+.summary-line {
+  display: flex;
+  justify-content: space-between;
+  color: #9ca3af;
+  font-size: 0.88rem;
+  padding: 8px 0;
+  border-bottom: 1px solid #111827;
+}
+
+.summary-line.total-line {
+  border-bottom: none;
+  border-top: 1px solid #1f2937;
+  color: #ffffff;
+  font-size: 1.05rem;
+  padding-top: 12px;
+  margin-top: 4px;
+}
+
+/* Botón de Confirmación */
+.btn-confirm-reserve {
+  width: 100%;
+  background-color: #2563eb;
+  color: #ffffff;
+  border: none;
+  padding: 12px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.btn-confirm-reserve:hover {
+  background-color: #1d4ed8;
+}
+
+.btn-confirm-reserve:active {
+  transform: scale(0.99);
+}
+
+/* Diseño Adaptable (Móviles / Pantallas Pequeñas) */
+@media (max-width: 850px) {
+  .event-reservation-container {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+  .reservation-card-col {
+    border-left: none;
+    border-top: 1px solid #1f2937;
+    padding-left: 0;
+    padding-top: 2rem;
+  }
+  .event-info-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+
+.event-banner {
+  width: 100%;
+  margin-bottom: 1.5rem;
+  overflow: hidden;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.event-hero-img {
+  width: 100%;
+  height: auto;
+  max-height: 380px;
+  object-fit: cover;
+  display: block;
+}

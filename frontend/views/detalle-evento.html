@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Detalle del Evento · Eventix</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/styles.css">
+  
+  <!-- Controlador JS de la vista -->
+  <script src="../controllers/detalle-evento.js" defer></script>
+</head>
+<body>
+
+  <!-- ENCABEZADO -->
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="index.html" aria-label="Eventix, inicio">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M3 5h1v14H3zM6 5h2v14H6zM10 5h1v14h-1zM13 5h2v14h-2zM17 5h1v14h-1zM20 5h1v14h-1z"/></svg>
+        </span>
+        <span class="brand-name">Eventix</span>
+      </a>
+
+      <input type="checkbox" id="menu-toggle" class="menu-toggle" aria-label="Abrir menú">
+      <label for="menu-toggle" class="menu-button" aria-hidden="true">
+        <span></span><span></span><span></span>
+      </label>
+
+      <nav class="main-nav" aria-label="Navegación principal">
+        <ul class="nav-links">
+          <li><a href="index.html#eventos">Eventos</a></li>
+          <li><a href="index.html#como-reservar">Cómo reservar</a></li>
+          <li><a href="index.html#ciudades">Ciudades</a></li>
+          <li><a href="index.html#organizadores">Para organizadores</a></li>
+        </ul>
+        <div class="nav-actions">
+          <a class="btn btn-ghost" href="login.html">Iniciar sesión</a>
+          <a class="btn btn-primary" href="registro.html">Crear cuenta</a>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <!-- CONTENIDO PRINCIPAL -->
+  <main id="contenido" class="container section">
+  
+  <div style="margin-bottom: 1.5rem;">
+    <span id="event-badge" class="badge badge-boleteria">En boletería</span>
+  </div>
+
+  <div class="event-reservation-container">
+    
+    <!-- Detalle del Evento -->
+    <div class="event-details-col">
+      <div class="event-banner">
+        <img id="event-img" src="../assets/eventos/noche-sinfonica.svg" alt="Imagen del evento" class="event-hero-img" width="800" height="450">
+      </div>
+
+      <h1 id="event-title" class="event-main-title">Noche Sinfónica de Verano</h1>
+      
+      <div class="event-info-grid">
+        <div class="info-item">
+          <span class="info-label">CÓDIGO</span>
+          <span id="event-code" class="info-value">EVT-0142</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">TEATRO</span>
+          <span id="event-teatro" class="info-value">Teatro Municipal</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">CIUDAD</span>
+          <span id="event-ciudad" class="info-value">Tuluá, Valle del Cauca</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">INICIO</span>
+          <span id="event-inicio" class="info-value">14 nov 2026, 8:00 p. m.</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">FIN ESTIMADO</span>
+          <span id="event-fin" class="info-value">14 nov 2026, 10:30 p. m.</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">CAPACIDAD</span>
+          <span id="event-capacidad" class="info-value">450 espectadores</span>
+        </div>
+      </div>
+
+      <div class="event-description">
+        <span class="description-label">Descripción</span>
+        <p id="event-desc">La Orquesta Filarmónica del Valle presenta un repertorio...</p>
+      </div>
+    </div>
+
+      <!-- Reserva Interactiva -->
+      <div class="reservation-card-col">
+        <h3 class="reserve-title">RESERVAR ENTRADAS</h3>
+        
+        <div class="zone-section-label">
+          <span>ZONA / UBICACIÓN</span>
+        </div>
+
+        <!-- Opciones de Zona con data-zone -->
+        <div class="zones-grid">
+          <div class="zone-card active" data-zone="preferencial" style="cursor: pointer;">
+            <span class="zone-name">Preferencial</span>
+            <span class="zone-price">$85.000</span>
+            <span class="zone-stock">120 disponibles</span>
+          </div>
+          <div class="zone-card" data-zone="vip" style="cursor: pointer;">
+            <span class="zone-name">VIP</span>
+            <span class="zone-price">$140.000</span>
+            <span class="zone-stock">40 disponibles</span>
+          </div>
+          <div class="zone-card" data-zone="general" style="cursor: pointer;">
+            <span class="zone-name">General</span>
+            <span class="zone-price">$55.000</span>
+            <span class="zone-stock">210 disponibles</span>
+          </div>
+        </div>
+
+        <!-- Selector de Cantidad -->
+        <div class="quantity-row">
+          <span class="qty-label">Cantidad</span>
+          <div class="qty-controls">
+            <button class="qty-btn" type="button">-</button>
+            <span class="qty-number">2</span>
+            <button class="qty-btn" type="button">+</button>
+          </div>
+        </div>
+
+        <!-- Desglose de Precios Dinámico -->
+        <div class="price-summary">
+          <div class="summary-line">
+            <span>Precio base</span>
+            <span id="base-price-val">$85.000</span>
+          </div>
+          <div class="summary-line">
+            <span id="subtotal-label">Entradas (x2)</span>
+            <span id="subtotal-val">$170.000</span>
+          </div>
+          <div class="summary-line">
+            <span>Servicios</span>
+            <span id="service-val">$8.000</span>
+          </div>
+          <div class="summary-line total-line">
+            <strong>Total</strong>
+            <strong id="grand-total-val">$178.000</strong>
+          </div>
+        </div>
+
+        <button class="btn btn-primary btn-block" type="button">Confirmar reserva</button>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- PIE DE PÁGINA -->
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div class="footer-brand">
+        <a class="brand" href="index.html">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M3 5h1v14H3zM6 5h2v14H6zM10 5h1v14h-1zM13 5h2v14h-2zM17 5h1v14h-1zM20 5h1v14h-1z"/></svg>
+          </span>
+          <span class="brand-name">Eventix</span>
+        </a>
+        <p>Plataforma de boletería para eventos y espectáculos.</p>
+      </div>
+      <nav class="footer-nav" aria-label="Enlaces del pie de página">
+        <h2>Explorar</h2>
+        <ul>
+          <li><a href="catalogo.html">Catálogo de eventos</a></li>
+          <li><a href="index.html#como-reservar">Cómo reservar</a></li>
+          <li><a href="index.html#ciudades">Ciudades</a></li>
+        </ul>
+      </nav>
+      <nav class="footer-nav" aria-label="Cuenta">
+        <h2>Tu cuenta</h2>
+        <ul>
+          <li><a href="login.html">Iniciar sesión</a></li>
+          <li><a href="registro.html">Crear cuenta de cliente</a></li>
+          <li><a href="registro.html?rol=agente">Crear cuenta de agente</a></li>
+        </ul>
+      </nav>
+    </div>
+    <div class="container footer-base">
+      <p>Proyecto Integrador, IV semestre, Facultad de Ingeniería de Sistemas, UCEVA. 2026.</p>
+      <p>Santiago Rodríguez Díaz, Santiago Díaz Londoño, Noemiguel Moreno y Brayan Castaño.</p>
+    </div>
+  </footer>
+
+</body>
+</html>
