@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-  // Base de datos de eventos (puedes añadir más eventos aquí)
+  // Base de datos de eventos local
   const eventosDB = {
     'noche-sinfonica': {
       codigo: 'EVT-0142',
@@ -57,14 +57,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  // 1. Obtener el parámetro "id" desde la URL (ej: ?id=jardin-espejos)
+  // 1. Obtener ID del evento desde la URL (?id=...)
   const urlParams = new URLSearchParams(window.location.search);
-  const eventoId = urlParams.get('id') || 'noche-sinfonica'; // Fallback por defecto
-
-  // Obtener los datos del evento actual (o el por defecto si no existe)
+  const eventoId = urlParams.get('id') || 'noche-sinfonica';
   const evento = eventosDB[eventoId] || eventosDB['noche-sinfonica'];
 
-  // 2. Renderizar los datos dinámicos en el DOM
+  // 2. Renderizar datos en la vista
   document.title = `${evento.titulo} · Eventix`;
 
   const badgeEl = document.getElementById('event-badge');
@@ -88,7 +86,7 @@ document.addEventListener('DOMContentLoaded', () => {
     bannerImg.alt = evento.titulo;
   }
 
-  // Actualizar visualmente los precios base en las tarjetas de selección
+  // Precios base por zona
   document.querySelector('[data-zone="preferencial"] .zone-price').textContent = formatCurrency(evento.precios.preferencial);
   document.querySelector('[data-zone="vip"] .zone-price').textContent = formatCurrency(evento.precios.vip);
   document.querySelector('[data-zone="general"] .zone-price').textContent = formatCurrency(evento.precios.general);
@@ -109,6 +107,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const subtotalValEl = document.getElementById('subtotal-val');
   const serviceValEl = document.getElementById('service-val');
   const grandTotalValEl = document.getElementById('grand-total-val');
+  const btnConfirmar = document.querySelector('.btn-block');
 
   function formatCurrency(amount) {
     return '$' + amount.toLocaleString('es-CO');
@@ -131,7 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
     btnMinus.style.cursor = quantity <= 1 ? 'not-allowed' : 'pointer';
   }
 
-  // Eventos de selección de zona
+  // Selección de zonas
   zoneCards.forEach(card => {
     card.addEventListener('click', () => {
       zoneCards.forEach(c => c.classList.remove('active'));
@@ -146,7 +145,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Eventos de cantidad
+  // Botones de cantidad
   btnMinus.addEventListener('click', () => {
     if (quantity > 1) {
       quantity--;
@@ -161,6 +160,50 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Cálculo inicial
   updateSummary();
+
+ 
+ // 4. CONEXIÓN CON EL BACKEND EN NODE.JS (Envío de correo)
+  
+btnConfirmar.addEventListener('click', async () => {
+ 
+  const emailDestino = prompt("Ingresa tu correo electrónico para recibir la confirmación:", "tu_correo@gmail.com");
+
+  if (!emailDestino) return; 
+
+  btnConfirmar.disabled = true;
+  btnConfirmar.textContent = "Procesando reserva...";
+
+  const reservaData = {
+    emailCliente: emailDestino,
+    eventoTitulo: evento.titulo,
+    cantidad: quantity,
+    total: grandTotalValEl.textContent
+  };
+
+  try {
+    // Petición al servidor Express en el puerto 5000
+    const respuesta = await fetch('http://192.168.1.5:5000/api/reservar', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(reservaData)
+    });
+
+    const resultado = await respuesta.json();
+
+    if (resultado.status === 'ok') {
+      alert(`¡Reserva confirmada con éxito!\n\nSe ha enviado un correo con el comprobante a: ${emailDestino}`);
+    } else {
+      alert('Ocurrió un error al procesar el envío del correo desde el servidor.');
+    }
+  } catch (error) {
+    console.error('Error al conectar con Node.js:', error);
+    alert('No se pudo conectar con el servidor backend. Asegúrate de ejecutar "node server.js" en la terminal.');
+  } finally {
+    btnConfirmar.disabled = false;
+    btnConfirmar.textContent = "Confirmar reserva";
+  }
+});
 });
