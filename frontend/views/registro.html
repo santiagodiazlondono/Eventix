@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EVENTIX | Crear cuenta</title>
+
+    <!-- Tipografías del proyecto -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+
+    <!-- 1. Estilos base compartidos con la vista de login
+            (paneles, marca, campos, botón y enlaces)            -->
+    <link rel="stylesheet" href="../css/login.css">
+
+    <!-- 2. Estilos propios del registro
+            (solo la rejilla de dos columnas del formulario)      -->
+    <link rel="stylesheet" href="../css/registro.css">
+</head>
+<body>
+
+    <main class="pantalla-login pantalla-registro" id="pantalla-registro">
+
+        <!-- ======================================================
+             PANEL IZQUIERDO: Presentación del sistema
+             Es el mismo del login, para dar continuidad visual.
+             ====================================================== -->
+        <section class="panel-presentacion" id="panel-presentacion">
+
+            <!-- Rótulo pequeño superior -->
+            <p class="rotulo-sistema" id="rotulo-sistema">SISTEMA DE GESTION DE EVENTOS</p>
+
+            <!-- Frase principal -->
+            <h1 class="titulo-principal" id="titulo-principal">
+                Cada boleta,<br>
+                bajo <span class="palabra-resaltada" id="palabra-resaltada">control</span>.
+            </h1>
+
+            <!-- Descripción del sistema -->
+            <p class="descripcion-sistema" id="descripcion-sistema">
+                Administra clientes, agentes, eventos y
+                reservas desde una sola plataforma,
+                con datos en tiempo real y reportes
+                listos para decidir
+            </p>
+
+            <!-- Código de barras decorativo -->
+            <div class="contenedor-codigo-barras" id="contenedor-codigo-barras" aria-hidden="true">
+                <img class="codigo-barras" id="codigo-barras" src="../assets/iconos/barcode.png" alt="">
+            </div>
+
+        </section>
+
+        <!-- ======================================================
+             PANEL DERECHO: Formulario de registro
+             ====================================================== -->
+        <section class="panel-acceso" id="panel-acceso">
+
+            <!-- Caja que agrupa y centra el contenido.
+                 Lleva la clase extra "caja-registro" porque este
+                 formulario necesita más ancho que el del login. -->
+            <div class="caja-acceso caja-registro" id="caja-registro">
+
+                <!-- Logo y nombre de la marca -->
+                <header class="marca" id="marca">
+                    <div class="marca-logo" id="marca-logo" aria-hidden="true">
+                        <img src="../assets/iconos/Logo.png" alt="">
+                    </div>
+                    <span class="marca-nombre" id="marca-nombre">EVENTIX</span>
+                </header>
+
+                <!-- Encabezado del formulario -->
+                <h2 class="titulo-formulario" id="titulo-formulario">Regístrate</h2>
+
+                <!-- Formulario de creación de cuenta.
+                     Los campos se acomodan en dos columnas. -->
+                <form class="formulario-registro" id="formulario-registro" action="#" method="post">
+
+                    <!-- Campo: nombre completo -->
+                    <div class="campo" id="campo-nombre">
+                        <label class="etiqueta-campo" id="etiqueta-nombre" for="nombre-completo">
+                            Nombre completo
+                        </label>
+
+                        <input
+                            class="entrada-texto"
+                            type="text"
+                            id="nombre-completo"
+                            name="nombre_completo"
+                            placeholder="Laura Ramirez Toro"
+                            autocomplete="name"
+                            required
+                        >
+                    </div>
+
+                    <!-- Campo: número de identificación -->
+                    <div class="campo" id="campo-identificacion">
+                        <label class="etiqueta-campo" id="etiqueta-identificacion" for="num-identificacion">
+                            N.º de identificación
+                        </label>
+
+                        <input
+                            class="entrada-texto"
+                            type="text"
+                            id="num-identificacion"
+                            name="num_identificacion"
+                            placeholder="1 115 XXX XXX"
+                            inputmode="numeric"
+                            required
+                        >
+                    </div>
+
+                    <!-- Campo: correo electrónico -->
+                    <div class="campo" id="campo-correo">
+                        <label class="etiqueta-campo" id="etiqueta-correo" for="correo">
+                            Correo electrónico
+                        </label>
+
+                        <input
+                            class="entrada-texto"
+                            type="email"
+                            id="correo"
+                            name="correo"
+                            placeholder="Laura@correo.com"
+                            autocomplete="email"
+                            required
+                        >
+                    </div>
+
+                    <!-- Campo: teléfono -->
+                    <div class="campo" id="campo-telefono">
+                        <label class="etiqueta-campo" id="etiqueta-telefono" for="telefono">
+                            Teléfono
+                        </label>
+
+                        <input
+                            class="entrada-texto"
+                            type="tel"
+                            id="telefono"
+                            name="numero_telefono"
+                            placeholder="300 000 0000"
+                            autocomplete="tel"
+                            required
+                        >
+                    </div>
+
+                    <!-- Campo: ciudad -->
+                    <div class="campo" id="campo-ciudad">
+                        <label class="etiqueta-campo" id="etiqueta-ciudad" for="ciudad">
+                            Ciudad
+                        </label>
+
+                        <input
+                            class="entrada-texto"
+                            type="text"
+                            id="ciudad"
+                            name="id_ciudad"
+                            placeholder="Tulua"
+                            required
+                        >
+                    </div>
+
+                    <!-- Campo: dirección -->
+                    <div class="campo" id="campo-direccion">
+                        <label class="etiqueta-campo" id="etiqueta-direccion" for="direccion">
+                            Dirección
+                        </label>
+
+                        <input
+                            class="entrada-texto"
+                            type="text"
+                            id="direccion"
+                            name="direccion"
+                            placeholder="Calle 10 # 15 -20"
+                            autocomplete="street-address"
+                            required
+                        >
+                    </div>
+
+                    <!-- Campo: contraseña (ocupa las dos columnas) -->
+                    <div class="campo campo-ancho-completo" id="campo-contrasena">
+                        <label class="etiqueta-campo" id="etiqueta-contrasena" for="contrasena">
+                            Contraseña
+                        </label>
+
+                        <input
+                            class="entrada-texto"
+                            type="password"
+                            id="contrasena"
+                            name="contrasena"
+                            placeholder="Crea una contraseña"
+                            autocomplete="new-password"
+                            minlength="8"
+                            required
+                        >
+                    </div>
+
+                    <!-- Botón de envío (ocupa las dos columnas) -->
+                    <button class="boton-principal campo-ancho-completo" id="boton-crear-cuenta" type="submit">
+                        Crear cuenta
+                    </button>
+
+                </form>
+
+                <!-- Enlace de apoyo -->
+                <nav class="enlaces-apoyo" id="enlaces-apoyo">
+
+                    <p class="linea-enlace" id="linea-login">
+                        ¿Ya tienes cuenta?
+                        <a class="enlace" id="enlace-login" href="Login.html">Inicia sesión</a>
+                    </p>
+
+                </nav>
+
+            </div>
+
+        </section>
+
+    </main>
+
+</body>
+</html>

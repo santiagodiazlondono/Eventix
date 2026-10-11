@@ -1,0 +1,403 @@
+/* ============================================================================
+   EVENTIX · Hoja de estilos de la vista LOGIN
+   Proyecto Integrador · Programación en Ambiente Web I
+   ----------------------------------------------------------------------------
+   Metodología: MOBILE-FIRST
+   Los estilos base están escritos para pantallas pequeñas (celular).
+   Las pantallas grandes se tratan al final, con @media (min-width: ...).
+   Nunca se usa max-width.
+   ============================================================================ */
+
+
+/* ============================================================================
+   1. VARIABLES DE DISEÑO
+   Todos los colores y medidas del proyecto en un solo lugar.
+   Si hay que cambiar un color, se cambia aquí y se actualiza toda la página.
+   ============================================================================ */
+:root {
+
+    /* --- Colores de fondo --- */
+    --color-fondo:            #0A0D14;  /* Fondo general de la página        */
+    --color-panel-izquierdo:  #11161F;  /* Fondo del panel de presentación   */
+    --color-panel-derecho:    #0D1119;  /* Fondo del panel del formulario    */
+    --color-campo:            #151B26;  /* Fondo de los inputs               */
+
+    /* --- Colores de borde --- */
+    --color-borde:            #242C3B;  /* Borde normal de los inputs        */
+    --color-borde-activo:     #3D7EFF;  /* Borde del input enfocado          */
+
+    /* --- Colores de texto --- */
+    --color-texto:            #EDF1F7;  /* Texto principal (blanco suave)    */
+    --color-texto-suave:      #8C97AD;  /* Texto secundario (gris azulado)   */
+    --color-texto-tenue:      #5A6578;  /* Placeholders                      */
+
+    /* --- Colores de acento --- */
+    --color-verde:            #2DE2A0;  /* Verde de marca (rótulo, "control")*/
+    --color-azul:             #1C6FEF;  /* Azul del botón y los enlaces      */
+    --color-azul-oscuro:      #1557C4;  /* Azul del botón al pasar el mouse  */
+
+    /* --- Tipografías --- */
+    --fuente-titulo: 'Space Grotesk', 'Segoe UI', sans-serif;  /* Títulos     */
+    --fuente-texto:  'Inter', 'Segoe UI', Arial, sans-serif;   /* Texto común */
+
+    /* --- Medidas --- */
+    --radio-borde:   7px;    /* Redondeo de inputs y botones                 */
+    --ancho-caja:    400px;  /* Ancho máximo del formulario                  */
+}
+
+
+/* ============================================================================
+   2. RESET BÁSICO
+   Quita los márgenes que el navegador pone por defecto para partir de cero.
+   ============================================================================ */
+
+/* El border-box hace que el padding NO aumente el ancho del elemento.
+   Sin esto, un input con width:100% + padding se sale de su contenedor. */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+body,
+h1, h2, p {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: var(--color-fondo);
+    color: var(--color-texto);
+    font-family: var(--fuente-texto);
+    line-height: 1.6;
+
+    /* Suaviza el dibujado del texto sobre fondos oscuros */
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Las imágenes nunca deben desbordar a su contenedor */
+img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+}
+
+
+/* ============================================================================
+   3. ESTRUCTURA GENERAL DE LA PANTALLA
+   En celular: los dos paneles van uno debajo del otro (columna).
+   En escritorio: se convierten en dos columnas (ver sección 9).
+   ============================================================================ */
+.pantalla-login {
+    display: flex;
+    flex-direction: column;   /* Mobile-first: apilados verticalmente */
+    min-height: 100vh;        /* Ocupa como mínimo toda la altura visible */
+}
+
+
+/* ============================================================================
+   4. PANEL IZQUIERDO · Presentación del sistema
+   ============================================================================ */
+.panel-presentacion {
+    background-color: var(--color-panel-izquierdo);
+    padding: 3rem 1.5rem;
+
+    /* Centra el contenido verticalmente dentro del panel */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+/* Rótulo pequeño en verde: "SISTEMA DE GESTION DE EVENTOS" */
+.rotulo-sistema {
+    color: var(--color-verde);
+    font-size: 0.8125rem;      /* 13px */
+    font-weight: 700;
+    letter-spacing: 0.08em;    /* Separa las letras: se ve más "de sistema" */
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+}
+
+/* Frase principal: "Cada boleta, bajo control." */
+.titulo-principal {
+    font-family: var(--fuente-titulo);
+    font-size: 2.25rem;        /* 36px en celular */
+    font-weight: 700;
+    line-height: 1.15;         /* Líneas juntas: se ve más compacto */
+    letter-spacing: -0.02em;
+    margin-bottom: 1.25rem;
+}
+
+/* La palabra "control" en verde */
+.palabra-resaltada {
+    color: var(--color-verde);
+}
+
+/* Párrafo descriptivo bajo el título */
+.descripcion-sistema {
+    color: var(--color-texto-suave);
+    font-size: 1rem;           /* 16px */
+    max-width: 25rem;          /* Evita líneas demasiado largas de leer */
+    margin-bottom: 2.5rem;
+}
+
+/* Código de barras decorativo */
+.codigo-barras {
+    width: 100%;
+    max-width: 22rem;          /* 352px: no crece más de esto */
+    opacity: 0.95;
+}
+
+
+/* ============================================================================
+   5. PANEL DERECHO · Zona del formulario
+   ============================================================================ */
+.panel-acceso {
+    background-color: var(--color-panel-derecho);
+    padding: 3rem 1.5rem;
+
+    /* Centra la caja del formulario horizontalmente */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Caja que limita el ancho del formulario para que no se estire de más */
+.caja-acceso {
+    width: 100%;
+    max-width: var(--ancho-caja);
+}
+
+
+/* ---- 5.1 Marca: logo + nombre ---------------------------------------- */
+.marca {
+    display: flex;
+    align-items: center;       /* Alinea el logo con el texto */
+    gap: 0.625rem;             /* Separación entre logo y nombre */
+    margin-bottom: 1.75rem;
+}
+
+.marca-logo img {
+    width: 2.25rem;            /* 36px */
+    height: 2.25rem;
+    border-radius: 9px;
+}
+
+.marca-nombre {
+    font-family: var(--fuente-titulo);
+    font-size: 1.0625rem;      /* 17px */
+    font-weight: 700;
+    letter-spacing: 0.04em;
+}
+
+
+/* ---- 5.2 Encabezado del formulario ----------------------------------- */
+.titulo-formulario {
+    font-family: var(--fuente-titulo);
+    font-size: 2rem;           /* 32px */
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin-bottom: 0.375rem;
+}
+
+.subtitulo-formulario {
+    color: var(--color-texto-suave);
+    font-size: 0.9375rem;      /* 15px */
+    margin-bottom: 1.75rem;
+}
+
+
+/* ============================================================================
+   6. FORMULARIO
+   ============================================================================ */
+.formulario-login {
+    display: flex;
+    flex-direction: column;
+    gap: 1.125rem;             /* Separación uniforme entre campos y botón */
+}
+
+/* Cada bloque de etiqueta + input */
+.campo {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;               /* Separación entre la etiqueta y su input */
+}
+
+.etiqueta-campo {
+    font-size: 0.9375rem;      /* 15px */
+    font-weight: 600;
+    color: var(--color-texto);
+}
+
+/* Caja de texto (correo y contraseña) */
+.entrada-texto {
+    width: 100%;
+    padding: 0.8125rem 1rem;   /* 13px arriba/abajo, 16px a los lados */
+
+    background-color: var(--color-campo);
+    border: 1px solid var(--color-borde);
+    border-radius: var(--radio-borde);
+
+    color: var(--color-texto);
+    font-family: var(--fuente-texto);
+    font-size: 1rem;           /* 16px evita que el celular haga zoom al tocar */
+
+    /* Transición suave al cambiar de estado */
+    transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+/* Texto de ejemplo dentro del input */
+.entrada-texto::placeholder {
+    color: var(--color-texto-tenue);
+}
+
+/* Estado ENFOCADO: cuando el usuario hace clic o llega con la tecla Tab.
+   El outline por defecto se quita, pero se reemplaza por un borde azul
+   visible: nunca se debe eliminar la señal de foco sin poner otra. */
+.entrada-texto:focus {
+    outline: none;
+    border-color: var(--color-borde-activo);
+    box-shadow: 0 0 0 3px rgba(61, 126, 255, 0.18);
+}
+
+
+/* ============================================================================
+   7. BOTÓN PRINCIPAL
+   ============================================================================ */
+.boton-principal {
+    width: 100%;
+    padding: 0.875rem 1rem;
+    margin-top: 0.375rem;
+
+    background-color: var(--color-azul);
+    border: none;
+    border-radius: var(--radio-borde);
+
+    color: #FFFFFF;
+    font-family: var(--fuente-titulo);
+    font-size: 1.0625rem;      /* 17px */
+    font-weight: 700;
+
+    cursor: pointer;           /* Manito al pasar el mouse */
+    transition: background-color 0.18s ease, transform 0.08s ease;
+}
+
+/* Al pasar el mouse por encima */
+.boton-principal:hover {
+    background-color: var(--color-azul-oscuro);
+}
+
+/* Al mantener el clic presionado: se hunde un poco */
+.boton-principal:active {
+    transform: translateY(1px);
+}
+
+/* Foco por teclado: anillo visible para quien navega con Tab */
+.boton-principal:focus-visible {
+    outline: 2px solid var(--color-texto);
+    outline-offset: 2px;
+}
+
+
+/* ============================================================================
+   8. ENLACES DE APOYO
+   ============================================================================ */
+.enlaces-apoyo {
+    margin-top: 1.25rem;
+    text-align: center;
+}
+
+.linea-enlace {
+    color: var(--color-texto-suave);
+    font-size: 0.9375rem;      /* 15px */
+    margin-bottom: 0.375rem;
+}
+
+.enlace {
+    color: var(--color-azul);
+    font-weight: 600;
+    text-decoration: underline;
+}
+
+.enlace:hover {
+    color: var(--color-texto);
+}
+
+
+/* ============================================================================
+   9. PANTALLAS GRANDES
+   Aquí es donde los dos paneles dejan de estar apilados y pasan a ser
+   dos columnas. Se usa min-width porque el diseño es Mobile-First.
+   ============================================================================ */
+
+/* ---- 9.1 Tablet: 40em = 640px ---------------------------------------- */
+@media (min-width: 40em) {
+
+    .panel-presentacion,
+    .panel-acceso {
+        padding: 3.5rem 3rem;
+    }
+
+    .titulo-principal {
+        font-size: 3rem;       /* 48px */
+    }
+
+    .titulo-formulario {
+        font-size: 2.25rem;    /* 36px */
+    }
+}
+
+
+/* ---- 9.2 Escritorio: 64em = 1024px ----------------------------------- */
+/* Este es el salto importante: pasa de una columna a dos.               */
+@media (min-width: 64em) {
+
+    .pantalla-login {
+        flex-direction: row;   /* Los paneles se ponen lado a lado */
+        height: 100vh;
+    }
+
+    /* El panel izquierdo es un poco más ancho que el derecho.
+       flex: 1.15 contra flex: 1 da aproximadamente 54% / 46%. */
+    .panel-presentacion {
+        flex: 1.15;
+        padding: 4rem 5rem;
+
+        /* Línea divisoria entre los dos paneles */
+        border-right: 1px solid var(--color-borde);
+    }
+
+    .panel-acceso {
+        flex: 1;
+        padding: 4rem 3rem;
+    }
+
+    .titulo-principal {
+        font-size: 3.5rem;     /* 56px */
+    }
+}
+
+
+/* ---- 9.3 Pantallas muy anchas: 80em = 1280px ------------------------- */
+@media (min-width: 80em) {
+
+    .panel-presentacion {
+        padding: 4rem 7rem;
+    }
+
+    .titulo-principal {
+        font-size: 4rem;       /* 64px */
+    }
+}
+
+
+/* ============================================================================
+   10. ACCESIBILIDAD
+   Si el usuario configuró su sistema para reducir animaciones, se respetan.
+   ============================================================================ */
+@media (prefers-reduced-motion: reduce) {
+
+    * {
+        transition: none !important;
+    }
+}

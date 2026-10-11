@@ -1,0 +1,127 @@
+/* ============================================================================
+   EVENTIX · Hoja de estilos de la vista REGISTRO
+   Proyecto Integrador · Programación en Ambiente Web I
+   ----------------------------------------------------------------------------
+   IMPORTANTE: este archivo NO funciona solo.
+   Va SIEMPRE después de login.css en el <head>, porque login.css es el que
+   trae los estilos base que las dos pantallas comparten:
+
+        · los dos paneles (.panel-presentacion / .panel-acceso)
+        · la marca (.marca, .marca-logo, .marca-nombre)
+        · los campos (.campo, .etiqueta-campo, .entrada-texto)
+        · el botón (.boton-principal)
+        · los enlaces (.enlaces-apoyo, .enlace)
+        · las variables de color y las tipografías
+
+   Aquí abajo solo está lo que el registro necesita de MÁS: una caja más
+   ancha y un formulario de dos columnas. Eso evita repetir código y
+   garantiza que si se cambia un color, cambia en las dos pantallas.
+
+   Metodología: MOBILE-FIRST (una columna por defecto, dos en pantalla ancha)
+   ============================================================================ */
+
+
+/* ============================================================================
+   1. CAJA DEL FORMULARIO
+   El login tiene un formulario angosto de una sola columna (400px bastan).
+   El registro tiene siete campos en dos columnas, así que necesita más
+   espacio. Se agrega la clase "caja-registro" junto a "caja-acceso" para
+   ampliar solo este caso, sin tocar el login.
+   ============================================================================ */
+.caja-registro {
+    max-width: 35rem;   /* 560px, frente a los 400px del login */
+}
+
+
+/* ============================================================================
+   2. FORMULARIO DE REGISTRO
+   Se usa CSS Grid en vez de Flexbox porque aquí hay una cuadrícula real:
+   filas y columnas que deben quedar alineadas entre sí.
+   ============================================================================ */
+
+/* --- Base (celular): una sola columna --------------------------------- */
+.formulario-registro {
+    display: grid;
+
+    /* minmax(0, 1fr) en lugar de solo 1fr:
+       sin el 0 como mínimo, un input largo puede estirar la columna y
+       desbordar la pantalla. Es el error clásico de Grid. */
+    grid-template-columns: minmax(0, 1fr);
+
+    gap: 1.125rem;   /* Separación entre campos, igual que en el login */
+}
+
+/* Elementos que deben ocupar el ancho completo del formulario:
+   la contraseña y el botón. En una sola columna no cambia nada;
+   el efecto se nota cuando hay dos columnas (sección 3). */
+.campo-ancho-completo {
+    grid-column: 1 / -1;   /* De la primera línea a la última */
+}
+
+
+/* ============================================================================
+   3. DOS COLUMNAS EN PANTALLAS MEDIANAS Y GRANDES
+   48em = 768px. A partir de ahí hay ancho suficiente para poner los campos
+   de a dos, tal como está en la maquetación.
+   ============================================================================ */
+@media (min-width: 48em) {
+
+    .formulario-registro {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        column-gap: 1.25rem;   /* Separación horizontal entre las columnas */
+        row-gap: 1.125rem;     /* Separación vertical entre las filas      */
+    }
+}
+
+
+/* ============================================================================
+   4. PROPORCIÓN DE LOS PANELES
+   En el login el panel izquierdo es más ancho (flex: 1.15 contra 1).
+   En el registro el formulario ocupa más espacio, así que los dos paneles
+   se reparten la pantalla por partes iguales.
+
+   Se aplica solo dentro de la media query de escritorio porque abajo de
+   1024px los paneles siguen apilados y la proporción no aplica.
+   ============================================================================ */
+@media (min-width: 64em) {
+
+    .pantalla-registro .panel-presentacion {
+        flex: 1;   /* Anula el flex: 1.15 que viene de login.css */
+    }
+
+    .pantalla-registro .panel-acceso {
+        flex: 1;
+    }
+
+    /* El formulario es alto: se reduce un poco el espacio vertical
+       para que quepa completo sin obligar a hacer scroll. */
+    .pantalla-registro .panel-acceso {
+        padding-top: 2.5rem;
+        padding-bottom: 2.5rem;
+    }
+}
+
+
+/* ============================================================================
+   5. AJUSTE DEL ENCABEZADO
+   La pantalla de registro no lleva subtítulo bajo el título, así que el
+   título necesita su propio margen inferior antes del formulario.
+   ============================================================================ */
+.pantalla-registro .titulo-formulario {
+    margin-bottom: 1.5rem;
+}
+
+
+/* ============================================================================
+   6. ALTURA DE LA PANTALLA
+   En el login se fija height: 100vh porque el contenido siempre cabe.
+   El registro es más largo: en pantallas bajas debe poder crecer y
+   permitir scroll, por eso se usa min-height en lugar de height.
+   ============================================================================ */
+@media (min-width: 64em) {
+
+    .pantalla-registro {
+        height: auto;
+        min-height: 100vh;
+    }
+}
