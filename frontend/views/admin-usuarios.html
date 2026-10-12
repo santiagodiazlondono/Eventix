@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Eventix: Gestión de usuarios del sistema de administración.">
+  <title>Eventix · Gestión de Usuarios</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body class="admin-body">
+
+  
+  <!-- ============ ENCABEZADO ============ -->
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="index.html" aria-label="Eventix, inicio">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M3 5h1v14H3zM6 5h2v14H6zM10 5h1v14h-1zM13 5h2v14h-2zM17 5h1v14h-1zM20 5h1v14h-1z"/></svg>
+        </span>
+        <span class="brand-name">Eventix</span>
+      </a>
+
+      <!-- Menú móvil sin JavaScript: checkbox + label -->
+      <input type="checkbox" id="menu-toggle" class="menu-toggle" aria-label="Abrir menú">
+      <label for="menu-toggle" class="menu-button" aria-hidden="true">
+        <span></span><span></span><span></span>
+      </label>
+
+      <nav class="main-nav" aria-label="Navegación de administración">
+        <ul class="nav-links">
+          <li><a href="admin-panel.html">Dashboard-Registros y Reportes</a></li>
+          <li><a href="admin-usuarios.html" class="is-active">Gestión de usuarios</a></li>
+          <li><a href="admin-catalogos.html">Gestión de catálogos</a></li>
+        </ul>
+        <div class="nav-actions">
+          <div class="admin-user-badge">
+            <span class="brand-mark brand-mark--circular admin-avatar-circular" aria-hidden="true">
+              <span class="admin-avatar-text">LR</span>
+            </span>
+            <span>Admin</span>
+          </div>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ============ CONTENIDO PRINCIPAL ============ -->
+  <main id="contenido" class="admin-content-wrap">
+    <div class="container">
+      
+      <!-- Encabezado de la vista -->
+      <div class="admin-header-path">Administración del Sistema</div>
+      <h1 class="admin-title">Gestión de Usuarios</h1>
+      <p class="admin-lead">Control general de cuentas, asignación de roles de agentes y clientes, y estados de acceso en la plataforma.</p>
+
+      <!-- Barra de herramientas con buscador y filtro -->
+      <div class="events-toolbar" style="margin-bottom: 1.5rem;">
+        <div class="search-field search-field--text" style="flex: 1; max-width: 360px;">
+          <div class="input-icon">
+            <svg aria-hidden="true"><use href="#i-search"/></svg>
+            <input type="search" placeholder="Buscar por nombre o correo..." aria-label="Buscar usuarios">
+          </div>
+        </div>
+        <div style="display: flex; gap: 0.75rem; align-items: center; margin-left: auto;">
+          <select class="search" style="min-height: auto; padding: 0.6rem 1rem; margin: 0;" aria-label="Filtrar por rol">
+            <option value="">Todos los roles</option>
+            <option value="admin">Admin</option>
+            <option value="organizador">Organizador / Agente</option>
+            <option value="cliente">Cliente</option>
+          </select>
+          <a class="btn btn-primary" href="#nuevo-usuario" style="padding: 0.6rem 1.2rem; font-size: 0.875rem;">+ Nuevo usuario</a>
+        </div>
+      </div>
+
+      <!-- Tabla de Directorio de Cuentas -->
+      <section class="distribution-card admin-card-flat" aria-labelledby="directorio-title">
+        <div class="distribution-header" style="margin-bottom: 1.25rem;">
+          <div>
+            <h2 id="directorio-title">Directorio de Cuentas</h2>
+            <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.2rem;">Listado general de usuarios registrados en Eventix UCEVA</p>
+          </div>
+        </div>
+
+        <div class="admin-table-scroll">
+          <table class="report-table">
+            <thead>
+              <tr>
+                <th>Usuario / Correo</th>
+                <th>Rol</th>
+                <th>Estado</th>
+                <th>Registro</th>
+                <th class="admin-text-right">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  <div style="font-weight: 600; color: var(--text);">Santiago Rodríguez Díaz</div>
+                  <div style="font-size: 0.78rem; color: var(--text-muted); font-family: var(--font-mono);">santiago.rodriguez@uceva.edu.co</div>
+                </td>
+                <td><span class="badge badge-boleteria">Admin</span></td>
+                <td><span class="admin-status-ok">● Activo</span></td>
+                <td style="color: var(--text-muted); font-size: 0.85rem;"><time datetime="2025-01-12">12 ene 2025</time></td>
+                <td class="admin-text-right">
+                  <a class="btn btn-ghost" href="#editar" style="padding: 0.3rem 0.7rem; font-size: 0.78rem; min-height: auto;">Editar</a>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <div style="font-weight: 600; color: var(--text);">Santiago Díaz Londoño</div>
+                  <div style="font-size: 0.78rem; color: var(--text-muted); font-family: var(--font-mono);">santiago.diaz@uceva.edu.co</div>
+                </td>
+                <td><span class="badge badge-envivo">Organizador</span></td>
+                <td><span class="admin-status-ok">● Activo</span></td>
+                <td style="color: var(--text-muted); font-size: 0.85rem;"><time datetime="2026-03-14">14 mar 2026</time></td>
+                <td class="admin-text-right">
+                  <a class="btn btn-ghost" href="#editar" style="padding: 0.3rem 0.7rem; font-size: 0.78rem; min-height: auto;">Editar</a>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <div style="font-weight: 600; color: var(--text);">Noemiguel Moreno</div>
+                  <div style="font-size: 0.78rem; color: var(--text-muted); font-family: var(--font-mono);">noemiguel.moreno@uceva.edu.co</div>
+                </td>
+                <td><span class="badge badge-programado">Cliente</span></td>
+                <td><span class="admin-status-err">● Suspendido</span></td>
+                <td style="color: var(--text-muted); font-size: 0.85rem;"><time datetime="2026-02-02">02 feb 2026</time></td>
+                <td class="admin-text-right">
+                  <a class="btn btn-ghost" href="#editar" style="padding: 0.3rem 0.7rem; font-size: 0.78rem; min-height: auto;">Editar</a>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <div style="font-weight: 600; color: var(--text);">Brayan Castaño</div>
+                  <div style="font-size: 0.78rem; color: var(--text-muted); font-family: var(--font-mono);">brayan.castano@uceva.edu.co</div>
+                </td>
+                <td><span class="badge badge-programado">Cliente</span></td>
+                <td><span class="admin-status-ok">● Activo</span></td>
+                <td style="color: var(--text-muted); font-size: 0.85rem;"><time datetime="2026-04-19">19 abr 2026</time></td>
+                <td class="admin-text-right">
+                  <a class="btn btn-ghost" href="#editar" style="padding: 0.3rem 0.7rem; font-size: 0.78rem; min-height: auto;">Editar</a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- ============ PIE DE PÁGINA ============ -->
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div class="footer-brand">
+        <a class="brand" href="index.html">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M3 5h1v14H3zM6 5h2v14H6zM10 5h1v14h-1zM13 5h2v14h-2zM17 5h1v14h-1zM20 5h1v14h-1z"/></svg>
+          </span>
+          <span class="brand-name">Eventix</span>
+        </a>
+        <p>Plataforma de boletería para eventos y espectáculos.</p>
+      </div>
+      <nav class="footer-nav" aria-label="Enlaces del pie de página">
+        <h2>Explorar</h2>
+        <ul>
+          <li><a href="catalogo.html">Catálogo de eventos</a></li>
+          <li><a href="#como-reservar">Cómo reservar</a></li>
+          <li><a href="#ciudades">Ciudades</a></li>
+        </ul>
+      </nav>
+      <nav class="footer-nav" aria-label="Cuenta">
+        <h2>Tu cuenta</h2>
+        <ul>
+          <li><a href="login.html">Iniciar sesión</a></li>
+          <li><a href="registro.html">Crear cuenta de cliente</a></li>
+          <li><a href="registro.html?rol=agente">Crear cuenta de agente</a></li>
+        </ul>
+      </nav>
+    </div>
+    <div class="container footer-base">
+      <p>Proyecto Integrador, IV semestre, Facultad de Ingeniería de Sistemas, UCEVA. 2026.</p>
+      <p>Santiago Rodríguez Díaz, Santiago Díaz Londoño, Noemiguel Moreno y Brayan Castaño.</p>
+    </div>
+  </footer>
+
+</body>
+</html>
