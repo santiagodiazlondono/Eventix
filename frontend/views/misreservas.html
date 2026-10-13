@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Consulta el historial y el estado de tus reservas en Eventix.">
+    <title>Mis reservas | Eventix</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/base.css">
+    <link rel="stylesheet" href="../css/misreservas.css">
+</head>
+<body>
+    <div class="app">
+        <aside class="barra-lateral" aria-label="Navegación de cliente">
+            <a class="marca" href="Index.html" aria-label="Eventix, inicio">
+                <span class="marca-icono" aria-hidden="true">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M3 5h1v14H3zM6 5h2v14H6zM10 5h1v14h-1zM13 5h2v14h-2zM17 5h1v14h-1zM20 5h1v14h-1z"/>
+                    </svg>
+                </span>
+                <span class="marca-texto">
+                    <strong>EVENTIX</strong>
+                    <small>PLATAFORMA DE BOLETERÍA</small>
+                </span>
+            </a>
+
+            <nav class="navegacion">
+                <a class="enlace-nav" href="catalogo.html">
+                    <span class="punto-nav" aria-hidden="true"></span>
+                    Catálogo de eventos
+                </a>
+                <a class="enlace-nav activo" href="misreservas.html" aria-current="page">
+                    <span class="punto-nav" aria-hidden="true"></span>
+                    Mis reservas
+                </a>
+                <a class="enlace-nav" href="perfil.html">
+                    <span class="punto-nav" aria-hidden="true"></span>
+                    Mi perfil
+                </a>
+            </nav>
+        </aside>
+
+        <div class="contenido-pagina">
+            <header class="barra-superior">
+                <div>
+                    <p class="contexto">CLIENTE</p>
+                    <h1>Mis reservas</h1>
+                </div>
+                <span class="avatar-superior" aria-label="Perfil de Laura Ramírez Toro">LR</span>
+            </header>
+
+            <main class="contenido-principal">
+                <section class="encabezado-pagina">
+                    <h2>Mis reservas</h2>
+                    <p>Historial de tus reservas y su estado actual</p>
+                </section>
+
+                <section class="tarjeta-tabla" aria-label="Listado de reservas">
+                    <table class="tabla">
+                        <thead>
+                            <tr>
+                                <th scope="col">Evento</th>
+                                <th scope="col">Fecha reserva</th>
+                                <th scope="col">Entradas</th>
+                                <th scope="col">Valor total</th>
+                                <th scope="col">Estado</th>
+                                <th scope="col"><span class="sr-only">Acciones</span></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td data-label="Evento">Noche sinfónica de Verano</td>
+                            <td data-label="Fecha reserva">02 oct 2026</td>
+                            <td data-label="Entradas">2</td>
+                            <td data-label="Valor total">$178.000</td>
+                            <td data-label="Estado"><span class="estado estado-confirmada">Confirmada</span></td>
+                            <td class="acciones"><a class="boton-ver" href="#">Ver</a></td>
+                        </tr>
+                        <tr>
+                            <td data-label="Evento">Stand Up: Noche de Comedia</td>
+                            <td data-label="Fecha reserva">28 sep 2026</td>
+                            <td data-label="Entradas">1</td>
+                            <td data-label="Valor total">$45.000</td>
+                            <td data-label="Estado"><span class="estado estado-reservada">Reservada</span></td>
+                            <td class="acciones"><a class="boton-ver" href="#">Ver</a></td>
+                        </tr>
+                        <tr>
+                            <td data-label="Evento">Obra: El Jardín de los Espejos</td>
+                            <td data-label="Fecha reserva">10 sep 2026</td>
+                            <td data-label="Entradas">4</td>
+                            <td data-label="Valor total">$80.000</td>
+                            <td data-label="Estado"><span class="estado estado-cancelada">Cancelada</span></td>
+                            <td class="acciones"><a class="boton-ver" href="#">Ver</a></td>
+                        </tr>
+                        <tr>
+                            <td data-label="Evento">Feria Gastronómica y Cultural</td>
+                            <td data-label="Fecha reserva">19 ago 2026</td>
+                            <td data-label="Entradas">2</td>
+                            <td data-label="Valor total">$120.000</td>
+                            <td data-label="Estado"><span class="estado estado-confirmada">Confirmada</span></td>
+                            <td class="acciones"><a class="boton-ver" href="#">Ver</a></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </section>
+            </main>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Consulta y actualiza tu perfil de cliente en Eventix.">
+    <title>Mi perfil | Eventix</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/base.css">
+    <link rel="stylesheet" href="../css/perfil.css">
+</head>
+<body>
+    <div class="app">
+        <aside class="barra-lateral" aria-label="Navegación de cliente">
+            <a class="marca" href="Index.html" aria-label="Eventix, inicio">
+                <span class="marca-icono" aria-hidden="true">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M3 5h1v14H3zM6 5h2v14H6zM10 5h1v14h-1zM13 5h2v14h-2zM17 5h1v14h-1zM20 5h1v14h-1z"/>
+                    </svg>
+                </span>
+                <span class="marca-texto">
+                    <strong>EVENTIX</strong>
+                    <small>PLATAFORMA DE BOLETERÍA</small>
+                </span>
+            </a>
+
+            <nav class="navegacion">
+                <a class="enlace-nav" href="catalogo.html">
+                    <span class="punto-nav" aria-hidden="true"></span>
+                    Catálogo de eventos
+                </a>
+                <a class="enlace-nav" href="misreservas.html">
+                    <span class="punto-nav" aria-hidden="true"></span>
+                    Mis reservas
+                </a>
+                <a class="enlace-nav activo" href="perfil.html" aria-current="page">
+                    <span class="punto-nav" aria-hidden="true"></span>
+                    Mi perfil
+                </a>
+            </nav>
+        </aside>
+
+        <div class="contenido-pagina">
+            <header class="barra-superior">
+                <div>
+                    <p class="contexto">CLIENTE</p>
+                    <h1>Mi perfil</h1>
+                </div>
+                <span class="avatar-superior" aria-label="Perfil de Laura Ramírez Toro">LR</span>
+            </header>
+
+            <main class="contenido-principal">
+                <section class="identidad-cliente" aria-label="Resumen del perfil">
+                    <div class="avatar-cliente" aria-hidden="true">LR</div>
+                    <div>
+                        <h2>Laura Ramírez Toro</h2>
+                        <p>Cliente <span aria-hidden="true">·</span> Miembro desde enero de 2025</p>
+                    </div>
+                </section>
+
+                <section class="estadisticas" aria-label="Actividad de la cuenta">
+                    <article class="tarjeta-estadistica">
+                        <p class="valor-estadistica">1.280</p>
+                        <h3>Puntos acumulados</h3>
+                    </article>
+                    <article class="tarjeta-estadistica">
+                        <p class="valor-estadistica">9</p>
+                        <h3>Reservas realizadas</h3>
+                    </article>
+                    <article class="tarjeta-estadistica">
+                        <p class="valor-estadistica">$643.000</p>
+                        <h3>Total invertido</h3>
+                    </article>
+                </section>
+
+                <section class="tarjeta-perfil" aria-labelledby="titulo-datos">
+                    <h2 class="titulo-seccion" id="titulo-datos">DATOS PERSONALES</h2>
+
+                    <form class="formulario-perfil" action="#" method="post">
+                        <div class="campo">
+                            <label for="nombre-completo">Nombre completo</label>
+                            <input id="nombre-completo" name="nombre_completo" type="text" value="Laura Ramírez Toro" autocomplete="name">
+                        </div>
+
+                        <div class="campo">
+                            <label for="identificacion">N.º de identificación</label>
+                            <input id="identificacion" name="identificacion" type="text" value="1 115 487 220" inputmode="numeric">
+                        </div>
+
+                        <div class="campo">
+                            <label for="correo">Correo electrónico</label>
+                            <input id="correo" name="correo" type="email" value="laura.ramirez@correo.com" autocomplete="email">
+                        </div>
+
+                        <div class="campo">
+                            <label for="ciudad">Ciudad</label>
+                            <input id="ciudad" name="ciudad" type="text" value="Tuluá, Valle del Cauca" autocomplete="address-level2">
+                        </div>
+
+                        <div class="campo campo-ancho-completo">
+                            <label for="direccion">Dirección</label>
+                            <input id="direccion" name="direccion" type="text" value="Cra 25 #10-40" autocomplete="street-address">
+                        </div>
+
+                        <div class="preferencias campo-ancho-completo">
+                            <label class="etiqueta-preferencia" for="novedades">
+                                Recibir publicidad y novedades de eventos
+                            </label>
+                            <span class="control-switch">
+                                <input id="novedades" name="novedades" type="checkbox" checked>
+                                <span class="switch-visual" aria-hidden="true"></span>
+                            </span>
+                        </div>
+
+                        <div class="acciones-formulario campo-ancho-completo">
+                            <button class="boton boton-secundario" type="reset">Cancelar</button>
+                            <button class="boton boton-principal" type="button">Guardar cambios</button>
+                        </div>
+                    </form>
+                </section>
+            </main>
+        </div>
+    </div>
+</body>
+</html>

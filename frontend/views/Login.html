@@ -3,136 +3,133 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Inicio de sesión - Eventix">
     <title>EVENTIX | Iniciar sesión</title>
 
-    <!-- Tipografías del proyecto -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
-
-    <!-- Hoja de estilos propia de esta vista -->
+    <!-- Estilos propios -->
     <link rel="stylesheet" href="../css/login.css">
 </head>
 <body>
 
-    <main class="pantalla-login">
-
-        <!-- ======================================================
-             PANEL IZQUIERDO: Presentación del sistema
-             ====================================================== -->
-        <section class="panel-presentacion" id="panel-presentacion">
-
-            <!-- Rótulo pequeño superior -->
-            <p class="rotulo-sistema">SISTEMA DE GESTION DE EVENTOS</p>
-
-            <!-- Frase principal -->
-            <h1 class="titulo-principal">
-                Cada boleta,<br>
-                bajo <span class="palabra-resaltada">control</span>.
-            </h1>
-
-            <!-- Descripción del sistema -->
-            <p class="descripcion-sistema">
-                Administra clientes, agentes, eventos y
-                reservas desde una sola plataforma,
-                con datos en tiempo real y reportes
-                listos para decidir
-            </p>
-
-            <!-- Código de barras decorativo -->
-            <div class="contenedor-codigo-barras" aria-hidden="true">
-                <img class="codigo-barras" src="../assets/iconos/barcode.png" alt="">
+    <main class="pagina-inicio">
+        <div class="fondo-eventos" aria-hidden="true">
+            <div class="fila-eventos">
+                <div class="cinta-eventos">
+                    <div class="grupo-eventos">
+                        <img src="../assets/eventos/feria-gastronomica.svg" alt="">
+                        <img src="../assets/eventos/jardin-espejos.svg" alt="">
+                        <img src="../assets/eventos/noche-sinfonica.svg" alt="">
+                        <img src="../assets/eventos/ritmos-pacifico.svg" alt="">
+                        <img src="../assets/eventos/rock-90s.svg" alt="">
+                        <img src="../assets/eventos/stand-up.svg" alt="">
+                    </div>
+                    <div class="grupo-eventos">
+                        <img src="../assets/eventos/feria-gastronomica.svg" alt="">
+                        <img src="../assets/eventos/jardin-espejos.svg" alt="">
+                        <img src="../assets/eventos/noche-sinfonica.svg" alt="">
+                        <img src="../assets/eventos/ritmos-pacifico.svg" alt="">
+                        <img src="../assets/eventos/rock-90s.svg" alt="">
+                        <img src="../assets/eventos/stand-up.svg" alt="">
+                    </div>
+                </div>
             </div>
-
-        </section>
-
-        <!-- ======================================================
-             PANEL DERECHO: Formulario de inicio de sesión
-             ====================================================== -->
-        <section class="panel-acceso" id="panel-acceso">
-
-            <!-- Caja que agrupa y centra todo el contenido del panel -->
-            <div class="caja-acceso">
-
-                <!-- Logo y nombre de la marca -->
-                <header class="marca">
-                    <div class="marca-logo" aria-hidden="true">
-                        <img src="../assets/iconos/Logo.png" alt="">
+            <div class="fila-eventos fila-eventos-inversa">
+                <div class="cinta-eventos">
+                    <div class="grupo-eventos">
+                        <img src="../assets/eventos/rock-90s.svg" alt="">
+                        <img src="../assets/eventos/stand-up.svg" alt="">
+                        <img src="../assets/eventos/feria-gastronomica.svg" alt="">
+                        <img src="../assets/eventos/ritmos-pacifico.svg" alt="">
+                        <img src="../assets/eventos/jardin-espejos.svg" alt="">
+                        <img src="../assets/eventos/noche-sinfonica.svg" alt="">
                     </div>
-                    <span class="marca-nombre">EVENTIX</span>
-                </header>
-
-                <!-- Encabezado del formulario -->
-                <h2 class="titulo-formulario">Inicia sesión</h2>
-
-                <p class="subtitulo-formulario">
-                    Ingresa con tu correo y contraseña
-                    registrados.
-                </p>
-
-                <!-- Formulario de autenticación -->
-                <form class="formulario-login" id="formulario-login" action="#" method="post">
-
-                    <!-- Campo: correo electrónico -->
-                    <div class="campo">
-                        <label class="etiqueta-campo" for="correo">
-                            Correo electrónico
-                        </label>
-
-                        <input
-                            class="entrada-texto"
-                            type="email"
-                            id="correo"
-                            name="correo"
-                            placeholder="nombre@correo.com"
-                            autocomplete="email"
-                            required
-                        >
+                    <div class="grupo-eventos">
+                        <img src="../assets/eventos/rock-90s.svg" alt="">
+                        <img src="../assets/eventos/stand-up.svg" alt="">
+                        <img src="../assets/eventos/feria-gastronomica.svg" alt="">
+                        <img src="../assets/eventos/ritmos-pacifico.svg" alt="">
+                        <img src="../assets/eventos/jardin-espejos.svg" alt="">
+                        <img src="../assets/eventos/noche-sinfonica.svg" alt="">
                     </div>
+                </div>
+            </div>
+        </div>
 
-                    <!-- Campo: contraseña -->
-                    <div class="campo">
-                        <label class="etiqueta-campo" for="contrasena">
-                            Contraseña
-                        </label>
+        <section class="contenedor-inicio">
+            <!-- Panel izquierdo -->
+            <div class="panel-marca">
+                <div class="contenido-marca">
+                    <p class="texto-superior">SISTEMA DE GESTIÓN DE EVENTOS</p>
 
-                        <input
-                            class="entrada-texto"
-                            type="password"
-                            id="contrasena"
-                            name="contrasena"
-                            placeholder="••••••••••"
-                            autocomplete="current-password"
-                            required
-                        >
-                    </div>
+                    <h1 class="titular">
+                        Cada boleta,<br>
+                        bajo <span>control.</span>
+                    </h1>
 
-                    <!-- Botón de envío -->
-                    <button class="boton-principal" type="submit">
-                        Iniciar sesión
-                    </button>
-
-                </form>
-
-                <!-- Enlaces de apoyo -->
-                <nav class="enlaces-apoyo">
-
-                    <p class="linea-enlace">
-                        ¿No tienes cuenta?
-                        <a class="enlace" href="registro.html">Regístrate aquí</a>
+                    <p class="descripcion">
+                        Administra clientes, agentes, eventos y<br class="solo-escritorio">
+                        reservas desde una sola plataforma,<br class="solo-escritorio">
+                        con datos en tiempo real y reportes<br class="solo-escritorio">
+                        listos para decidir.
                     </p>
 
-                    <p class="linea-enlace">
-                        ¿Perdiste la contraseña?
-                        <a class="enlace" href="recuperar.html">Recuperar contraseña</a>
-                    </p>
-
-                </nav>
-
+                    <div class="codigo-barras" aria-hidden="true">
+                    </div>
+                </div>
             </div>
 
-        </section>
+            <!-- Panel derecho -->
+            <div class="panel-formulario">
+                <div class="contenido-formulario">
+                    <div class="logotipo" aria-label="Eventix">
+                        <div class="icono-logotipo">▥</div>
+                        <span>EVENTIX</span>
+                    </div>
 
+                    <div class="encabezado-inicio">
+                        <h2>Inicia sesión</h2>
+                        <p>Ingresa con tu correo y contraseña<br class="solo-escritorio"> registrados.</p>
+                    </div>
+
+                    <form class="formulario-inicio" action="#" method="post">
+                        <div class="campo-formulario">
+                            <label for="correo-electronico" class="etiqueta-campo">Correo electrónico</label>
+                            <input
+                                type="email"
+                                class="entrada-formulario"
+                                id="correo-electronico"
+                                name="correo-electronico"
+                                placeholder="nombre@correo.com"
+                                autocomplete="email"
+                                required
+                            >
+                        </div>
+
+                        <div class="campo-formulario">
+                            <label for="clave-acceso" class="etiqueta-campo">Contraseña</label>
+                            <input
+                                type="password"
+                                class="entrada-formulario"
+                                id="clave-acceso"
+                                name="clave-acceso"
+                                placeholder="•••••••••••"
+                                autocomplete="current-password"
+                                required
+                            >
+                        </div>
+
+                        <button type="submit" class="boton-inicio">
+                            Iniciar sesión
+                        </button>
+                    </form>
+
+                    <div class="enlaces-inicio">
+                        <p>¿No tienes cuenta? <a href="registro.html">Regístrate aquí</a></p>
+                        <p>¿Perdiste la contraseña? <a href="recuperar.html">Recuperar contraseña</a></p>
+                    </div>
+                </div>
+            </div>
+        </section>
     </main>
 
 </body>

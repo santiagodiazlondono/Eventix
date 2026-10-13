@@ -1,0 +1,256 @@
+/* perfil.css — solo estilos propios de "Mi perfil".
+   La estructura (sidebar, barra superior) vive en base.css */
+
+.identidad-cliente {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.65rem;
+}
+
+.avatar-cliente {
+    display: grid;
+    width: 3.75rem;
+    height: 3.75rem;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 0.8rem;
+    background: linear-gradient(145deg, #3D7EFF, #24D8CC);
+    color: #fff;
+    font-family: var(--fuente-titulo);
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.identidad-cliente h2 {
+    font-family: var(--fuente-titulo);
+    font-size: 1.1rem;
+    line-height: 1.3;
+}
+
+.identidad-cliente p {
+    margin-top: 0.2rem;
+    color: var(--texto-suave);
+    font-size: 0.7rem;
+}
+
+.estadisticas {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.9rem;
+    margin-bottom: 1.1rem;
+}
+
+.tarjeta-estadistica {
+    min-width: 0;
+    padding: 0.8rem 1rem;
+    border: 1px solid var(--borde);
+    border-radius: 0.45rem;
+    background: var(--superficie);
+}
+
+.valor-estadistica {
+    color: var(--turquesa);
+    font-family: var(--fuente-titulo);
+    font-size: 1.15rem;
+    font-weight: 700;
+    line-height: 1.25;
+}
+
+.tarjeta-estadistica h3 {
+    margin-top: 0.18rem;
+    color: #AAB2C0;
+    font-size: 0.66rem;
+    font-weight: 400;
+}
+
+.tarjeta-perfil {
+    padding: 1.25rem;
+    border: 1px solid var(--borde);
+    border-radius: 0.45rem;
+    background: var(--superficie);
+}
+
+.titulo-seccion {
+    margin-bottom: 1rem;
+    color: var(--turquesa);
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.045em;
+}
+
+.formulario-perfil {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.8rem;
+}
+
+.campo {
+    display: grid;
+    min-width: 0;
+    gap: 0.25rem;
+}
+
+.campo label {
+    color: #AEB6C4;
+    font-size: 0.66rem;
+}
+
+.campo input {
+    width: 100%;
+    min-width: 0;
+    min-height: 2rem;
+    padding: 0.35rem 0.55rem;
+    border: 1px solid #30394A;
+    border-radius: 0.25rem;
+    background: var(--superficie-campo);
+    color: var(--texto);
+    font-size: 0.7rem;
+}
+
+.campo input:focus {
+    border-color: var(--borde-enfocado);
+}
+
+.campo-ancho-completo {
+    grid-column: 1 / -1;
+}
+
+.preferencias {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    min-height: 2.8rem;
+    margin-top: 0.2rem;
+    border-bottom: 1px solid #343D4D;
+}
+
+.etiqueta-preferencia {
+    color: var(--texto);
+    font-size: 0.7rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.control-switch {
+    position: relative;
+    display: inline-grid;
+    width: 2.2rem;
+    height: 1.2rem;
+    flex: 0 0 auto;
+}
+
+.control-switch input {
+    position: absolute;
+    z-index: 1;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.switch-visual {
+    align-self: center;
+    width: 100%;
+    height: 0.78rem;
+    border-radius: 999px;
+    background: #475166;
+    transition: background-color 150ms ease;
+}
+
+.switch-visual::after {
+    position: absolute;
+    top: 0.19rem;
+    left: 0.1rem;
+    width: 0.82rem;
+    height: 0.82rem;
+    border-radius: 50%;
+    background: #E8ECF4;
+    content: "";
+    transition: transform 150ms ease;
+}
+
+.control-switch input:checked + .switch-visual {
+    background: var(--violeta);
+}
+
+.control-switch input:checked + .switch-visual::after {
+    transform: translateX(1.17rem);
+}
+
+.control-switch input:focus-visible + .switch-visual {
+    outline: 2px solid var(--turquesa);
+    outline-offset: 3px;
+}
+
+.acciones-formulario {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.6rem;
+    padding-top: 0.05rem;
+}
+
+.boton {
+    min-height: 2rem;
+    padding: 0.35rem 0.75rem;
+    border: 1px solid transparent;
+    border-radius: 0.3rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 150ms ease, border-color 150ms ease;
+}
+
+.boton-secundario {
+    border-color: #42506A;
+    background: transparent;
+    color: var(--texto);
+}
+
+.boton-secundario:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.boton-principal {
+    background: var(--violeta);
+    color: #fff;
+}
+
+.boton-principal:hover {
+    background: #5952D2;
+}
+
+@media (max-width: 520px) {
+    .estadisticas {
+        grid-template-columns: 1fr;
+        gap: 0.55rem;
+    }
+
+    .tarjeta-estadistica {
+        padding: 0.65rem 0.8rem;
+    }
+
+    .valor-estadistica {
+        font-size: 1rem;
+    }
+
+    .formulario-perfil {
+        grid-template-columns: 1fr;
+    }
+
+    .campo-ancho-completo {
+        grid-column: auto;
+    }
+
+    .preferencias,
+    .acciones-formulario {
+        grid-column: 1 / -1;
+    }
+
+    .tarjeta-perfil {
+        padding: 1rem;
+    }
+}
