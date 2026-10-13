@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Eventix: Panel de agente para gestionar eventos publicados.">
+  <title>Eventix · Mis Eventos (Agente)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body class="admin-body">
+
+  <!-- Iconos reutilizables -->
+  <svg class="sprite" aria-hidden="true">
+    <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21Z"/><circle cx="12" cy="9.5" r="2.5"/></symbol>
+    <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></symbol>
+    <symbol id="i-edit" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M10 11v6M14 11v6"/></symbol>
+    <symbol id="i-upload" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+  </svg>
+
+  <!-- ============ ENCABEZADO ============ -->
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="index.html" aria-label="Eventix, inicio">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M3 5h1v14H3zM6 5h2v14H6zM10 5h1v14h-1zM13 5h2v14h-2zM17 5h1v14h-1zM20 5h1v14h-1z"/></svg>
+        </span>
+        <span class="brand-name">Eventix</span>
+      </a>
+
+      <!-- Menú móvil sin JavaScript -->
+      <input type="checkbox" id="menu-toggle" class="menu-toggle" aria-label="Abrir menú">
+      <label for="menu-toggle" class="menu-button" aria-hidden="true">
+        <span></span><span></span><span></span>
+      </label>
+
+      <nav class="main-nav" aria-label="Navegación de agente">
+        <ul class="nav-links">
+          <li><a href="agente-registro.html">Registrar evento</a></li>
+          <li><a href="agente-mis-eventos.html" class="is-active">Mis eventos</a></li>
+          <li><a href="agente-reservas.html">Gestión de reservas</a></li>
+          <li><a href="agente-perfil.html">Mi perfil</a></li>
+        </ul>
+        <div class="nav-actions">
+          <div class="admin-user-badge">
+            <span class="brand-mark brand-mark--circular admin-avatar-circular" aria-hidden="true">
+              <span class="admin-avatar-text">JO</span>
+            </span>
+            <span>Agente</span>
+          </div>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ============ CONTENIDO PRINCIPAL ============ -->
+  <main id="contenido" class="admin-content-wrap">
+    <div class="container">
+      
+      <!-- Encabezado superior -->
+      <div class="agent-section-header">
+        <span class="agent-subtitle">Agente</span>
+        <h1 class="admin-title">Mis eventos</h1>
+      </div>
+
+      <!-- Tarjeta contenedora de la tabla -->
+      <section class="distribution-card admin-card-flat agent-table-card" aria-labelledby="mis-eventos-title">
+        <div class="agent-table-head-box">
+          <h2 id="mis-eventos-title">Eventos registrados</h2>
+          <p>Gestiona los eventos que has publicado.</p>
+        </div>
+
+        <div class="admin-table-scroll">
+          <table class="report-table agent-table">
+            <thead>
+              <tr>
+                <th>CÓDIGO</th>
+                <th>EVENTO</th>
+                <th>CIUDAD</th>
+                <th>FECHA</th>
+                <th>AFORO</th>
+                <th>ESTADO</th>
+                <th class="text-right">ACCIONES</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Fila 1 -->
+              <tr>
+                <td class="font-mono text-muted">EVT-0142</td>
+                <td class="font-weight-500">Noche sinfónica de Verano</td>
+                <td class="text-muted">Tuluá</td>
+                <td class="text-muted">14 nov 2026</td>
+                <td class="font-mono">312 / 450</td>
+                <td><span class="badge badge-boleteria">En boletería</span></td>
+                <td class="text-right">
+                  <div class="agent-action-links">
+                    <a href="#modal-editar" aria-label="Editar evento" class="icon-edit"><svg><use href="#i-edit"/></svg></a>
+                    <a href="#eliminar" aria-label="Eliminar evento" class="icon-trash"><svg><use href="#i-trash"/></svg></a>
+                  </div>
+                </td>
+              </tr>
+              <!-- Fila 2 -->
+              <tr>
+                <td class="font-mono text-muted">EVT-0142</td>
+                <td class="font-weight-500">Stand Up: Noche de Comedia</td>
+                <td class="text-muted">Tuluá</td>
+                <td class="text-muted">14 nov 2026</td>
+                <td class="font-mono">180 / 180</td>
+                <td><span class="badge badge-envivo">En vivo</span></td>
+                <td class="text-right">
+                  <div class="agent-action-links">
+                    <a href="#modal-editar" aria-label="Editar evento" class="icon-edit"><svg><use href="#i-edit"/></svg></a>
+                    <a href="#eliminar" aria-label="Eliminar evento" class="icon-trash"><svg><use href="#i-trash"/></svg></a>
+                  </div>
+                </td>
+              </tr>
+              <!-- Fila 3 -->
+              <tr>
+                <td class="font-mono text-muted">EVT-0142</td>
+                <td class="font-weight-500">Obra: El Jardín de los Espejos</td>
+                <td class="text-muted">Cali</td>
+                <td class="text-muted">14 nov 2026</td>
+                <td class="font-mono">210 / 210</td>
+                <td><span class="badge badge-programado badge-finalizado">Finalizado</span></td>
+                <td class="text-right">
+                  <div class="agent-action-links">
+                    <a href="#modal-editar" aria-label="Editar evento" class="icon-edit"><svg><use href="#i-edit"/></svg></a>
+                    <a href="#eliminar" aria-label="Eliminar evento" class="icon-trash"><svg><use href="#i-trash"/></svg></a>
+                  </div>
+                </td>
+              </tr>
+              <!-- Fila 4 -->
+              <tr>
+                <td class="font-mono text-muted">EVT-0142</td>
+                <td class="font-weight-500">Feria Gastronómica y Cultural</td>
+                <td class="text-muted">Tuluá</td>
+                <td class="text-muted">14 nov 2026</td>
+                <td class="font-mono">0 / 300</td>
+                <td><span class="badge badge-programado badge-cancelado">Cancelado</span></td>
+                <td class="text-right">
+                  <div class="agent-action-links">
+                    <a href="#modal-editar" aria-label="Editar evento" class="icon-edit"><svg><use href="#i-edit"/></svg></a>
+                    <a href="#eliminar" aria-label="Eliminar evento" class="icon-trash"><svg><use href="#i-trash"/></svg></a>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- ============ MODAL DE EDICIÓN ============ -->
+  <div id="modal-editar" class="agent-modal">
+    <div class="agent-modal-box">
+      
+      <a href="#" class="agent-modal-close" aria-label="Cerrar modal">
+        <svg aria-hidden="true"><use href="#i-close"/></svg>
+      </a>
+
+      <div class="agent-modal-header">
+        <span class="agent-subtitle">Agente</span>
+        <h2>Modificación del evento</h2>
+        <p>Completa la información para editar el evento en el catálogo.</p>
+      </div>
+
+      <form class="agent-modal-form">
+        
+        <div class="agent-field">
+          <label>Nombre del evento</label>
+          <input type="text" value="Noche Sinfónica de Verano">
+        </div>
+
+        <div class="agent-field">
+          <label>Código del evento</label>
+          <input type="text" value="Autogenerado: EVT-0163" readonly class="font-mono text-muted">
+        </div>
+
+        <div class="agent-field">
+          <label>Teatro / recinto</label>
+          <input type="text" value="Teatro Municipal">
+        </div>
+
+        <div class="agent-field">
+          <label>Ciudad</label>
+          <select class="agent-select">
+            <option value="Tulua" selected>Tulua</option>
+            <option value="Cali">Cali</option>
+            <option value="Bogota">Bogotá</option>
+          </select>
+        </div>
+
+        <div class="agent-field">
+          <label>Capacidad total</label>
+          <input type="number" value="450">
+        </div>
+
+        <div class="agent-field">
+          <label>Precio base</label>
+          <input type="text" value="$85.000">
+        </div>
+
+        <div class="agent-field">
+          <label>Fecha y hora de inicio</label>
+          <input type="datetime-local">
+        </div>
+
+        <div class="agent-field">
+          <label>Fecha y hora fin (estimada)</label>
+          <input type="datetime-local">
+        </div>
+
+        <div class="agent-field">
+          <label>Estado</label>
+          <select class="agent-select">
+            <option value="cancelado" selected>Cancelado</option>
+            <option value="boleteria">En boletería</option>
+            <option value="programado">Programado</option>
+            <option value="envivo">En vivo</option>
+          </select>
+        </div>
+
+        <div class="agent-field">
+          <label>Observaciones</label>
+          <input type="text" placeholder="Ej. Ingreso desde las 7:00 pm">
+        </div>
+
+        <div class="agent-field agent-field--full">
+          <label>Descripción</label>
+          <textarea rows="3" class="agent-textarea">La Orquesta Filarmónica del Valle presenta un repertorio único...</textarea>
+        </div>
+
+        <!-- Botón de subir archivos -->
+        <div class="agent-upload-box agent-field--full">
+          <svg aria-hidden="true"><use href="#i-upload"/></svg>
+          <h3>Actualizar archivos multimedia</h3>
+          <p>Sube nuevas imágenes o videos para la galería y carrusel.</p>
+          <label class="btn btn-ghost agent-upload-btn">
+            <span>Seleccionar archivos</span>
+            <input type="file" multiple accept="image/*,video/*" class="sr-only-input">
+          </label>
+        </div>
+
+        <!-- Localidades -->
+        <div class="agent-localities-grid agent-field--full">
+          <div class="agent-locality-col">
+            <label>Localidad 1</label>
+            <input type="text" value="Preferencial" class="mb-sm">
+            <input type="text" value="$85.000">
+          </div>
+          <div class="agent-locality-col">
+            <label>Localidad 2</label>
+            <input type="text" value="VIP" class="mb-sm">
+            <input type="text" value="$85.000">
+          </div>
+        </div>
+
+        <!-- Botones de Acción -->
+        <div class="agent-modal-actions agent-field--full">
+          <a href="#" class="btn btn-ghost agent-btn-discard">Descartar</a>
+          <button type="submit" class="btn btn-primary">Aplicar cambios</button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+  <!-- ============ PIE DE PÁGINA ============ -->
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div class="footer-brand">
+        <a class="brand" href="index.html">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M3 5h1v14H3zM6 5h2v14H6zM10 5h1v14h-1zM13 5h2v14h-2zM17 5h1v14h-1zM20 5h1v14h-1z"/></svg>
+          </span>
+          <span class="brand-name">Eventix</span>
+        </a>
+        <p>Plataforma de boletería para eventos y espectáculos.</p>
+      </div>
+      <nav class="footer-nav" aria-label="Enlaces del pie de página">
+        <h2>Explorar</h2>
+        <ul>
+          <li><a href="catalogo.html">Catálogo de eventos</a></li>
+          <li><a href="index.html#como-reservar">Cómo reservar</a></li>
+          <li><a href="index.html#ciudades">Ciudades</a></li>
+        </ul>
+      </nav>
+      <nav class="footer-nav" aria-label="Cuenta">
+        <h2>Tu cuenta</h2>
+        <ul>
+          <li><a href="login.html">Iniciar sesión</a></li>
+          <li><a href="registro.html">Crear cuenta de cliente</a></li>
+          <li><a href="registro.html?rol=agente">Crear cuenta de agente</a></li>
+        </ul>
+      </nav>
+    </div>
+    <div class="container footer-base">
+      <p>Proyecto Integrador, IV semestre, Facultad de Ingeniería de Sistemas, UCEVA. 2026.</p>
+      <p>Santiago Rodríguez Díaz, Santiago Díaz Londoño, Noemiguel Moreno y Brayan Castaño.</p>
+    </div>
+  </footer>
+
+</body>
+</html>

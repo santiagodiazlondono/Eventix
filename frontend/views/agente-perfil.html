@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Eventix: Perfil de agente e información de la cuenta.">
+  <title>Eventix · Mi Perfil (Agente)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body class="admin-body">
+
+  <!-- Iconos reutilizables -->
+  <svg class="sprite" aria-hidden="true">
+    <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21Z"/><circle cx="12" cy="9.5" r="2.5"/></symbol>
+    <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></symbol>
+  </svg>
+
+
+  <!-- ============ ENCABEZADO ============ -->
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="index.html" aria-label="Eventix, inicio">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M3 5h1v14H3zM6 5h2v14H6zM10 5h1v14h-1zM13 5h2v14h-2zM17 5h1v14h-1zM20 5h1v14h-1z"/></svg>
+        </span>
+        <span class="brand-name">Eventix</span>
+      </a>
+
+      <input type="checkbox" id="menu-toggle" class="menu-toggle" aria-label="Abrir menú">
+      <label for="menu-toggle" class="menu-button" aria-hidden="true">
+        <span></span><span></span><span></span>
+      </label>
+
+      <nav class="main-nav" aria-label="Navegación de agente">
+        <ul class="nav-links">
+          <li><a href="agente-registro.html">Registrar evento</a></li>
+          <li><a href="agente-mis-eventos.html">Mis eventos</a></li>
+          <li><a href="agente-reservas.html">Gestión de reservas</a></li>
+          <li><a href="agente-perfil.html" class="is-active">Mi perfil</a></li>
+        </ul>
+        <div class="nav-actions">
+          <div class="admin-user-badge">
+            <span class="brand-mark brand-mark--circular admin-avatar-circular" aria-hidden="true">
+              <span class="admin-avatar-text ">JO</span>
+            </span>
+            <span>Agente</span>
+          </div>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ============ CONTENIDO PRINCIPAL ============ -->
+  <main id="contenido" class="admin-content-wrap">
+    <div class="container agent-profile-container">
+      
+      <!-- Encabezado superior -->
+      <div class="agent-section-header">
+        <span class="agent-subtitle">Agente</span>
+        <h1 class="admin-title">Perfil</h1>
+      </div>
+
+      <!-- Tarjeta Header de Perfil del Agente -->
+      <div class="agent-profile-wrapper">
+        <div class="distribution-card admin-card-flat agent-profile-card">
+          <div class="agent-profile-avatar">
+            <span>JO</span>
+          </div>
+          <div>
+            <h2 class="agent-profile-name">Johana Ortiz Cardona</h2>
+            <p class="agent-profile-role">Agente · gestión de eventos</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Métricas / Estadísticas del Agente -->
+      <div class="agent-metrics-grid">
+        <div class="distribution-card admin-card-flat agent-metric-card">
+          <span class="agent-metric-num">12</span>
+          <span class="agent-metric-label">Eventos gestionados</span>
+        </div>
+        <div class="distribution-card admin-card-flat agent-metric-card">
+          <span class="agent-metric-num">86</span>
+          <span class="agent-metric-label">Reservas gestionadas</span>
+        </div>
+        <div class="distribution-card admin-card-flat agent-metric-card">
+          <span class="agent-metric-num">3</span>
+          <span class="agent-metric-label">Eventos activos</span>
+        </div>
+      </div>
+
+      <!-- Grid Principal: Formulario de Datos + Permisos -->
+      <div class="agent-main-grid">
+        
+        <!-- Columna Izquierda: Datos del Agente -->
+        <section class="distribution-card admin-card-flat agent-form-section">
+          <div class="agent-card-title-box">
+            <h3>Datos del Agente</h3>
+          </div>
+
+          <form class="agent-form">
+            <div class="agent-field">
+              <label>Nombre completo</label>
+              <input type="text" value="Johana Ortiz Cardona">
+            </div>
+
+            <div class="agent-field">
+              <label>N.° de identificación</label>
+              <input type="text" value="1 116 347 120">
+            </div>
+
+            <div class="agent-field">
+              <label>Correo electrónico</label>
+              <input type="email" value="agente.entertainment@correo.com">
+            </div>
+
+            <div class="agent-field">
+              <label>Ciudad</label>
+              <input type="text" value="Tuluá, Valle del Cauca">
+            </div>
+
+            <div class="agent-field agent-field--full">
+              <label>Dirección</label>
+              <input type="text" value="AG - 0043" class="font-mono">
+            </div>
+
+            <div class="agent-toggle-row">
+              <span class="agent-toggle-text">Estado Agente - Activo</span>
+              <label class="agent-switch">
+                <input type="checkbox" checked>
+                <span class="agent-slider"></span>
+              </label>
+            </div>
+
+            <div class="agent-form-actions">
+              <button type="button" class="btn btn-ghost">Cancelar</button>
+              <button type="submit" class="btn btn-primary agent-btn-save">Guardar cambios</button>
+            </div>
+          </form>
+        </section>
+
+        <!-- Columna Derecha: Permisos y Activado Reciente -->
+        <div class="agent-sidebar">
+          
+          <!-- Bloque de Permisos -->
+          <section class="distribution-card admin-card-flat agent-sidebar-card">
+            <h3>Permisos</h3>
+            <ul class="agent-permissions-list">
+              <li>Registrar eventos</li>
+              <li>Editar eventos</li>
+              <li>Gestionar reservas</li>
+              <li>Cancelar reservas</li>
+              <li>Quitar usuarios</li>
+            </ul>
+          </section>
+
+          <!-- Bloque Activado Reciente -->
+          <section class="distribution-card admin-card-flat agent-sidebar-card">
+            <h3>Activado Reciente</h3>
+            <p class="agent-recent-text">EVT - 0142 [Noche sinfónica de verano]</p>
+          </section>
+
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ============ PIE DE PÁGINA ============ -->
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div class="footer-brand">
+        <a class="brand" href="index.html">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M3 5h1v14H3zM6 5h2v14H6zM10 5h1v14h-1zM13 5h2v14h-2zM17 5h1v14h-1zM20 5h1v14h-1z"/></svg>
+          </span>
+          <span class="brand-name">Eventix</span>
+        </a>
+        <p>Plataforma de boletería para eventos y espectáculos.</p>
+      </div>
+      <nav class="footer-nav" aria-label="Enlaces del pie de página">
+        <h2>Explorar</h2>
+        <ul>
+          <li><a href="catalogo.html">Catálogo de eventos</a></li>
+          <li><a href="index.html#como-reservar">Cómo reservar</a></li>
+          <li><a href="index.html#ciudades">Ciudades</a></li>
+        </ul>
+      </nav>
+      <nav class="footer-nav" aria-label="Cuenta">
+        <h2>Tu cuenta</h2>
+        <ul>
+          <li><a href="login.html">Iniciar sesión</a></li>
+          <li><a href="registro.html">Crear cuenta de cliente</a></li>
+          <li><a href="registro.html?rol=agente">Crear cuenta de agente</a></li>
+        </ul>
+      </nav>
+    </div>
+    <div class="container footer-base">
+      <p>Proyecto Integrador, IV semestre, Facultad de Ingeniería de Sistemas, UCEVA. 2026.</p>
+      <p>Santiago Rodríguez Díaz, Santiago Díaz Londoño, Noemiguel Moreno y Brayan Castaño.</p>
+    </div>
+  </footer>
+
+</body>
+</html>

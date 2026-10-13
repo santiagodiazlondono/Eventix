@@ -12,7 +12,11 @@
 </head>
 <body class="admin-body">
 
-  
+  <!-- Iconos reutilizables -->
+  <svg class="sprite" aria-hidden="true">
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></symbol>
+  </svg>
+
   <!-- ============ ENCABEZADO ============ -->
   <header class="site-header">
     <div class="container header-inner">
@@ -23,7 +27,7 @@
         <span class="brand-name">Eventix</span>
       </a>
 
-      <!-- Menú móvil sin JavaScript: checkbox + label -->
+      <!-- Menú móvil sin JavaScript -->
       <input type="checkbox" id="menu-toggle" class="menu-toggle" aria-label="Abrir menú">
       <label for="menu-toggle" class="menu-button" aria-hidden="true">
         <span></span><span></span><span></span>
@@ -38,7 +42,7 @@
         <div class="nav-actions">
           <div class="admin-user-badge">
             <span class="brand-mark brand-mark--circular admin-avatar-circular" aria-hidden="true">
-              <span class="admin-avatar-text">LR</span>
+              <span class="admin-avatar-text text-accent">LR</span>
             </span>
             <span>Admin</span>
           </div>
@@ -57,35 +61,35 @@
       <p class="admin-lead">Control general de cuentas, asignación de roles de agentes y clientes, y estados de acceso en la plataforma.</p>
 
       <!-- Barra de herramientas con buscador y filtro -->
-      <div class="events-toolbar" style="margin-bottom: 1.5rem;">
-        <div class="search-field search-field--text" style="flex: 1; max-width: 360px;">
+      <div class="events-toolbar users-toolbar">
+        <div class="search-field search-field--text users-search-box">
           <div class="input-icon">
             <svg aria-hidden="true"><use href="#i-search"/></svg>
             <input type="search" placeholder="Buscar por nombre o correo..." aria-label="Buscar usuarios">
           </div>
         </div>
-        <div style="display: flex; gap: 0.75rem; align-items: center; margin-left: auto;">
-          <select class="search" style="min-height: auto; padding: 0.6rem 1rem; margin: 0;" aria-label="Filtrar por rol">
+        <div class="users-toolbar-actions">
+          <select class="search users-role-select" aria-label="Filtrar por rol">
             <option value="">Todos los roles</option>
             <option value="admin">Admin</option>
             <option value="organizador">Organizador / Agente</option>
             <option value="cliente">Cliente</option>
           </select>
-          <a class="btn btn-primary" href="#nuevo-usuario" style="padding: 0.6rem 1.2rem; font-size: 0.875rem;">+ Nuevo usuario</a>
+          <a class="btn btn-primary users-add-btn" href="#nuevo-usuario">+ Nuevo usuario</a>
         </div>
       </div>
 
       <!-- Tabla de Directorio de Cuentas -->
-      <section class="distribution-card admin-card-flat" aria-labelledby="directorio-title">
-        <div class="distribution-header" style="margin-bottom: 1.25rem;">
+      <section class="distribution-card admin-card-flat users-card-table" aria-labelledby="directorio-title">
+        <div class="distribution-header users-card-head">
           <div>
             <h2 id="directorio-title">Directorio de Cuentas</h2>
-            <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.2rem;">Listado general de usuarios registrados en Eventix UCEVA</p>
+            <p class="users-card-sub">Listado general de usuarios registrados en Eventix UCEVA</p>
           </div>
         </div>
 
         <div class="admin-table-scroll">
-          <table class="report-table">
+          <table class="report-table users-table">
             <thead>
               <tr>
                 <th>Usuario / Correo</th>
@@ -98,50 +102,50 @@
             <tbody>
               <tr>
                 <td>
-                  <div style="font-weight: 600; color: var(--text);">Santiago Rodríguez Díaz</div>
-                  <div style="font-size: 0.78rem; color: var(--text-muted); font-family: var(--font-mono);">santiago.rodriguez@uceva.edu.co</div>
+                  <div class="user-name">Santiago Rodríguez Díaz</div>
+                  <div class="user-email">santiago.rodriguez@uceva.edu.co</div>
                 </td>
                 <td><span class="badge badge-boleteria">Admin</span></td>
                 <td><span class="admin-status-ok">● Activo</span></td>
-                <td style="color: var(--text-muted); font-size: 0.85rem;"><time datetime="2025-01-12">12 ene 2025</time></td>
+                <td class="user-date"><time datetime="2025-01-12">12 ene 2025</time></td>
                 <td class="admin-text-right">
-                  <a class="btn btn-ghost" href="#editar" style="padding: 0.3rem 0.7rem; font-size: 0.78rem; min-height: auto;">Editar</a>
+                  <a class="btn btn-ghost user-edit-btn" href="#editar">Editar</a>
                 </td>
               </tr>
               <tr>
                 <td>
-                  <div style="font-weight: 600; color: var(--text);">Santiago Díaz Londoño</div>
-                  <div style="font-size: 0.78rem; color: var(--text-muted); font-family: var(--font-mono);">santiago.diaz@uceva.edu.co</div>
+                  <div class="user-name">Santiago Díaz Londoño</div>
+                  <div class="user-email">santiago.diaz@uceva.edu.co</div>
                 </td>
                 <td><span class="badge badge-envivo">Organizador</span></td>
                 <td><span class="admin-status-ok">● Activo</span></td>
-                <td style="color: var(--text-muted); font-size: 0.85rem;"><time datetime="2026-03-14">14 mar 2026</time></td>
+                <td class="user-date"><time datetime="2026-03-14">14 mar 2026</time></td>
                 <td class="admin-text-right">
-                  <a class="btn btn-ghost" href="#editar" style="padding: 0.3rem 0.7rem; font-size: 0.78rem; min-height: auto;">Editar</a>
+                  <a class="btn btn-ghost user-edit-btn" href="#editar">Editar</a>
                 </td>
               </tr>
               <tr>
                 <td>
-                  <div style="font-weight: 600; color: var(--text);">Noemiguel Moreno</div>
-                  <div style="font-size: 0.78rem; color: var(--text-muted); font-family: var(--font-mono);">noemiguel.moreno@uceva.edu.co</div>
+                  <div class="user-name">Noemiguel Moreno</div>
+                  <div class="user-email">noemiguel.moreno@uceva.edu.co</div>
                 </td>
                 <td><span class="badge badge-programado">Cliente</span></td>
                 <td><span class="admin-status-err">● Suspendido</span></td>
-                <td style="color: var(--text-muted); font-size: 0.85rem;"><time datetime="2026-02-02">02 feb 2026</time></td>
+                <td class="user-date"><time datetime="2026-02-02">02 feb 2026</time></td>
                 <td class="admin-text-right">
-                  <a class="btn btn-ghost" href="#editar" style="padding: 0.3rem 0.7rem; font-size: 0.78rem; min-height: auto;">Editar</a>
+                  <a class="btn btn-ghost user-edit-btn" href="#editar">Editar</a>
                 </td>
               </tr>
               <tr>
                 <td>
-                  <div style="font-weight: 600; color: var(--text);">Brayan Castaño</div>
-                  <div style="font-size: 0.78rem; color: var(--text-muted); font-family: var(--font-mono);">brayan.castano@uceva.edu.co</div>
+                  <div class="user-name">Brayan Castaño</div>
+                  <div class="user-email">brayan.castano@uceva.edu.co</div>
                 </td>
                 <td><span class="badge badge-programado">Cliente</span></td>
                 <td><span class="admin-status-ok">● Activo</span></td>
-                <td style="color: var(--text-muted); font-size: 0.85rem;"><time datetime="2026-04-19">19 abr 2026</time></td>
+                <td class="user-date"><time datetime="2026-04-19">19 abr 2026</time></td>
                 <td class="admin-text-right">
-                  <a class="btn btn-ghost" href="#editar" style="padding: 0.3rem 0.7rem; font-size: 0.78rem; min-height: auto;">Editar</a>
+                  <a class="btn btn-ghost user-edit-btn" href="#editar">Editar</a>
                 </td>
               </tr>
             </tbody>

@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Eventix: Panel de agente para la gestión de reservas de eventos.">
+  <title>Eventix · Gestión de Reservas (Agente)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body class="admin-body">
+
+  <!-- Iconos reutilizables -->
+  <svg class="sprite" aria-hidden="true">
+    <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21Z"/><circle cx="12" cy="9.5" r="2.5"/></symbol>
+    <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></symbol>
+  </svg>
+
+
+  <!-- ============ ENCABEZADO ============ -->
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="index.html" aria-label="Eventix, inicio">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M3 5h1v14H3zM6 5h2v14H6zM10 5h1v14h-1zM13 5h2v14h-2zM17 5h1v14h-1zM20 5h1v14h-1z"/></svg>
+        </span>
+        <span class="brand-name">Eventix</span>
+      </a>
+
+      <!-- Menú móvil sin JavaScript -->
+      <input type="checkbox" id="menu-toggle" class="menu-toggle" aria-label="Abrir menú">
+      <label for="menu-toggle" class="menu-button" aria-hidden="true">
+        <span></span><span></span><span></span>
+      </label>
+
+      <nav class="main-nav" aria-label="Navegación de agente">
+        <ul class="nav-links">
+          <li><a href="agente-registro.html">Registrar evento</a></li>
+          <li><a href="agente-mis-eventos.html">Mis eventos</a></li>
+          <li><a href="agente-reservas.html" class="is-active">Gestión de reservas</a></li>
+          <li><a href="agente-perfil.html">Mi perfil</a></li>
+        </ul>
+        <div class="nav-actions">
+          <div class="admin-user-badge">
+            <span class="brand-mark brand-mark--circular admin-avatar-circular" aria-hidden="true">
+              <span class="admin-avatar-text">JO</span>
+            </span>
+            <span>Agente</span>
+          </div>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ============ CONTENIDO PRINCIPAL ============ -->
+  <main id="contenido" class="admin-content-wrap">
+    <div class="container">
+      
+      <!-- Encabezado superior -->
+      <div class="agent-section-header">
+        <span class="agent-subtitle">Agente</span>
+        <h1 class="admin-title">Gestión de reservas</h1>
+      </div>
+
+      <!-- Tarjeta contenedora principal -->
+      <section class="distribution-card admin-card-flat agent-reservations-card" aria-labelledby="reservas-title">
+        
+        <!-- Título y Filtros -->
+        <div class="agent-reservations-header">
+          <h2 id="reservas-title">Reservas solicitadas</h2>
+          <p>Actualiza el estado de las reservas de tus eventos.</p>
+
+          <div class="agent-filter-row">
+            <div class="agent-filter-group">
+              <label for="filter-evento">Evento:</label>
+              <select id="filter-evento" class="agent-filter-select">
+                <option value="">Todos</option>
+                <option value="sinfonica">Noche sinfónica de Verano</option>
+                <option value="standup">Stand Up: Noche de Comedia</option>
+                <option value="jardin">Obra: El Jardín de los Espejos</option>
+                <option value="feria">Feria Gastronómica y Cultural</option>
+              </select>
+            </div>
+
+            <div class="agent-filter-group">
+              <label for="filter-estado">Estado:</label>
+              <select id="filter-estado" class="agent-filter-select">
+                <option value="">Todos</option>
+                <option value="confirmada">Confirmada</option>
+                <option value="cancelada">Cancelada</option>
+                <option value="pendiente">Pendiente</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tabla de Reservas -->
+        <div class="admin-table-scroll">
+          <table class="report-table agent-table">
+            <thead>
+              <tr>
+                <th>CLIENTE</th>
+                <th>EVENTO</th>
+                <th>ENTRADAS</th>
+                <th>VALOR</th>
+                <th>FECHA RESERVA</th>
+                <th>ESTADO</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Fila 1 -->
+              <tr>
+                <td class="font-weight-500">Laura Ramirez T..</td>
+                <td class="text-muted">Noche sinfónica de Verano</td>
+                <td class="font-mono">2</td>
+                <td class="font-mono">$178000</td>
+                <td class="text-muted">01 oct 2026</td>
+                <td>
+                  <select class="agent-status-select">
+                    <option value="confirmada" selected>Confirmada</option>
+                    <option value="cancelada">Cancelada</option>
+                    <option value="pendiente">Pendiente</option>
+                  </select>
+                </td>
+              </tr>
+              <!-- Fila 2 -->
+              <tr>
+                <td class="font-weight-500">Andrés Felipe S..</td>
+                <td class="text-muted">Stand Up: Noche de Comedia</td>
+                <td class="font-mono">3</td>
+                <td class="font-mono">$135000</td>
+                <td class="text-muted">29 sep 2026</td>
+                <td>
+                  <select class="agent-status-select">
+                    <option value="confirmada">Confirmada</option>
+                    <option value="cancelada" selected>Cancelada</option>
+                    <option value="pendiente">Pendiente</option>
+                  </select>
+                </td>
+              </tr>
+              <!-- Fila 3 -->
+              <tr>
+                <td class="font-weight-500">Maria Jose Sala..</td>
+                <td class="text-muted">Obra: El Jardín de los Espejos</td>
+                <td class="font-mono">1</td>
+                <td class="font-mono">$85000</td>
+                <td class="text-muted">27 sep 2026</td>
+                <td>
+                  <select class="agent-status-select">
+                    <option value="confirmada" selected>Confirmada</option>
+                    <option value="cancelada">Cancelada</option>
+                    <option value="pendiente">Pendiente</option>
+                  </select>
+                </td>
+              </tr>
+              <!-- Fila 4 -->
+              <tr>
+                <td class="font-weight-500">Camilo Restrepo</td>
+                <td class="text-muted">Feria Gastronómica y Cultural</td>
+                <td class="font-mono">4</td>
+                <td class="font-mono">$80000</td>
+                <td class="text-muted">10 sep 2026</td>
+                <td>
+                  <select class="agent-status-select">
+                    <option value="confirmada" selected>Confirmada</option>
+                    <option value="cancelada">Cancelada</option>
+                    <option value="pendiente">Pendiente</option>
+                  </select>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- ============ PIE DE PÁGINA ============ -->
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div class="footer-brand">
+        <a class="brand" href="index.html">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M3 5h1v14H3zM6 5h2v14H6zM10 5h1v14h-1zM13 5h2v14h-2zM17 5h1v14h-1zM20 5h1v14h-1z"/></svg>
+          </span>
+          <span class="brand-name">Eventix</span>
+        </a>
+        <p>Plataforma de boletería para eventos y espectáculos.</p>
+      </div>
+      <nav class="footer-nav" aria-label="Enlaces del pie de página">
+        <h2>Explorar</h2>
+        <ul>
+          <li><a href="catalogo.html">Catálogo de eventos</a></li>
+          <li><a href="index.html#como-reservar">Cómo reservar</a></li>
+          <li><a href="index.html#ciudades">Ciudades</a></li>
+        </ul>
+      </nav>
+      <nav class="footer-nav" aria-label="Cuenta">
+        <h2>Tu cuenta</h2>
+        <ul>
+          <li><a href="login.html">Iniciar sesión</a></li>
+          <li><a href="registro.html">Crear cuenta de cliente</a></li>
+          <li><a href="registro.html?rol=agente">Crear cuenta de agente</a></li>
+        </ul>
+      </nav>
+    </div>
+    <div class="container footer-base">
+      <p>Proyecto Integrador, IV semestre, Facultad de Ingeniería de Sistemas, UCEVA. 2026.</p>
+      <p>Santiago Rodríguez Díaz, Santiago Díaz Londoño, Noemiguel Moreno y Brayan Castaño.</p>
+    </div>
+  </footer>
+
+</body>
+</html>
