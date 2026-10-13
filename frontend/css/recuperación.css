@@ -1,0 +1,292 @@
+   :root{
+      /* Fondos */
+      --bg-page:#0A0D14;
+      --bg-right:#0D1119;
+      --bg-input:#151B26;
+    
+      /* Bordes */
+      --border:#242C3B;
+      --border-focus:#3D7EFF;
+    
+      /* Texto */
+      --text-primary:#EDF1F7;
+      --text-muted:#8C97AD;
+      --text-faint:#5A6578;
+    
+      /* Acentos de marca */
+      --green:#2DE2A0;
+      --blue:#1C6FEF;
+      --blue-hover:#1557C4;
+    
+      /* Tipografías: títulos con Space Grotesk, texto con Inter */
+      --font-heading:'Space Grotesk','Segoe UI',sans-serif;
+      --font-body:'Inter','Segoe UI',Arial,sans-serif;
+    
+      /* Medidas reutilizables */
+      --radius-card:20px;
+      --radius-input:8px;
+    }
+    
+    /* Los iconos SVG de esta hoja siguen el estilo lineal de Feather Icons:
+       https://feathericons.com/ (de ahí se pueden tomar más si hacen falta) */
+    
+    *{box-sizing:border-box;}
+    html,body{margin:0;padding:0;height:100%;}
+    body{
+      background:var(--bg-page);
+      font-family:var(--font-body);
+      color:var(--text-primary);
+    }
+    h1,h2{ font-family:var(--font-heading); }
+    
+    /* fieldset pierde su borde y relleno por defecto para poder usarse
+       como simple agrupador semántico del campo de correo */
+    fieldset{
+      border:none;
+      margin:0;
+      padding:0;
+      min-width:0;
+    }
+    
+    /* ============================================================
+       CSS de recuperación.html
+       Tarjeta flotante centrada, dividida en panel de marca (izquierda)
+       y panel de formulario (derecha), sobre un fondo ambiental oscuro.
+       ============================================================ */
+    
+    /* El body centra la tarjeta y le da un fondo con un leve resplandor
+       de marca (verde/azul) para que no se vea un negro plano detrás */
+    body:has(.page){
+      background-image:
+        radial-gradient(circle at 15% 20%, rgba(45,226,160,.06), transparent 42%),
+        radial-gradient(circle at 85% 80%, rgba(28,111,239,.10), transparent 48%);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      min-height:100vh;
+      padding:24px;
+    }
+    
+    .page{
+      display:flex;
+      width:100%;
+      max-width:960px;
+      min-height:560px;
+      border-radius:var(--radius-card);
+      overflow:hidden;
+      /* sombra amplia y difusa: es lo que da la sensación de tarjeta "flotando" */
+      box-shadow:0 40px 80px -30px rgba(0,0,0,.7);
+    }
+    
+    .brand-pane{
+      flex:1 1 50%;
+      /* sin color propio: deja ver el resplandor de fondo del body,
+         por eso ese lado se ve "transparente" en vez de un bloque plano */
+      background:transparent;
+      display:flex;
+      align-items:center;
+      justify-content:flex-start;
+      padding:clamp(28px,5vw,56px);
+    }
+    
+    .brand-content{
+      display:flex;
+      flex-direction:column;
+      align-items:flex-start;
+      text-align:left;
+      max-width:360px;
+    }
+    
+    .form-pane{
+      flex:1 1 50%;
+      background:var(--bg-right);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:clamp(28px,5vw,56px);
+    }
+    
+    .brand-tag{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      color:var(--green);
+      font-size:11px;
+      font-weight:700;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      margin-bottom:18px;
+    }
+    .brand-tag::before{
+      content:"";
+      width:5px;height:5px;
+      border-radius:50%;
+      background:var(--green);
+      display:inline-block;
+    }
+    
+    .brand-headline{
+      font-size:clamp(26px,3.4vw,32px);
+      line-height:1.2;
+      font-weight:700;
+      letter-spacing:-.01em;
+      color:var(--text-primary);
+      margin:0 0 16px 0;
+      max-width:360px;
+    }
+    .brand-headline em{
+      font-style:normal;
+      color:var(--green);
+    }
+    
+    .brand-copy{
+      font-size:14px;
+      line-height:1.65;
+      color:var(--text-muted);
+      margin:0 0 24px 0;
+      max-width:320px;
+    }
+    
+    /* código de barras decorativo: barras SVG de igual alto y distinto grosor */
+    .barcode{
+      height:30px;
+      width:auto;
+      max-width:100%;
+    }
+    .barcode rect{
+      fill:var(--green);
+    }
+    
+    .form-card{
+      width:100%;
+      max-width:340px;
+    }
+    
+    /* logotipo EVENTIX: cuadro con degradado de marca (verde a azul) */
+    .form-card-icon{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      margin-bottom:22px;
+    }
+    .form-card-icon .dot{
+      width:28px;height:28px;
+      border-radius:8px;
+      background:linear-gradient(135deg,var(--green),var(--blue));
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .form-card-icon .dot svg{width:14px;height:14px;color:var(--bg-page);}
+    .form-card-icon span{
+      font-family:var(--font-heading);
+      font-size:13px;
+      color:var(--text-primary);
+      letter-spacing:.05em;
+      font-weight:700;
+    }
+    
+    .form-title{
+      font-size:26px;
+      font-weight:700;
+      letter-spacing:-.01em;
+      color:var(--text-primary);
+      margin:0 0 6px 0;
+    }
+    .form-desc{
+      font-size:13px;
+      color:var(--text-muted);
+      line-height:1.55;
+      margin:0 0 24px 0;
+    }
+    
+    .field{ margin-bottom:16px; }
+    .field label{
+      display:block;
+      font-size:13px;
+      font-weight:600;
+      color:var(--text-primary);
+      margin-bottom:7px;
+    }
+    .field input{
+      width:100%;
+      background:var(--bg-input);
+      border:1px solid var(--border);
+      border-radius:var(--radius-input);
+      padding:12px 14px;
+      font-size:14px;
+      font-family:var(--font-body);
+      color:var(--text-primary);
+      outline:none;
+      transition:border-color .18s ease, box-shadow .18s ease;
+    }
+    .field input::placeholder{ color:var(--text-faint); }
+    
+    /* estado de foco visible: nunca se quita el outline sin reemplazarlo */
+    .field input:focus{
+      border-color:var(--border-focus);
+      box-shadow:0 0 0 3px rgba(61,126,255,.18);
+    }
+    
+    .btn-primary{
+      width:100%;
+      background:var(--blue);
+      color:#fff;
+      border:none;
+      border-radius:var(--radius-input);
+      padding:13px 0;
+      font-family:var(--font-heading);
+      font-size:14px;
+      font-weight:700;
+      cursor:pointer;
+      margin-top:6px;
+      /* brillo azul propio del botón, siempre visible */
+      box-shadow:0 6px 24px -4px rgba(28,111,239,.55);
+      transition:background-color .18s ease, box-shadow .18s ease;
+    }
+    .btn-primary:hover{
+      background:var(--blue-hover);
+      /* el brillo se intensifica un poco al pasar el mouse */
+      box-shadow:0 8px 28px -4px rgba(28,111,239,.7);
+    }
+    
+    .btn-secondary{
+      width:100%;
+      background:transparent;
+      color:var(--text-muted);
+      border:1px solid var(--border);
+      border-radius:var(--radius-input);
+      padding:12px 0;
+      font-size:13px;
+      font-weight:600;
+      margin-top:10px;
+      cursor:pointer;
+    }
+    
+    .form-footnote{
+      text-align:center;
+      font-size:13px;
+      color:var(--text-muted);
+      margin-top:20px;
+    }
+    .form-footnote a{
+      color:var(--blue);
+      text-decoration:underline;
+      font-weight:600;
+    }
+    .form-footnote a:hover{ color:var(--text-primary); }
+    
+    /* por debajo de 900px la tarjeta deja de ser de dos columnas:
+       los paneles se apilan y pierde el máximo ancho fijo */
+    @media (max-width:900px){
+      body:has(.page){ padding:0; align-items:flex-start; }
+      .page{
+        flex-direction:column;
+        min-height:100vh;
+        border-radius:0;
+        max-width:100%;
+      }
+      .brand-pane{ padding:clamp(28px,7vw,48px) clamp(20px,7vw,48px) 24px; }
+      .brand-content{ max-width:100%; }
+      .form-pane{ padding:24px clamp(20px,7vw,48px) clamp(32px,8vw,56px); }
+    }
