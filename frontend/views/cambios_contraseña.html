@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nueva contraseña</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/cambios.css">
+</head>
+<body>
+
+<main class="page">
+
+  <aside class="brand-pane">
+    <section class="brand-content">
+      <span class="brand-tag">SISTEMA DE GESTIÓN DE EVENTOS</span>
+      <h1 class="brand-headline">Cada boleta,<br>bajo <em>control.</em></h1>
+      <p class="brand-copy">Administra clientes, agentes, eventos y reservas desde una sola plataforma, con datos en tiempo real y reportes listos para decidir.</p>
+      <img class="barcode" src="../assets/iconos/barcode.png" alt="" aria-hidden="true">
+    </section>
+  </aside>
+
+  <section class="form-pane">
+    <article class="form-card">
+      <header class="form-card-icon">
+        <span class="dot">
+          <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M3 5h1v14H3zM6 5h2v14H6zM10 5h1v14h-1zM13 5h2v14h-2zM17 5h1v14h-1zM20 5h1v14h-1z"/></svg>
+        </span>
+        <span>EVENTIX</span>
+      </header>
+
+      <h2 class="form-title">Restablece tu contraseña</h2>
+      <p class="form-desc">Enviamos un código a <strong style="color:var(--text-primary)">laura@correo.com</strong>. Ingrésalo junto con tu nueva contraseña.</p>
+
+      <fieldset class="field">
+        <label for="code">Código de verificación</label>
+        <fieldset class="code-row">
+          <input maxlength="1" value="4">
+          <input maxlength="1" value="8">
+          <input maxlength="1" value="2">
+          <input maxlength="1" value="">
+          <input maxlength="1" value="">
+          <input maxlength="1" value="">
+        </fieldset>
+      </fieldset>
+
+      <fieldset class="field">
+        <label for="pwd1">Nueva contraseña</label>
+        <input id="pwd1" type="password" placeholder="Mínimo 8 caracteres" value="••••••••">
+        <output class="strength active"><span></span><span></span><span></span></output>
+      </fieldset>
+
+      <fieldset class="field">
+        <label for="pwd2">Confirmar contraseña</label>
+        <input id="pwd2" type="password" placeholder="Repite tu contraseña" value="••••••••">
+      </fieldset>
+
+      <button class="btn-primary" type="button">Guardar nueva contraseña</button>
+
+      <p class="form-footnote">¿No recibiste el código? <a href="#">Reenviar</a></p>
+    </article>
+  </section>
+
+</main>
+
+</body>
+</html>

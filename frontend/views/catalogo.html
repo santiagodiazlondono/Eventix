@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Catálogo de eventos · Eventix</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/catalogo.css">
+  <script src="../controllers/catalogo.js" defer></script>
+</head>
+<body>
+
+  <a class="skip-link" href="#contenido">Saltar al contenido</a>
+
+  <!-- Iconos reutilizables (mismo sprite de detalle-evento.html) -->
+  <svg class="sprite" aria-hidden="true">
+    <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21Z"/><circle cx="12" cy="9.5" r="2.5"/></symbol>
+    <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></symbol>
+  </svg>
+
+  <!-- ENCABEZADO -->
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="index.html" aria-label="Eventix, inicio">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M3 5h1v14H3zM6 5h2v14H6zM10 5h1v14h-1zM13 5h2v14h-2zM17 5h1v14h-1zM20 5h1v14h-1z"/></svg>
+        </span>
+        <span class="brand-name">Eventix</span>
+      </a>
+
+      <input type="checkbox" id="menu-toggle" class="menu-toggle" aria-label="Abrir menú">
+      <label for="menu-toggle" class="menu-button" aria-hidden="true">
+        <span></span><span></span><span></span>
+      </label>
+
+      <nav class="main-nav" aria-label="Navegación principal">
+        <ul class="nav-links">
+          <li><a href="catalogo.html" aria-current="page">Eventos</a></li>
+          <li><a href="index.html#como-reservar">Cómo reservar</a></li>
+          <li><a href="index.html#ciudades">Ciudades</a></li>
+          <li><a href="index.html#organizadores">Para organizadores</a></li>
+        </ul>
+        <div class="nav-actions">
+          <a class="btn btn-ghost" href="login.html">Iniciar sesión</a>
+          <a class="btn btn-primary" href="registro.html">Crear cuenta</a>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <!-- CONTENIDO PRINCIPAL: solo el catálogo -->
+  <main id="contenido" class="container section">
+
+    <header class="catalog-head">
+      <h1 class="catalog-title">Próximos eventos</h1>
+      <p class="catalog-subtitle">Explora los espectáculos programados y reserva tus entradas.</p>
+    </header>
+
+    <!-- Filtros por estado + búsqueda -->
+    <div class="catalog-toolbar">
+      <ul class="chips" aria-label="Filtrar por estado">
+        <li><button type="button" class="chip is-active" data-filter="todos" aria-pressed="true">Todos</button></li>
+        <li><button type="button" class="chip" data-filter="boleteria" aria-pressed="false">En boletería</button></li>
+        <li><button type="button" class="chip" data-filter="programado" aria-pressed="false">Programados</button></li>
+        <li><button type="button" class="chip" data-filter="envivo" aria-pressed="false">En vivo</button></li>
+      </ul>
+
+      <div class="search-box">
+        <svg aria-hidden="true"><use href="#i-search"/></svg>
+        <input id="search" class="search-input" type="search" placeholder="Buscar por nombre, teatro o ciudad…" aria-label="Buscar evento" autocomplete="off">
+      </div>
+    </div>
+
+    <p id="results-count" class="results-count" role="status" aria-live="polite">6 eventos</p>
+
+    <ul class="event-grid" id="event-grid">
+
+      <li class="event-card" data-status="boleteria">
+        <a class="event-link" href="detalle-evento.html?id=EVT-0142" aria-label="Ver detalle: Noche Sinfónica de Verano">
+          <div class="event-thumb">
+            <img src="../assets/eventos/noche-sinfonica.svg" alt="" width="640" height="360" loading="lazy">
+            <span class="event-kind">EVT-0142</span>
+            <span class="badge badge-boleteria">En boletería</span>
+          </div>
+          <div class="event-body">
+            <h2 class="event-name">Noche Sinfónica de Verano</h2>
+            <p class="event-meta"><svg aria-hidden="true"><use href="#i-pin"/></svg>Teatro Municipal · Tuluá</p>
+            <p class="event-meta"><svg aria-hidden="true"><use href="#i-cal"/></svg>14 nov 2026 · 8:00 p. m.</p>
+            <div class="event-foot">
+              <span class="event-from">Desde</span>
+              <span class="event-price">$55.000</span>
+            </div>
+          </div>
+        </a>
+      </li>
+
+      <li class="event-card" data-status="programado">
+        <a class="event-link" href="detalle-evento.html?id=EVT-0138" aria-label="Ver detalle: Festival Ritmos del Pacífico">
+          <div class="event-thumb thumb-music">
+            <span class="event-kind">EVT-0138</span>
+            <span class="badge badge-programado">Programado</span>
+          </div>
+          <div class="event-body">
+            <h2 class="event-name">Festival Ritmos del Pacífico</h2>
+            <p class="event-meta"><svg aria-hidden="true"><use href="#i-pin"/></svg>Coliseo El Cacique · Cali</p>
+            <p class="event-meta"><svg aria-hidden="true"><use href="#i-cal"/></svg>22 nov 2026 · 6:30 p. m.</p>
+            <div class="event-foot">
+              <span class="event-from">Desde</span>
+              <span class="event-price">$120.000</span>
+            </div>
+          </div>
+        </a>
+      </li>
+
+      <li class="event-card" data-status="envivo">
+        <a class="event-link" href="detalle-evento.html?id=EVT-0129" aria-label="Ver detalle: Stand Up Noche de Comedia">
+          <div class="event-thumb">
+            <img src="../assets/eventos/stand-up.svg" alt="" width="640" height="360" loading="lazy">
+            <span class="event-kind">EVT-0129</span>
+            <span class="badge badge-envivo">En vivo</span>
+          </div>
+          <div class="event-body">
+            <h2 class="event-name">Stand Up: Noche de Comedia</h2>
+            <p class="event-meta"><svg aria-hidden="true"><use href="#i-pin"/></svg>Teatro Jorge Isaacs · Cali</p>
+            <p class="event-meta"><svg aria-hidden="true"><use href="#i-cal"/></svg>13 oct 2026 · 7:30 p. m.</p>
+            <div class="event-foot">
+              <span class="event-from">Desde</span>
+              <span class="event-price">$60.000</span>
+            </div>
+          </div>
+        </a>
+      </li>
+
+      <li class="event-card" data-status="boleteria">
+        <a class="event-link" href="detalle-evento.html?id=EVT-0151" aria-label="Ver detalle: Jardín de los Espejos">
+          <div class="event-thumb">
+            <img src="../assets/eventos/jardin-espejos.svg" alt="" width="640" height="360" loading="lazy">
+            <span class="event-kind">EVT-0151</span>
+            <span class="badge badge-boleteria">En boletería</span>
+          </div>
+          <div class="event-body">
+            <h2 class="event-name">Jardín de los Espejos</h2>
+            <p class="event-meta"><svg aria-hidden="true"><use href="#i-pin"/></svg>Teatro Municipal · Tuluá</p>
+            <p class="event-meta"><svg aria-hidden="true"><use href="#i-cal"/></svg>29 nov 2026 · 7:00 p. m.</p>
+            <div class="event-foot">
+              <span class="event-from">Desde</span>
+              <span class="event-price">$70.000</span>
+            </div>
+          </div>
+        </a>
+      </li>
+
+      <li class="event-card" data-status="programado">
+        <a class="event-link" href="detalle-evento.html?id=EVT-0156" aria-label="Ver detalle: Rock en el Valle">
+          <div class="event-thumb thumb-rock">
+            <span class="event-kind">EVT-0156</span>
+            <span class="badge badge-programado">Programado</span>
+          </div>
+          <div class="event-body">
+            <h2 class="event-name">Rock en el Valle</h2>
+            <p class="event-meta"><svg aria-hidden="true"><use href="#i-pin"/></svg>Coliseo El Cacique · Cali</p>
+            <p class="event-meta"><svg aria-hidden="true"><use href="#i-cal"/></svg>5 dic 2026 · 5:00 p. m.</p>
+            <div class="event-foot">
+              <span class="event-from">Desde</span>
+              <span class="event-price">$95.000</span>
+            </div>
+          </div>
+        </a>
+      </li>
+
+      <li class="event-card" data-status="programado">
+        <a class="event-link" href="detalle-evento.html?id=EVT-0160" aria-label="Ver detalle: Feria de Teatro Clásico">
+          <div class="event-thumb thumb-theatre">
+            <span class="event-kind">EVT-0160</span>
+            <span class="badge badge-programado">Programado</span>
+          </div>
+          <div class="event-body">
+            <h2 class="event-name">Feria de Teatro Clásico</h2>
+            <p class="event-meta"><svg aria-hidden="true"><use href="#i-pin"/></svg>Teatro Municipal · Tuluá</p>
+            <p class="event-meta"><svg aria-hidden="true"><use href="#i-cal"/></svg>12 dic 2026 · 4:00 p. m.</p>
+            <div class="event-foot">
+              <span class="event-from">Desde</span>
+              <span class="event-price">$45.000</span>
+            </div>
+          </div>
+        </a>
+      </li>
+
+    </ul>
+
+    <!-- Estado vacío (lo muestra catalogo.js si no hay coincidencias) -->
+    <div id="empty-state" class="empty-state" hidden>
+      <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg>
+      <h2>Sin resultados</h2>
+      <p>No encontramos eventos con esos filtros. Prueba con otra búsqueda.</p>
+      <button type="button" class="btn btn-ghost" id="clear-filters">Limpiar filtros</button>
+    </div>
+
+  </main>
+
+  <!-- PIE DE PÁGINA (igual que detalle-evento.html) -->
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div class="footer-brand">
+        <a class="brand" href="index.html">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M3 5h1v14H3zM6 5h2v14H6zM10 5h1v14h-1zM13 5h2v14h-2zM17 5h1v14h-1zM20 5h1v14h-1z"/></svg>
+          </span>
+          <span class="brand-name">Eventix</span>
+        </a>
+        <p>Plataforma de boletería para eventos y espectáculos.</p>
+      </div>
+      <nav class="footer-nav" aria-label="Enlaces del pie de página">
+        <h2>Explorar</h2>
+        <ul>
+          <li><a href="catalogo.html">Catálogo de eventos</a></li>
+          <li><a href="index.html#como-reservar">Cómo reservar</a></li>
+          <li><a href="index.html#ciudades">Ciudades</a></li>
+        </ul>
+      </nav>
+      <nav class="footer-nav" aria-label="Cuenta">
+        <h2>Tu cuenta</h2>
+        <ul>
+          <li><a href="login.html">Iniciar sesión</a></li>
+          <li><a href="registro.html">Crear cuenta de cliente</a></li>
+          <li><a href="registro.html?rol=agente">Crear cuenta de agente</a></li>
+        </ul>
+      </nav>
+    </div>
+    <div class="container footer-base">
+      <p>Proyecto Integrador, IV semestre, Facultad de Ingeniería de Sistemas, UCEVA. 2026.</p>
+      <p>Santiago Rodríguez Díaz, Santiago Díaz Londoño, Noemiguel Moreno y Brayan Castaño.</p>
+    </div>
+  </footer>
+
+</body>
+</html>
