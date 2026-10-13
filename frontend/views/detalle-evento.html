@@ -9,10 +9,19 @@
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../css/styles.css">
   
-  <!-- Controlador JS de la vista -->
+  <!-- Controlador JS de la vista y del carrusel -->
+  <script src="../controllers/carrusel.js" defer></script>
   <script src="../controllers/detalle-evento.js" defer></script>
 </head>
-<body>
+<body class="admin-body">
+
+  <!-- Iconos reutilizables (sprite del sistema Eventix) -->
+  <svg class="sprite" aria-hidden="true">
+    <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21Z"/><circle cx="12" cy="9.5" r="2.5"/></symbol>
+    <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></symbol>
+    <symbol id="i-prev" viewBox="0 0 24 24"><path d="m14.5 6-6 6 6 6"/></symbol>
+    <symbol id="i-next" viewBox="0 0 24 24"><path d="m9.5 6 6 6-6 6"/></symbol>
+  </svg>
 
   <!-- ENCABEZADO -->
   <header class="site-header">
@@ -53,10 +62,49 @@
 
   <div class="event-reservation-container">
     
-    <!-- Detalle del Evento -->
+    <!-- Detalle del Evento con Carrusel de Imágenes Ampliado -->
     <div class="event-details-col">
-      <div class="event-banner">
-        <img id="event-img" src="../assets/eventos/noche-sinfonica.svg" alt="Imagen del evento" class="event-hero-img" width="800" height="450">
+      
+      <!-- CARRUSEL DE IMÁGENES DEL EVENTO (Tamaño grande) -->
+      <div class="carousel" role="region" aria-roledescription="carrusel" aria-label="Galería del evento" style="margin-bottom: 2rem;">
+        <ul class="carousel-track" style="display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none;">
+          <li class="slide" id="slide-1" aria-roledescription="diapositiva" aria-label="1 de 3: Imagen principal del evento" style="flex: 0 0 100%; scroll-snap-align: start;">
+            <article class="slide-card" style="background: transparent; border: none; box-shadow: none; padding: 0;">
+              <div class="slide-media" style="border-radius: 14px; overflow: hidden; position: relative; aspect-ratio: 16/9; background: #05070a;">
+                <img id="event-img" src="../assets/eventos/noche-sinfonica.svg" alt="Imagen principal del evento" class="event-hero-img" width="1200" height="675" style="width: 100%; height: 100%; object-fit: cover; display: block;">
+                <a class="slide-arrow slide-arrow--prev" href="#slide-3" aria-label="Imagen anterior"><svg aria-hidden="true"><use href="#i-prev"/></svg></a>
+                <a class="slide-arrow slide-arrow--next" href="#slide-2" aria-label="Imagen siguiente"><svg aria-hidden="true"><use href="#i-next"/></svg></a>
+              </div>
+            </article>
+          </li>
+          <li class="slide" id="slide-2" aria-roledescription="diapositiva" aria-label="2 de 3: Vista del recinto" style="flex: 0 0 100%; scroll-snap-align: start;">
+            <article class="slide-card" style="background: transparent; border: none; box-shadow: none; padding: 0;">
+              <div class="slide-media" style="border-radius: 14px; overflow: hidden; position: relative; aspect-ratio: 16/9; background: #05070a;">
+                <img src="../assets/eventos/jardin-espejos.svg" alt="Vista del escenario y recinto" class="event-hero-img" width="1200" height="675" style="width: 100%; height: 100%; object-fit: cover; display: block;" loading="lazy">
+                <a class="slide-arrow slide-arrow--prev" href="#slide-1" aria-label="Imagen anterior"><svg aria-hidden="true"><use href="#i-prev"/></svg></a>
+                <a class="slide-arrow slide-arrow--next" href="#slide-3" aria-label="Imagen siguiente"><svg aria-hidden="true"><use href="#i-next"/></svg></a>
+              </div>
+            </article>
+          </li>
+          <li class="slide" id="slide-3" aria-roledescription="diapositiva" aria-label="3 de 3: Distribución de localidades" style="flex: 0 0 100%; scroll-snap-align: start;">
+            <article class="slide-card" style="background: transparent; border: none; box-shadow: none; padding: 0;">
+              <div class="slide-media" style="border-radius: 14px; overflow: hidden; position: relative; aspect-ratio: 16/9; background: #05070a;">
+                <img src="../assets/eventos/stand-up.svg" alt="Distribución de localidades y aforo" class="event-hero-img" width="1200" height="675" style="width: 100%; height: 100%; object-fit: cover; display: block;" loading="lazy">
+                <a class="slide-arrow slide-arrow--prev" href="#slide-2" aria-label="Imagen anterior"><svg aria-hidden="true"><use href="#i-prev"/></svg></a>
+                <a class="slide-arrow slide-arrow--next" href="#slide-1" aria-label="Imagen siguiente"><svg aria-hidden="true"><use href="#i-next"/></svg></a>
+              </div>
+            </article>
+          </li>
+        </ul>
+        <div class="carousel-controls" style="margin-top: 0.75rem;">
+          <div class="carousel-progress" aria-hidden="true"><span></span></div>
+          <p class="carousel-status" style="font-size: 0.78rem; color: var(--text-muted);">Desliza o usa las flechas para ver más fotos del evento</p>
+        </div>
+        <ol class="carousel-dots" aria-label="Elegir imagen de galería" style="margin-top: 0.6rem; display: flex; justify-content: center; gap: 0.5rem; list-style: none; padding: 0;">
+          <li><a href="#slide-1" aria-label="Ir a imagen 1" style="display: block; width: 9px; height: 9px; border-radius: 50%; background: rgba(255,255,255,0.3);"></a></li>
+          <li><a href="#slide-2" aria-label="Ir a imagen 2" style="display: block; width: 9px; height: 9px; border-radius: 50%; background: rgba(255,255,255,0.3);"></a></li>
+          <li><a href="#slide-3" aria-label="Ir a imagen 3" style="display: block; width: 9px; height: 9px; border-radius: 50%; background: rgba(255,255,255,0.3);"></a></li>
+        </ol>
       </div>
 
       <h1 id="event-title" class="event-main-title">Noche Sinfónica de Verano</h1>
@@ -90,7 +138,7 @@
 
       <div class="event-description">
         <span class="description-label">Descripción</span>
-        <p id="event-desc">La Orquesta Filarmónica del Valle presenta un repertorio...</p>
+        <p id="event-desc">La Orquesta Filarmónica del Valle presenta un repertorio único...</p>
       </div>
     </div>
 

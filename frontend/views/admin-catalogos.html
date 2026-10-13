@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Eventix: Gestión de catálogos generales, ubicación geográfica y cuentas.">
+  <title>Eventix · Catálogos generales</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body class="admin-body">
+
+  <!-- Iconos reutilizables (sprite del sistema Eventix con iconos de editar y eliminar) -->
+  <svg class="sprite" aria-hidden="true">
+    <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21Z"/><circle cx="12" cy="9.5" r="2.5"/></symbol>
+    <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></symbol>
+    <symbol id="i-edit" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M10 11v6M14 11v6"/></symbol>
+  </svg>
+
+  
+
+  <!-- ============ ENCABEZADO ============ -->
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="index.html" aria-label="Eventix, inicio">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M3 5h1v14H3zM6 5h2v14H6zM10 5h1v14h-1zM13 5h2v14h-2zM17 5h1v14h-1zM20 5h1v14h-1z"/></svg>
+        </span>
+        <span class="brand-name">Eventix</span>
+      </a>
+
+      <!-- Menú móvil sin JavaScript: checkbox + label -->
+      <input type="checkbox" id="menu-toggle" class="menu-toggle" aria-label="Abrir menú">
+      <label for="menu-toggle" class="menu-button" aria-hidden="true">
+        <span></span><span></span><span></span>
+      </label>
+
+      <nav class="main-nav" aria-label="Navegación de administración">
+        <ul class="nav-links">
+          <li><a href="admin-panel.html">Dashboard-Registros y Reportes</a></li>
+          <li><a href="admin-usuarios.html">Gestión de usuarios</a></li>
+          <li><a href="admin-catalogos.html" class="is-active">Gestión de catálogos</a></li>
+        </ul>
+        <div class="nav-actions">
+          <div class="admin-user-badge">
+            <span class="brand-mark brand-mark--circular admin-avatar-circular" aria-hidden="true">
+              <span class="admin-avatar-text">LR</span>
+            </span>
+            <span>Admin</span>
+          </div>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ============ CONTENIDO PRINCIPAL ============ -->
+  <main id="contenido" class="admin-content-wrap">
+    <div class="container">
+      
+      <!-- Encabezado de la vista según diseño de referencia -->
+      <div style="margin-bottom: 2rem;">
+        <h1 class="admin-title" style="margin-bottom: 0.3rem;">Catálogos generales</h1>
+        <p class="admin-lead" style="margin: 0; font-size: 0.95rem;">Administra la ubicación geográfica y las cuentas de administrador.</p>
+      </div>
+
+      <!-- Pestañas de navegación de catálogos -->
+      <div style="border-bottom: 1px solid rgba(255, 255, 255, 0.08); margin-bottom: 1.5rem;">
+        <ul style="display: flex; list-style: none; gap: 2.5rem; padding: 0; margin: 0; font-size: 0.95rem;">
+          <li><a href="#países" style="color: var(--text); text-decoration: none; padding-bottom: 0.75rem; display: block; border-bottom: 2px solid var(--accent); font-weight: 500;">Países</a></li>
+          <li><a href="#departamentos" style="color: var(--text-muted); text-decoration: none; padding-bottom: 0.75rem; display: block; border-bottom: 2px solid transparent;">Departamentos</a></li>
+          <li><a href="#ciudades" style="color: var(--text-muted); text-decoration: none; padding-bottom: 0.75rem; display: block; border-bottom: 2px solid transparent;">Ciudades</a></li>
+          <li><a href="#administrador" style="color: var(--text-muted); text-decoration: none; padding-bottom: 0.75rem; display: block; border-bottom: 2px solid transparent;">Administrador</a></li>
+        </ul>
+      </div>
+
+      <!-- Botón de acción superior derecha -->
+      <div style="display: flex; justify-content: flex-end; margin-bottom: 1rem;">
+        <a class="btn btn-primary" href="#agregar-pais" style="display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.55rem 1.1rem; font-size: 0.85rem;">
+          <span style="font-size: 1.1rem; line-height: 1;">+</span> Agregar país
+        </a>
+      </div>
+
+      <!-- Tabla de Contenido / Catálogo de Países -->
+      <section class="distribution-card admin-card-flat" aria-labelledby="catalogos-title" style="padding: 0; overflow: hidden;">
+        <div class="admin-table-scroll">
+          <table class="report-table" style="width: 100%; border-collapse: collapse;">
+            <thead>
+              <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.08); text-align: left; font-size: 0.78rem; letter-spacing: 0.05em; color: var(--text-muted);">
+                <th style="padding: 1rem 1.5rem; width: 15%;">ID</th>
+                <th style="padding: 1rem 1.5rem; width: 50%;">NOMBRE</th>
+                <th style="padding: 1rem 1.5rem; width: 20%;">DEPARTAMENTOS</th>
+                <th style="padding: 1rem 1.5rem; text-align: right; width: 15%;">ACCIONES</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.04);">
+                <td style="padding: 1.1rem 1.5rem; font-family: var(--font-mono); color: var(--text-muted); font-size: 0.9rem;">01</td>
+                <td style="padding: 1.1rem 1.5rem; font-weight: 500; color: var(--text);">Colombia</td>
+                <td style="padding: 1.1rem 1.5rem; color: var(--text); font-family: var(--font-mono);">32</td>
+                <td style="padding: 1.1rem 1.5rem; text-align: right;">
+                  <div style="display: inline-flex; gap: 1rem; align-items: center;">
+                    <a href="#editar" aria-label="Editar Colombia" style="color: #2dd4bf; display: inline-flex;"><svg style="width: 1.1rem; height: 1.1rem; fill: none; stroke: currentColor; stroke-width: 2;"><use href="#i-edit"/></svg></a>
+                    <a href="#eliminar" aria-label="Eliminar Colombia" style="color: #fb7185; display: inline-flex;"><svg style="width: 1.1rem; height: 1.1rem; fill: none; stroke: currentColor; stroke-width: 2;"><use href="#i-trash"/></svg></a>
+                  </div>
+                </td>
+              </tr>
+              <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.04);">
+                <td style="padding: 1.1rem 1.5rem; font-family: var(--font-mono); color: var(--text-muted); font-size: 0.9rem;">02</td>
+                <td style="padding: 1.1rem 1.5rem; font-weight: 500; color: var(--text);">Ecuador</td>
+                <td style="padding: 1.1rem 1.5rem; color: var(--text); font-family: var(--font-mono);">24</td>
+                <td style="padding: 1.1rem 1.5rem; text-align: right;">
+                  <div style="display: inline-flex; gap: 1rem; align-items: center;">
+                    <a href="#editar" aria-label="Editar Ecuador" style="color: #2dd4bf; display: inline-flex;"><svg style="width: 1.1rem; height: 1.1rem; fill: none; stroke: currentColor; stroke-width: 2;"><use href="#i-edit"/></svg></a>
+                    <a href="#eliminar" aria-label="Eliminar Ecuador" style="color: #fb7185; display: inline-flex;"><svg style="width: 1.1rem; height: 1.1rem; fill: none; stroke: currentColor; stroke-width: 2;"><use href="#i-trash"/></svg></a>
+                  </div>
+                </td>
+              </tr>
+              <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.04);">
+                <td style="padding: 1.1rem 1.5rem; font-family: var(--font-mono); color: var(--text-muted); font-size: 0.9rem;">03</td>
+                <td style="padding: 1.1rem 1.5rem; font-weight: 500; color: var(--text);">Peru</td>
+                <td style="padding: 1.1rem 1.5rem; color: var(--text); font-family: var(--font-mono);">25</td>
+                <td style="padding: 1.1rem 1.5rem; text-align: right;">
+                  <div style="display: inline-flex; gap: 1rem; align-items: center;">
+                    <a href="#editar" aria-label="Editar Peru" style="color: #2dd4bf; display: inline-flex;"><svg style="width: 1.1rem; height: 1.1rem; fill: none; stroke: currentColor; stroke-width: 2;"><use href="#i-edit"/></svg></a>
+                    <a href="#eliminar" aria-label="Eliminar Peru" style="color: #fb7185; display: inline-flex;"><svg style="width: 1.1rem; height: 1.1rem; fill: none; stroke: currentColor; stroke-width: 2;"><use href="#i-trash"/></svg></a>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding: 1.1rem 1.5rem; font-family: var(--font-mono); color: var(--text-muted); font-size: 0.9rem;">04</td>
+                <td style="padding: 1.1rem 1.5rem; font-weight: 500; color: var(--text);">Venezuela</td>
+                <td style="padding: 1.1rem 1.5rem; color: var(--text); font-family: var(--font-mono);">23</td>
+                <td style="padding: 1.1rem 1.5rem; text-align: right;">
+                  <div style="display: inline-flex; gap: 1rem; align-items: center;">
+                    <a href="#editar" aria-label="Editar Venezuela" style="color: #2dd4bf; display: inline-flex;"><svg style="width: 1.1rem; height: 1.1rem; fill: none; stroke: currentColor; stroke-width: 2;"><use href="#i-edit"/></svg></a>
+                    <a href="#eliminar" aria-label="Eliminar Venezuela" style="color: #fb7185; display: inline-flex;"><svg style="width: 1.1rem; height: 1.1rem; fill: none; stroke: currentColor; stroke-width: 2;"><use href="#i-trash"/></svg></a>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- ============ PIE DE PÁGINA ============ -->
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div class="footer-brand">
+        <a class="brand" href="index.html">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M3 5h1v14H3zM6 5h2v14H6zM10 5h1v14h-1zM13 5h2v14h-2zM17 5h1v14h-1zM20 5h1v14h-1z"/></svg>
+          </span>
+          <span class="brand-name">Eventix</span>
+        </a>
+        <p>Plataforma de boletería para eventos y espectáculos.</p>
+      </div>
+      <nav class="footer-nav" aria-label="Enlaces del pie de página">
+        <h2>Explorar</h2>
+        <ul>
+          <li><a href="catalogo.html">Catálogo de eventos</a></li>
+          <li><a href="#como-reservar">Cómo reservar</a></li>
+          <li><a href="#ciudades">Ciudades</a></li>
+        </ul>
+      </nav>
+      <nav class="footer-nav" aria-label="Cuenta">
+        <h2>Tu cuenta</h2>
+        <ul>
+          <li><a href="login.html">Iniciar sesión</a></li>
+          <li><a href="registro.html">Crear cuenta de cliente</a></li>
+          <li><a href="registro.html?rol=agente">Crear cuenta de agente</a></li>
+        </ul>
+      </nav>
+    </div>
+    <div class="container footer-base">
+      <p>Proyecto Integrador, IV semestre, Facultad de Ingeniería de Sistemas, UCEVA. 2026.</p>
+      <p>Santiago Rodríguez Díaz, Santiago Díaz Londoño, Noemiguel Moreno y Brayan Castaño.</p>
+    </div>
+  </footer>
+
+</body>
+</html>

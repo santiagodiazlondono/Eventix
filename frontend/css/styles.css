@@ -1597,3 +1597,428 @@ input, select, button { font: inherit; color: inherit; }
   object-fit: cover;
   display: block;
 }
+
+/* =========================================================
+   ESTILOS PARA EL PANEL DE ADMINISTRACIÓN (REGISTROS Y REPORTES)
+   ========================================================= */
+
+/* Fondo reticulado de la página de admin */
+body.admin-body {
+  position: relative;
+  background: var(--bg);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+body.admin-body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 44px 44px;
+  opacity: .35;
+  -webkit-mask-image: radial-gradient(circle at 25% 35%, #000, transparent 70%);
+          mask-image: radial-gradient(circle at 25% 35%, #000, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+body.admin-body > * {
+  position: relative;
+  z-index: 1;
+}
+
+.admin-content-wrap {
+  flex: 1;
+  padding-block: 2.5rem 4rem;
+}
+
+.admin-header-path {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent-2);
+  font-weight: 600;
+  margin-bottom: 0.3rem;
+}
+
+.admin-title {
+  font-size: 1.85rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
+}
+
+.admin-lead {
+  color: var(--text-muted);
+  font-size: 0.9375rem;
+  margin-bottom: 1.5rem;
+}
+
+.admin-section-space {
+  padding-top: 0;
+}
+
+.admin-section-border {
+  padding-top: 3rem;
+  border-top: 1px solid var(--border);
+}
+
+.admin-head-gap {
+  margin-bottom: 0.25rem;
+}
+
+.admin-head-sm {
+  margin-bottom: 1rem;
+}
+
+.admin-mb-lg {
+  margin-bottom: 3.5rem;
+}
+
+.admin-mb-md {
+  margin-bottom: 1.5rem;
+}
+
+.admin-metrics-duo {
+  grid-template-columns: repeat(2, 1fr);
+  align-items: stretch;
+}
+
+.admin-val-accent {
+  font-size: 1.4rem !important;
+  color: var(--accent-2) !important;
+}
+
+.admin-table-scroll {
+  overflow-x: auto;
+}
+
+.admin-text-right {
+  text-align: right;
+}
+
+.admin-card-flat {
+  margin-bottom: 0 !important;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.admin-card-title {
+  font-size: 1.05rem;
+  margin-bottom: 1.25rem;
+  font-weight: 600;
+}
+
+.admin-status-ok {
+  color: var(--success);
+  font-weight: 500;
+}
+
+.admin-status-err {
+  color: var(--danger);
+  font-weight: 500;
+}
+
+.admin-cancel-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  flex: 1;
+  justify-content: space-between;
+}
+
+.cancel-item-title {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.cancel-item-date {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+/* Tarjetas de métricas */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 1rem;
+  align-items: stretch;
+}
+
+.metric-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.metric-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.metric-value {
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.metric-trend {
+  font-size: 0.78rem;
+  color: var(--accent-2);
+  font-weight: 500;
+}
+
+.metric-trend--neutral {
+  color: var(--text-muted);
+}
+
+/* Tarjeta de distribución de roles y gráficos */
+.distribution-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+}
+
+.distribution-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.distribution-header h2 {
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.total-badge {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  background: var(--surface-2);
+  padding: 0.25rem 0.6rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+
+.role-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.role-row {
+  display: grid;
+  grid-template-columns: 140px 1fr 60px;
+  align-items: center;
+  gap: 1rem;
+}
+
+.role-name {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.progress-bar-bg {
+  height: 8px;
+  background: var(--surface-3);
+  border-radius: 999px;
+  overflow: hidden;
+  width: 100%;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+}
+
+.progress-bar-fill--accent {
+  background: var(--accent);
+}
+
+.progress-bar-fill--warn {
+  background: var(--warn);
+}
+
+.role-count {
+  text-align: right;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+/* Gráfico de barras verticales (Ingresos) */
+.chart-bars-container {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  align-items: flex-end;
+  gap: 1rem;
+  height: 220px;
+  padding-top: 2rem;
+  padding-bottom: 0.5rem;
+}
+
+.chart-bar-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.chart-bar-fill {
+  width: 100%;
+  background: linear-gradient(180deg, var(--accent-2), var(--accent));
+  border-radius: 6px 6px 0 0;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  transition: opacity 0.2s;
+}
+
+.chart-bar-fill:hover {
+  opacity: 0.85;
+}
+
+.chart-bar-fill span {
+  position: absolute;
+  top: -26px;
+  font-size: 0.72rem;
+  font-family: var(--font-mono);
+  color: var(--text);
+  background: var(--surface-3);
+  padding: 2px 5px;
+  border-radius: 4px;
+  white-space: nowrap;
+  border: 1px solid var(--border-strong);
+}
+
+.chart-bar-label {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+/* Tablas de reportes */
+.report-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.875rem;
+}
+
+.report-table th {
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border-strong);
+}
+
+.report-table td {
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+}
+
+.report-table tbody tr:hover {
+  background: var(--surface-2);
+}
+
+/* Tarjetas de causas de cancelación más alargadas y estilizadas */
+.cancel-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.85rem 1rem;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  gap: 1rem;
+}
+
+.cancel-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: rgba(255, 84, 112, 0.15);
+  color: var(--danger);
+  border: 1px solid rgba(255, 84, 112, 0.3);
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* Badge de avatar circular LR */
+.admin-user-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.35rem 0.75rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.admin-avatar-circular {
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50% !important;
+  display: grid;
+  place-items: center;
+  background: var(--surface-2) !important;
+  border: 1px solid var(--border-strong);
+}
+
+.admin-avatar-text {
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--accent-2);
+}
+
+/* Responsividad */
+@media (max-width: 1024px) {
+  .metrics-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .chart-bars-container {
+    height: 180px;
+    gap: 0.5rem;
+  }
+  .chart-bar-fill span {
+    font-size: 0.6rem;
+    top: -22px;
+  }
+  .admin-metrics-duo {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .metrics-grid {
+    grid-template-columns: 1fr;
+  }
+  .role-row {
+    grid-template-columns: 100px 1fr 40px;
+  }
+}
