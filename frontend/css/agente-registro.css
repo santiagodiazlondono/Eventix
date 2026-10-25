@@ -1,0 +1,47 @@
+/* =========================================================
+   EVENTIX · Estilos para Registrar Evento (Agente)
+   ========================================================= */
+
+.agent-form-container {
+  max-width: 900px;
+}
+
+.agent-form-card {
+  padding: 2.5rem;
+}
+
+.agent-register-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+.agent-register-form .agent-field {
+  grid-column: span 1;
+}
+
+.agent-register-form .agent-field--full {
+  grid-column: span 2;
+}
+
+.agent-register-form label {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.agent-register-form input[type="text"],
+.agent-register-form input[type="number"],
+.agent-register-form input[type="datetime-local"] {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: var(--font-sans);
+}
+

@@ -1,0 +1,82 @@
+.users-toolbar {
+  margin-bottom: 1.5rem;
+}
+
+.users-search-box {
+  flex: 1;
+  max-width: 360px;
+}
+
+.users-toolbar-actions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  margin-left: auto;
+}
+
+.users-role-select {
+  min-height: auto;
+  padding: 0.6rem 1rem;
+  margin: 0;
+}
+
+.users-add-btn {
+  padding: 0.6rem 1.2rem;
+  font-size: 0.875rem;
+}
+
+.users-card-table {
+  padding: 0;
+  overflow: hidden;
+}
+
+.users-card-head {
+  margin-bottom: 1.25rem;
+  padding: 1.5rem 1.5rem 0 1.5rem;
+}
+
+.users-card-sub {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  margin-top: 0.2rem;
+}
+
+.users-table th {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  text-align: left;
+  font-size: 0.78rem;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.users-table td {
+  padding: 1.1rem 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.users-table tr:last-child td {
+  border-bottom: none;
+}
+
+.user-name {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.user-email {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.user-date {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.user-edit-btn {
+  padding: 0.3rem 0.7rem;
+  font-size: 0.78rem;
+  min-height: auto;
+}

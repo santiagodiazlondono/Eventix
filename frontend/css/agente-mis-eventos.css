@@ -1,0 +1,295 @@
+/* =========================================================
+   EVENTIX · Estilos para Mis Eventos y Modal de Edición
+   ========================================================= */
+
+.agent-table-card {
+  padding: 0;
+  overflow: hidden;
+}
+
+.agent-table-head-box {
+  padding: 1.5rem 1.5rem 1rem 1.5rem;
+}
+
+.agent-table-head-box h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 0.3rem;
+}
+
+.agent-table-head-box p {
+  color: var(--text-muted);
+  font-size: 0.88rem;
+}
+
+.agent-table th {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  text-align: left;
+  font-size: 0.78rem;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.agent-table td {
+  padding: 1.1rem 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.agent-table tr:last-child td {
+  border-bottom: none;
+}
+
+.font-mono {
+  font-family: var(--font-mono);
+}
+
+.text-muted {
+  color: var(--text-muted);
+}
+
+.font-weight-500 {
+  font-weight: 500;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.agent-action-links {
+  display: inline-flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.icon-edit {
+  color: #2dd4bf;
+  display: inline-flex;
+}
+
+.icon-edit svg,
+.icon-trash svg {
+  width: 1.1rem;
+  height: 1.1rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+}
+
+.icon-trash {
+  color: #fb7185;
+  display: inline-flex;
+}
+
+.badge-finalizado {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-muted);
+}
+
+.badge-cancelado {
+  background: rgba(251, 113, 133, 0.15);
+  color: #fb7185;
+}
+
+/* Modal de Edición */
+.agent-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(5, 7, 10, 0.85);
+  z-index: 1000;
+  overflow-y: auto;
+  padding: 2rem 1rem;
+}
+
+.agent-modal:target {
+  display: block !important;
+}
+
+.agent-modal-box {
+  max-width: 900px;
+  margin: 0 auto;
+  background: #0A0D14;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  padding: 2.5rem;
+  position: relative;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+}
+
+.agent-modal-close {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 50%;
+  width: 2.5rem;
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.agent-modal-close svg {
+  width: 1.2rem;
+  height: 1.2rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+}
+
+.agent-modal-header {
+  margin-bottom: 2rem;
+}
+
+.agent-modal-header h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 0.4rem;
+}
+
+.agent-modal-header p {
+  color: var(--text-muted);
+  font-size: 0.88rem;
+}
+
+.agent-modal-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+.agent-modal-form .agent-field {
+  grid-column: span 1;
+}
+
+.agent-modal-form .agent-field--full {
+  grid-column: span 2;
+}
+
+.agent-modal-form label {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.agent-modal-form input[type="text"],
+.agent-modal-form input[type="number"],
+.agent-modal-form input[type="datetime-local"] {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: var(--font-sans);
+}
+
+.agent-select {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: #0a0d14;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: var(--font-sans);
+}
+
+.agent-textarea {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: var(--font-sans);
+  resize: vertical;
+}
+
+.agent-upload-box {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px dashed rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.agent-upload-box svg {
+  width: 2rem;
+  height: 2rem;
+  stroke: var(--accent);
+  margin-bottom: 0.5rem;
+  fill: none;
+  stroke-width: 2;
+}
+
+.agent-upload-box h3 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 0.2rem;
+}
+
+.agent-upload-box p {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: 1rem;
+}
+
+.agent-upload-btn {
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  padding: 0.5rem 1rem;
+}
+
+.sr-only-input {
+  display: none;
+}
+
+.agent-localities-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 1.5rem;
+}
+
+.agent-locality-col input {
+  width: 100%;
+  padding: 0.7rem 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  color: var(--text);
+}
+
+.mb-sm {
+  margin-bottom: 0.5rem;
+}
+
+.agent-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.agent-btn-discard {
+  padding: 0.7rem 1.5rem;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+
+
+
