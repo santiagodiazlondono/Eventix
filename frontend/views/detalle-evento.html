@@ -9,8 +9,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../css/styles.css">
   
-  <!-- Controlador JS de la vista y del carrusel -->
-  <script src="../controllers/carrusel.js" defer></script>
+  <!-- Controlador de eventos y detalle -->
+  <script src="../controllers/eventos.js" defer></script>
   <script src="../controllers/detalle-evento.js" defer></script>
 </head>
 <body class="admin-body">
@@ -57,7 +57,7 @@
   <main id="contenido" class="container section">
   
   <div style="margin-bottom: 1.5rem;">
-    <span id="event-badge" class="badge badge-boleteria">En boletería</span>
+    <span id="event-badge" class="badge">Cargando evento...</span>
   </div>
 
   <div class="event-reservation-container">
@@ -66,7 +66,7 @@
     <div class="event-details-col">
       
       <!-- CARRUSEL DE IMÁGENES DEL EVENTO (Tamaño grande) -->
-      <div class="carousel" role="region" aria-roledescription="carrusel" aria-label="Galería del evento" style="margin-bottom: 2rem;">
+      <div class="carousel" role="region" aria-roledescription="carrusel" aria-label="Galería del evento" style="margin-bottom: 2rem;" hidden>
         <ul class="carousel-track" style="display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none;">
           <li class="slide" id="slide-1" aria-roledescription="diapositiva" aria-label="1 de 3: Imagen principal del evento" style="flex: 0 0 100%; scroll-snap-align: start;">
             <article class="slide-card" style="background: transparent; border: none; box-shadow: none; padding: 0;">
@@ -107,38 +107,38 @@
         </ol>
       </div>
 
-      <h1 id="event-title" class="event-main-title">Noche Sinfónica de Verano</h1>
+      <h1 id="event-title" class="event-main-title">Cargando evento...</h1>
       
       <div class="event-info-grid">
         <div class="info-item">
           <span class="info-label">CÓDIGO</span>
-          <span id="event-code" class="info-value">EVT-0142</span>
+          <span id="event-code" class="info-value">Cargando...</span>
         </div>
         <div class="info-item">
           <span class="info-label">TEATRO</span>
-          <span id="event-teatro" class="info-value">Teatro Municipal</span>
+          <span id="event-teatro" class="info-value">Cargando...</span>
         </div>
         <div class="info-item">
           <span class="info-label">CIUDAD</span>
-          <span id="event-ciudad" class="info-value">Tuluá, Valle del Cauca</span>
+          <span id="event-ciudad" class="info-value">Cargando...</span>
         </div>
         <div class="info-item">
           <span class="info-label">INICIO</span>
-          <span id="event-inicio" class="info-value">14 nov 2026, 8:00 p. m.</span>
+          <span id="event-inicio" class="info-value">Cargando...</span>
         </div>
         <div class="info-item">
           <span class="info-label">FIN ESTIMADO</span>
-          <span id="event-fin" class="info-value">14 nov 2026, 10:30 p. m.</span>
+          <span id="event-fin" class="info-value">Cargando...</span>
         </div>
         <div class="info-item">
           <span class="info-label">CAPACIDAD</span>
-          <span id="event-capacidad" class="info-value">450 espectadores</span>
+          <span id="event-capacidad" class="info-value">Cargando...</span>
         </div>
       </div>
 
       <div class="event-description">
         <span class="description-label">Descripción</span>
-        <p id="event-desc">La Orquesta Filarmónica del Valle presenta un repertorio único...</p>
+        <p id="event-desc">Cargando información del evento...</p>
       </div>
     </div>
 
@@ -147,25 +147,14 @@
         <h3 class="reserve-title">RESERVAR ENTRADAS</h3>
         
         <div class="zone-section-label">
-          <span>ZONA / UBICACIÓN</span>
+          <span>PRECIO POR ENTRADA</span>
         </div>
 
-        <!-- Opciones de Zona con data-zone -->
         <div class="zones-grid">
           <div class="zone-card active" data-zone="preferencial" style="cursor: pointer;">
-            <span class="zone-name">Preferencial</span>
-            <span class="zone-price">$85.000</span>
-            <span class="zone-stock">120 disponibles</span>
-          </div>
-          <div class="zone-card" data-zone="vip" style="cursor: pointer;">
-            <span class="zone-name">VIP</span>
-            <span class="zone-price">$140.000</span>
-            <span class="zone-stock">40 disponibles</span>
-          </div>
-          <div class="zone-card" data-zone="general" style="cursor: pointer;">
             <span class="zone-name">General</span>
-            <span class="zone-price">$55.000</span>
-            <span class="zone-stock">210 disponibles</span>
+            <span id="event-price" class="zone-price">Cargando...</span>
+            <span id="event-stock" class="zone-stock">Aforo por consultar</span>
           </div>
         </div>
 
@@ -183,19 +172,19 @@
         <div class="price-summary">
           <div class="summary-line">
             <span>Precio base</span>
-            <span id="base-price-val">$85.000</span>
+            <span id="base-price-val">Cargando...</span>
           </div>
           <div class="summary-line">
-            <span id="subtotal-label">Entradas (x2)</span>
-            <span id="subtotal-val">$170.000</span>
+            <span id="subtotal-label">Entradas</span>
+            <span id="subtotal-val">Cargando...</span>
           </div>
           <div class="summary-line">
             <span>Servicios</span>
-            <span id="service-val">$8.000</span>
+            <span id="service-val">Cargando...</span>
           </div>
           <div class="summary-line total-line">
             <strong>Total</strong>
-            <strong id="grand-total-val">$178.000</strong>
+            <strong id="grand-total-val">Cargando...</strong>
           </div>
         </div>
 

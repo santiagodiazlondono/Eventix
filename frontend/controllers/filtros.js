@@ -1,271 +1,281 @@
-/* =========================================================
-   EVENTIX · Filtro de eventos
-   Filtra la sección "Próximos eventos" por:
-     ciudad · categoría · fecha (mes o rango) · estado · texto
-   Los datos se leen de los atributos data-* de cada evento,
-   así que al agregar eventos al HTML los filtros se actualizan solos.
-   ========================================================= */
 (function () {
   "use strict";
 
-  var items = Array.prototype.slice.call(document.querySelectorAll(".event-item"));
-  if (!items.length) return;
+  var list = document.querySelector('[data-event-list="inicio"]');
+  if (!list) return;
 
   var dialog = document.getElementById("filter-dialog");
-  var openBtn = document.getElementById("open-filters");
-  var countBadge = openBtn.querySelector(".filter-count");
-  var applyBtn = document.getElementById("apply-filters");
+  var openButton = document.getElementById("open-filters");
+  var countBadge = openButton.querySelector(".filter-count");
+  var applyButton = document.getElementById("apply-filters");
   var resultsBar = document.querySelector(".results-bar");
   var resultsCount = document.querySelector(".results-count");
   var activeList = document.querySelector(".active-filters");
   var emptyState = document.querySelector(".empty-state");
-  var chips = Array.prototype.slice.call(document.querySelectorAll(".chip[data-estado]"));
-
-  var fCiudad = document.getElementById("f-ciudad");
-  var fCategoria = document.getElementById("f-categoria");
-  var fCuando = document.getElementById("f-cuando");
-  var fDesde = document.getElementById("f-desde");
-  var fHasta = document.getElementById("f-hasta");
+  var chipsList = document.querySelector(".events-toolbar .chips");
+  var citySelect = document.getElementById("f-ciudad");
+  var dateSelect = document.getElementById("f-cuando");
+  var fromInput = document.getElementById("f-desde");
+  var untilInput = document.getElementById("f-hasta");
   var rangeBox = dialog.querySelector(".filter-range");
+  var items = [];
+  var loaded = false;
+  var state = { ciudad: "", cuando: "", desde: "", hasta: "", estado: "", q: "" };
 
-  var EMPTY = { ciudad: "", categoria: "", cuando: "", desde: "", hasta: "", estado: "", q: "" };
-  var state = Object.assign({}, EMPTY);
+  function normalize(value) {
+    return String(value || "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .trim();
+  }
 
-  /* ---------- utilidades ---------- */
-  function normalize(text) {
-    return (text || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+  function slug(value) {
+    return normalize(value).replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
   }
 
   function unique(values) {
-    return values.filter(function (v, i) { return values.indexOf(v) === i; }).sort();
-  }
-
-  var monthFmt = new Intl.DateTimeFormat("es-CO", { month: "long", year: "numeric", timeZone: "UTC" });
-  var dayFmt = new Intl.DateTimeFormat("es-CO", { day: "numeric", month: "short", timeZone: "UTC" });
-
-  function monthLabel(ym) {
-    var txt = monthFmt.format(new Date(ym + "-01T00:00:00Z"));
-    return txt.charAt(0).toUpperCase() + txt.slice(1);
-  }
-  function dayLabel(iso) {
-    return dayFmt.format(new Date(iso + "T00:00:00Z")).replace(".", "");
-  }
-
-  function addOptions(select, values, labelFn) {
-    values.forEach(function (v) {
-      var opt = document.createElement("option");
-      opt.value = v;
-      opt.textContent = labelFn ? labelFn(v) : v;
-      select.appendChild(opt);
+    return Array.from(new Set(values.filter(Boolean))).sort(function (a, b) {
+      return a.localeCompare(b, "es");
     });
   }
 
-  /* ---------- opciones a partir de los eventos ---------- */
-  addOptions(fCiudad, unique(items.map(function (li) { return li.dataset.ciudad; })));
-  addOptions(fCategoria, unique(items.map(function (li) { return li.dataset.categoria; })));
-  var months = unique(items.map(function (li) { return li.dataset.fecha.slice(0, 7); }));
-  months.forEach(function (ym) {
-    var opt = document.createElement("option");
-    opt.value = ym;
-    opt.textContent = monthLabel(ym);
-    fCuando.insertBefore(opt, fCuando.querySelector('option[value="rango"]'));
-  });
+  function monthLabel(month) {
+    var value = new Intl.DateTimeFormat("es-CO", {
+      month: "long",
+      year: "numeric",
+      timeZone: "UTC"
+    }).format(new Date(month + "-01T00:00:00Z"));
+    return value.charAt(0).toUpperCase() + value.slice(1);
+  }
 
-  /* ---------- lógica de coincidencia ---------- */
-  function matches(li, f) {
-    var d = li.dataset;
-    if (f.ciudad && d.ciudad !== f.ciudad) return false;
-    if (f.categoria && d.categoria !== f.categoria) return false;
-    if (f.estado && d.estado !== f.estado) return false;
-    if (f.cuando && f.cuando !== "rango" && d.fecha.slice(0, 7) !== f.cuando) return false;
-    if (f.cuando === "rango") {
-      if (f.desde && d.fecha < f.desde) return false;
-      if (f.hasta && d.fecha > f.hasta) return false;
+  function dayLabel(date) {
+    return new Intl.DateTimeFormat("es-CO", {
+      day: "numeric",
+      month: "short",
+      timeZone: "UTC"
+    }).format(new Date(date + "T00:00:00Z")).replace(".", "");
+  }
+
+  function addOptions(select, values, label) {
+    values.forEach(function (value) {
+      select.add(new Option(label ? label(value) : value, value));
+    });
+  }
+
+  function matches(item, filters) {
+    var data = item.dataset;
+    if (filters.ciudad && data.ciudad !== filters.ciudad) return false;
+    if (filters.estado && data.estado !== filters.estado) return false;
+    if (filters.cuando && filters.cuando !== "rango" &&
+        data.fecha.slice(0, 7) !== filters.cuando) return false;
+    if (filters.cuando === "rango") {
+      if (filters.desde && data.fecha < filters.desde) return false;
+      if (filters.hasta && data.fecha > filters.hasta) return false;
     }
-    if (f.q) {
-      var haystack = normalize(d.titulo + " " + d.ciudad + " " + d.categoria + " " + li.textContent);
-      if (haystack.indexOf(normalize(f.q)) === -1) return false;
-    }
+    if (filters.q && !normalize(data.titulo + " " + data.ciudad + " " + item.textContent)
+      .includes(normalize(filters.q))) return false;
     return true;
   }
 
-  function countFor(f) {
-    return items.filter(function (li) { return matches(li, f); }).length;
+  function countFor(filters) {
+    return items.filter(function (item) { return matches(item, filters); }).length;
   }
 
-  function plural(n) {
-    return n === 1 ? "1 evento" : n + " eventos";
-  }
-
-  /* ---------- pintar resultados ---------- */
-  function describeDate(f) {
-    if (!f.cuando) return "";
-    if (f.cuando !== "rango") return monthLabel(f.cuando);
-    if (f.desde && f.hasta) return dayLabel(f.desde) + " – " + dayLabel(f.hasta);
-    if (f.desde) return "Desde " + dayLabel(f.desde);
-    if (f.hasta) return "Hasta " + dayLabel(f.hasta);
+  function describeDate(filters) {
+    if (!filters.cuando) return "";
+    if (filters.cuando !== "rango") return monthLabel(filters.cuando);
+    if (filters.desde && filters.hasta) return dayLabel(filters.desde) + " – " + dayLabel(filters.hasta);
+    if (filters.desde) return "Desde " + dayLabel(filters.desde);
+    if (filters.hasta) return "Hasta " + dayLabel(filters.hasta);
     return "";
   }
 
   function render() {
     var shown = 0;
-    items.forEach(function (li) {
-      var ok = matches(li, state);
-      li.hidden = !ok;
-      if (ok) shown++;
+    items.forEach(function (item) {
+      item.hidden = !matches(item, state);
+      if (!item.hidden) shown++;
     });
 
-    // Etiquetas de filtros activos (se pueden quitar una por una)
     var tags = [];
     if (state.q) tags.push({ key: "q", label: "“" + state.q + "”" });
     if (state.ciudad) tags.push({ key: "ciudad", label: state.ciudad });
-    if (state.categoria) tags.push({ key: "categoria", label: state.categoria });
-    var dateTxt = describeDate(state);
-    if (dateTxt) tags.push({ key: "fecha", label: dateTxt });
+    var dateDescription = describeDate(state);
+    if (dateDescription) tags.push({ key: "fecha", label: dateDescription });
 
-    activeList.innerHTML = "";
-    tags.forEach(function (t) {
-      var li = document.createElement("li");
-      var b = document.createElement("button");
-      b.type = "button";
-      b.className = "filter-tag";
-      b.dataset.remove = t.key;
-      b.setAttribute("aria-label", "Quitar filtro " + t.label);
-      b.innerHTML = '<span></span><svg aria-hidden="true"><use href="#i-close"/></svg>';
-      b.firstChild.textContent = t.label;
-      li.appendChild(b);
-      activeList.appendChild(li);
+    activeList.replaceChildren();
+    tags.forEach(function (tag) {
+      var item = document.createElement("li");
+      var button = document.createElement("button");
+      button.type = "button";
+      button.className = "filter-tag";
+      button.dataset.remove = tag.key;
+      button.setAttribute("aria-label", "Quitar filtro " + tag.label);
+      var text = document.createElement("span");
+      text.textContent = tag.label;
+      button.appendChild(text);
+      item.appendChild(button);
+      activeList.appendChild(item);
     });
     if (tags.length > 1) {
-      var liAll = document.createElement("li");
-      liAll.innerHTML = '<button type="button" class="link-clear" data-clear-filters>Quitar todos</button>';
-      activeList.appendChild(liAll);
+      var clearItem = document.createElement("li");
+      var clearButton = document.createElement("button");
+      clearButton.type = "button";
+      clearButton.className = "link-clear";
+      clearButton.dataset.clearFilters = "";
+      clearButton.textContent = "Quitar todos";
+      clearItem.appendChild(clearButton);
+      activeList.appendChild(clearItem);
     }
 
-    var filtering = tags.length > 0 || state.estado;
-    resultsBar.hidden = !filtering;
-    resultsCount.textContent = "Mostrando " + shown + " de " + plural(items.length);
-    emptyState.hidden = shown !== 0;
-
+    var hasFilters = tags.length > 0 || state.estado;
+    resultsBar.hidden = !hasFilters;
+    resultsCount.textContent = "Mostrando " + shown + " de " + items.length + " eventos";
+    emptyState.hidden = !loaded || items.length === 0 || shown !== 0;
     countBadge.hidden = tags.length === 0;
     countBadge.textContent = tags.length;
-    openBtn.classList.toggle("is-active", tags.length > 0);
+    openButton.classList.toggle("is-active", tags.length > 0);
 
-    chips.forEach(function (chip) {
-      var on = chip.dataset.estado === state.estado;
-      chip.classList.toggle("is-active", on);
-      chip.setAttribute("aria-pressed", on ? "true" : "false");
+    chipsList.querySelectorAll(".chip").forEach(function (chip) {
+      var active = chip.dataset.estado === state.estado;
+      chip.classList.toggle("is-active", active);
+      chip.setAttribute("aria-pressed", active ? "true" : "false");
     });
   }
 
-  /* ---------- panel (dialog) ---------- */
   function readDraft() {
     return Object.assign({}, state, {
-      ciudad: fCiudad.value,
-      categoria: fCategoria.value,
-      cuando: fCuando.value,
-      desde: fCuando.value === "rango" ? fDesde.value : "",
-      hasta: fCuando.value === "rango" ? fHasta.value : ""
+      ciudad: citySelect.value,
+      cuando: dateSelect.value,
+      desde: dateSelect.value === "rango" ? fromInput.value : "",
+      hasta: dateSelect.value === "rango" ? untilInput.value : ""
     });
   }
 
-  function updateDraftUI() {
-    rangeBox.hidden = fCuando.value !== "rango";
-    fHasta.min = fDesde.value || "";
-    var n = countFor(readDraft());
-    applyBtn.textContent = n === 0 ? "Sin resultados" : "Ver " + plural(n);
-    applyBtn.disabled = n === 0;
+  function updateDraft() {
+    rangeBox.hidden = dateSelect.value !== "rango";
+    untilInput.min = fromInput.value || "";
+    var count = countFor(readDraft());
+    applyButton.textContent = count === 0 ? "Sin resultados" : "Ver " + count + (count === 1 ? " evento" : " eventos");
+    applyButton.disabled = count === 0;
   }
 
   function fillDraft() {
-    fCiudad.value = state.ciudad;
-    fCategoria.value = state.categoria;
-    fCuando.value = state.cuando;
-    fDesde.value = state.desde;
-    fHasta.value = state.hasta;
-    updateDraftUI();
+    citySelect.value = state.ciudad;
+    dateSelect.value = state.cuando;
+    fromInput.value = state.desde;
+    untilInput.value = state.hasta;
+    updateDraft();
   }
 
-  openBtn.hidden = false;                 // el botón solo aparece si hay JavaScript
-  openBtn.addEventListener("click", function () {
+  openButton.hidden = false;
+  openButton.addEventListener("click", function () {
     fillDraft();
     dialog.showModal();
   });
-
-  dialog.addEventListener("change", updateDraftUI);
-  dialog.addEventListener("input", updateDraftUI);
+  dialog.addEventListener("change", updateDraft);
+  dialog.addEventListener("input", updateDraft);
 
   dialog.querySelector("[data-reset-draft]").addEventListener("click", function () {
-    fCiudad.value = fCategoria.value = fCuando.value = fDesde.value = fHasta.value = "";
-    updateDraftUI();
+    citySelect.value = dateSelect.value = fromInput.value = untilInput.value = "";
+    updateDraft();
   });
-
   dialog.addEventListener("close", function () {
     if (dialog.returnValue === "apply") {
       state = readDraft();
       render();
       document.getElementById("eventos").scrollIntoView({ behavior: "smooth" });
     }
-    openBtn.focus();
+    openButton.focus();
+  });
+  dialog.addEventListener("click", function (event) {
+    if (event.target === dialog) dialog.close("cancel");
   });
 
-  // Cerrar al hacer clic fuera del panel
-  dialog.addEventListener("click", function (e) {
-    if (e.target === dialog) dialog.close("cancel");
+  chipsList.addEventListener("click", function (event) {
+    var chip = event.target.closest(".chip");
+    if (!chip) return;
+    state.estado = chip.dataset.estado;
+    render();
   });
 
-  /* ---------- estados rápidos (chips) ---------- */
-  chips.forEach(function (chip) {
-    chip.addEventListener("click", function () {
-      state.estado = chip.dataset.estado;
+  document.addEventListener("click", function (event) {
+    var removeButton = event.target.closest("[data-remove]");
+    if (removeButton) {
+      if (removeButton.dataset.remove === "fecha") {
+        state.cuando = state.desde = state.hasta = "";
+      } else {
+        state[removeButton.dataset.remove] = "";
+      }
       render();
-    });
-  });
-
-  /* ---------- quitar filtros ---------- */
-  document.addEventListener("click", function (e) {
-    var tag = e.target.closest("[data-remove]");
-    if (tag) {
-      var key = tag.dataset.remove;
-      if (key === "fecha") { state.cuando = state.desde = state.hasta = ""; }
-      else { state[key] = ""; }
+      openButton.focus();
+    } else if (event.target.closest("[data-clear-filters]")) {
+      state = { ciudad: "", cuando: "", desde: "", hasta: "", estado: "", q: "" };
       render();
-      openBtn.focus();
-      return;
-    }
-    if (e.target.closest("[data-clear-filters]")) {
-      state = Object.assign({}, EMPTY);
-      render();
-      openBtn.focus();
+      openButton.focus();
     }
   });
 
-  /* ---------- buscador del hero ---------- */
   var heroForm = document.getElementById("hero-search");
   if (heroForm) {
-    heroForm.addEventListener("submit", function (e) {
-      e.preventDefault();
+    heroForm.addEventListener("submit", function (event) {
+      event.preventDefault();
       var date = heroForm.elements.fecha.value;
-      state = Object.assign({}, EMPTY, {
+      state = {
         q: heroForm.elements.q.value.trim(),
         ciudad: heroForm.elements.ciudad.value,
         cuando: date ? "rango" : "",
-        desde: date
-      });
+        desde: date,
+        hasta: "",
+        estado: ""
+      };
       render();
       document.getElementById("eventos").scrollIntoView({ behavior: "smooth" });
     });
   }
 
-  /* ---------- tarjetas de "Eventos por ciudad" ---------- */
   Array.prototype.forEach.call(document.querySelectorAll(".city[data-ciudad]"), function (link) {
-    link.addEventListener("click", function (e) {
-      e.preventDefault();
-      state = Object.assign({}, EMPTY, { ciudad: link.dataset.ciudad });
+    link.addEventListener("click", function (event) {
+      event.preventDefault();
+      state.ciudad = link.dataset.ciudad;
       render();
       document.getElementById("eventos").scrollIntoView({ behavior: "smooth" });
     });
   });
 
-  render();
+  window.addEventListener("eventix:eventos-cargados", function (event) {
+    items = Array.prototype.slice.call(list.querySelectorAll(".event-item"));
+    var cities = unique(items.map(function (item) { return item.dataset.ciudad; }));
+    addOptions(citySelect, cities);
+
+    var months = unique(items.map(function (item) { return item.dataset.fecha.slice(0, 7); }));
+    var rangeOption = dateSelect.querySelector('option[value="rango"]');
+    months.forEach(function (month) {
+      dateSelect.insertBefore(new Option(monthLabel(month), month), rangeOption);
+    });
+
+    var statuses = new Map();
+    event.detail.eventos.forEach(function (item) {
+      if (item.estado) statuses.set(slug(item.estado), item.estado);
+    });
+    statuses.forEach(function (label, value) {
+      var button = document.createElement("button");
+      button.type = "button";
+      button.className = "chip";
+      button.dataset.estado = value;
+      button.setAttribute("aria-pressed", "false");
+      button.textContent = label;
+      chipsList.appendChild(button);
+    });
+
+    loaded = true;
+    render();
+  });
+
+  window.addEventListener("eventix:eventos-error", function () {
+    items = [];
+    loaded = false;
+    emptyState.hidden = true;
+  });
 })();

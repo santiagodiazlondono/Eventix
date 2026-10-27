@@ -9,6 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../css/catalogo.css">
   <link rel="stylesheet" href="../css/styles.css">
+  <script src="../controllers/eventos.js" defer></script>
   <script src="../controllers/catalogo.js" defer></script>
 </head>
 <body class="admin-body">
@@ -63,9 +64,6 @@
     <div class="catalog-toolbar">
       <ul class="chips" aria-label="Filtrar por estado">
         <li><button type="button" class="chip is-active" data-filter="todos" aria-pressed="true">Todos</button></li>
-        <li><button type="button" class="chip" data-filter="boleteria" aria-pressed="false">En boletería</button></li>
-        <li><button type="button" class="chip" data-filter="programado" aria-pressed="false">Programados</button></li>
-        <li><button type="button" class="chip" data-filter="envivo" aria-pressed="false">En vivo</button></li>
       </ul>
 
       <div class="search-box">
@@ -74,9 +72,9 @@
       </div>
     </div>
 
-    <p id="results-count" class="results-count" role="status" aria-live="polite">6 eventos</p>
+    <p id="results-count" class="results-count" role="status" aria-live="polite">Cargando eventos registrados...</p>
 
-    <ul class="event-grid" id="event-grid">
+    <ul class="event-grid" id="event-grid" data-event-list="catalogo" hidden>
 
       <li class="event-card" data-status="boleteria">
         <a class="event-link" href="detalle-evento.html?id=EVT-0142" aria-label="Ver detalle: Noche Sinfónica de Verano">

@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../css/styles.css">
-  <script src="../controllers/carrusel.js" defer></script>
+  <script src="../controllers/eventos.js" defer></script>
   <script src="../controllers/filtros.js" defer></script>
 </head>
 <body>
@@ -93,32 +93,24 @@
           </form>
         </div>
 
-        <!-- Boleta destacada: el elemento protagonista de la página -->
-        <article class="ticket" aria-label="Evento destacado">
+        <aside class="ticket" aria-label="Explorar eventos">
           <div class="ticket-main">
-            <img class="ticket-img" src="../assets/eventos/noche-sinfonica.svg" alt="Ilustración de un violín y notas musicales bajo un cielo estrellado" width="400" height="225">
-            <p class="ticket-code">EVT-0142</p>
-            <h2 class="ticket-title">Noche Sinfónica de Verano</h2>
-            <p class="ticket-org">Orquesta Filarmónica del Valle</p>
-            <dl class="ticket-data">
-              <div><dt>Lugar</dt><dd>Teatro Municipal, Tuluá</dd></div>
-              <div><dt>Fecha</dt><dd><time datetime="2026-11-14T20:00">14 nov 2026, 8:00 p. m.</time></dd></div>
-              <div><dt>Desde</dt><dd class="ticket-price">$85.000</dd></div>
-            </dl>
+            <p class="ticket-code">EVENTIX</p>
+            <h2 class="ticket-title">Encuentra tu próximo evento</h2>
+            <p class="ticket-org">Consulta los eventos publicados en nuestra plataforma.</p>
           </div>
-          <div class="ticket-perforation" aria-hidden="true"></div>
           <div class="ticket-stub">
-            <span class="badge badge-boleteria">En boletería</span>
+            <span class="badge badge-programado">Catálogo actualizado</span>
             <div class="barcode" aria-hidden="true"></div>
-            <a class="btn btn-primary btn-block" href="detalle-evento.html?id=noche-sinfonica">Reservar entradas</a>
+            <a class="btn btn-primary btn-block" href="#eventos">Ver eventos disponibles</a>
           </div>
-        </article>
+        </aside>
       </div>
     </section>
 
 
     <!-- ============ CARRUSEL DE EVENTOS (solo HTML5 + CSS3, con scroll-snap) ============ -->
-    <section class="section carousel-section" id="destacados" aria-labelledby="destacados-title">
+    <section class="section carousel-section" id="destacados" aria-labelledby="destacados-title" hidden>
       <div class="container">
         <div class="section-head">
           <h2 id="destacados-title">En cartelera</h2>
@@ -275,9 +267,6 @@
         <div class="events-toolbar">
           <div class="chips" role="group" aria-label="Filtrar por estado">
             <button type="button" class="chip is-active" data-estado="" aria-pressed="true">Todos</button>
-            <button type="button" class="chip" data-estado="boleteria" aria-pressed="false">En boletería</button>
-            <button type="button" class="chip" data-estado="programado" aria-pressed="false">Programados</button>
-            <button type="button" class="chip" data-estado="envivo" aria-pressed="false">En vivo</button>
           </div>
           <button type="button" class="btn btn-ghost filter-btn" id="open-filters" aria-haspopup="dialog" aria-controls="filter-dialog" hidden>
             <svg aria-hidden="true"><use href="#i-filter"/></svg>
@@ -291,7 +280,8 @@
           <ul class="active-filters" aria-label="Filtros aplicados"></ul>
         </div>
 
-        <ul class="event-grid">
+        <p id="eventos-mensaje" role="status" aria-live="polite">Cargando eventos registrados...</p>
+        <ul class="event-grid" data-event-list="inicio" hidden>
           <li class="event-item" data-ciudad="Cali" data-fecha="2026-11-22" data-categoria="Concierto" data-estado="programado" data-titulo="Festival Ritmos del Pacífico">
             <article class="event-card">
               <div class="event-thumb thumb-music"><img src="../assets/eventos/ritmos-pacifico.svg" alt="Ilustración de una marimba y un tambor cununo frente al mar del Pacífico al atardecer" width="400" height="225" loading="lazy"><span class="event-kind">Concierto</span></div>
@@ -454,11 +444,6 @@
         <div class="filter-field">
           <label for="f-ciudad">Ciudad</label>
           <select id="f-ciudad" name="ciudad"><option value="">Todas las ciudades</option></select>
-        </div>
-
-        <div class="filter-field">
-          <label for="f-categoria">Categoría</label>
-          <select id="f-categoria" name="categoria"><option value="">Todas las categorías</option></select>
         </div>
 
         <div class="filter-field">
