@@ -3,7 +3,7 @@
     --texto-atenuado: #a7adb7;
     --color-acento: #00f0c7;
     --color-boton: #006df5;
-    --borde-entrada: #30445e;
+    --borde-entrada: #242c3b;
 }
 
 * {
@@ -39,71 +39,6 @@ body {
         radial-gradient(ellipse at 50% 45%, rgba(16, 40, 69, 0.5), transparent 68%);
 }
 
-.fondo-eventos {
-    position: absolute;
-    z-index: -1;
-    inset: -16% -12%;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-evenly;
-    gap: 36px;
-    overflow: hidden;
-    transform: rotate(-7deg) scale(1.08);
-    pointer-events: none;
-}
-
-.fila-eventos {
-    overflow: hidden;
-    opacity: 0.48;
-    mask-image: linear-gradient(
-        to bottom,
-        transparent,
-        #000 12%,
-        #000 88%,
-        transparent
-    );
-}
-
-.cinta-eventos {
-    display: flex;
-    width: max-content;
-    animation: desplazamiento-eventos 76s linear infinite;
-    will-change: transform;
-}
-
-.fila-eventos-inversa .cinta-eventos {
-    animation-direction: reverse;
-    animation-duration: 92s;
-}
-
-.grupo-eventos {
-    display: flex;
-    flex: 0 0 auto;
-    gap: 18px;
-    padding-right: 18px;
-}
-
-.cinta-eventos img {
-    display: block;
-    width: clamp(220px, 25vw, 360px);
-    aspect-ratio: 16 / 9;
-    flex: 0 0 auto;
-    object-fit: cover;
-    border: 1px solid rgba(213, 228, 255, 0.18);
-    border-radius: 16px;
-    box-shadow: 0 16px 42px rgba(0, 0, 0, 0.3);
-}
-
-@keyframes desplazamiento-eventos {
-    from {
-        transform: translateX(0);
-    }
-
-    to {
-        transform: translateX(-50%);
-    }
-}
-
 /*
  * El contenedor tiene un ancho máximo para acercar visualmente ambos paneles
  * y mantener el conjunto centrado en pantallas grandes.
@@ -111,8 +46,8 @@ body {
 .contenedor-inicio {
     position: relative;
     z-index: 1;
-    width: min(100%, 1160px);
-    min-height: min(680px, calc(100svh - 64px));
+    width: min(100%, 960px);
+    min-height: 560px;
     display: grid;
     grid-template-columns: 1.08fr 0.92fr;
     border: 1px solid rgba(190, 204, 226, 0.2);
@@ -132,7 +67,7 @@ body {
 .panel-marca {
     display: flex;
     align-items: center;
-    padding: 64px clamp(42px, 6vw, 84px);
+    padding: 48px clamp(32px, 4.5vw, 56px);
     background: linear-gradient(
         115deg,
         rgba(15, 21, 32, 0.36),
@@ -141,6 +76,7 @@ body {
 }
 
 .contenido-marca {
+    width: 100%;
     max-width: 480px;
     margin-left: auto;
 }
@@ -156,7 +92,8 @@ body {
 .titular {
     margin: 0;
     color: var(--texto-principal);
-    font-size: clamp(2.25rem, 4vw, 3.35rem);
+    font-family: "Space Grotesk", Inter, system-ui, sans-serif;
+    font-size: clamp(2.25rem, 3.5vw, 3rem);
     line-height: 1.12;
     font-weight: 700;
     letter-spacing: -0.03em;
@@ -167,10 +104,10 @@ body {
 }
 
 .descripcion {
-    max-width: 420px;
+    max-width: 360px;
     margin: 18px 0 0;
     color: #a8afb9;
-    font-size: 0.98rem;
+    font-size: 0.88rem;
     line-height: 1.55;
 }
 
@@ -190,8 +127,8 @@ body {
 .panel-formulario {
     display: flex;
     align-items: center;
-    padding: 56px clamp(34px, 5vw, 72px);
-    background: rgba(9, 13, 20, 0.78);
+    padding: 40px clamp(28px, 3.8vw, 48px);
+    background: rgba(9, 13, 20, 0.82);
     border-left: 1px solid rgba(154, 164, 179, 0.18);
 }
 
@@ -206,38 +143,33 @@ body {
     gap: 8px;
     margin-bottom: 16px;
     color: #dce2ea;
-    font-size: 0.68rem;
+    font-size: 0.75rem;
     font-weight: 700;
     letter-spacing: 0.03em;
 }
 
 .icono-logotipo {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 18px;
-    height: 18px;
-    border-radius: 4px;
-    background: #2b9fff;
-    color: #fff;
-    font-size: 0.72rem;
-    line-height: 1;
-    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.15);
+    display: block;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    object-fit: cover;
 }
 
 .encabezado-inicio h2 {
     margin: 0;
-    font-size: clamp(2rem, 3.2vw, 2.55rem);
-    line-height: 1;
+    font-family: "Space Grotesk", Inter, system-ui, sans-serif;
+    font-size: 1.875rem;
+    line-height: 1.12;
     font-weight: 700;
     letter-spacing: -0.03em;
 }
 
 .encabezado-inicio p {
-    margin: 10px 0 30px;
+    margin: 10px 0 24px;
     color: var(--texto-atenuado);
-    font-size: 0.88rem;
-    line-height: 1.45;
+    font-size: 0.82rem;
+    line-height: 1.5;
 }
 
 .etiqueta-campo {
@@ -255,10 +187,12 @@ body {
     padding: 0.6rem 0.9rem;
     border: 1px solid var(--borde-entrada);
     border-radius: 8px;
-    background: rgba(19, 26, 37, 0.88);
+    background: #151b26;
     color: #f1f4f8;
+    font-family: Inter, system-ui, sans-serif;
     font-size: 0.88rem;
     box-shadow: none;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease;
 }
 
 .entrada-formulario::placeholder {
@@ -268,14 +202,21 @@ body {
 
 .entrada-formulario:focus {
     outline: none;
-    border-color: #167bf8;
-    background: rgba(19, 26, 37, 0.96);
-    color: #f1f4f8;
-    box-shadow: 0 0 0 0.2rem rgba(0, 109, 245, 0.18);
+    border-color: #3d7eff;
+    box-shadow: 0 0 0 0.2rem rgba(61, 126, 255, 0.18);
+}
+
+.entrada-formulario:-webkit-autofill,
+.entrada-formulario:-webkit-autofill:hover,
+.entrada-formulario:-webkit-autofill:focus {
+    -webkit-text-fill-color: #f1f4f8;
+    -webkit-box-shadow: 0 0 0 1000px #151b26 inset;
+    caret-color: #f1f4f8;
+    transition: background-color 99999s ease-out;
 }
 
 .campo-formulario {
-    margin-bottom: 20px;
+    margin-bottom: 16px;
 }
 
 .boton-inicio {
@@ -284,18 +225,19 @@ body {
     margin-top: 2px;
     border: 0;
     border-radius: 8px;
-    background: var(--color-boton);
+    background: #1c6fef;
     color: #fff;
+    font-family: "Space Grotesk", Inter, system-ui, sans-serif;
     font-size: 0.88rem;
     font-weight: 700;
-    box-shadow: 0 8px 22px rgba(0, 109, 245, 0.2);
+    box-shadow: 0 8px 22px rgba(28, 111, 239, 0.2);
     cursor: pointer;
 }
 
 .boton-inicio:hover,
 .boton-inicio:focus,
 .boton-inicio:active {
-    background: #0b76ff;
+    background: #1557c4;
 }
 
 .enlaces-inicio {
@@ -327,17 +269,17 @@ body {
     }
 
     .contenedor-inicio {
-        width: min(100%, 900px);
-        min-height: min(620px, calc(100svh - 48px));
+        width: min(100%, 960px);
+        min-height: 560px;
         grid-template-columns: 1fr 0.95fr;
     }
 
     .panel-marca {
-        padding: 48px 42px;
+        padding: 40px 32px;
     }
 
     .panel-formulario {
-        padding: 40px 34px;
+        padding: 36px 28px;
     }
 
     .descripcion {
@@ -345,26 +287,23 @@ body {
     }
 }
 
-/* Móviles: los paneles pasan a una sola columna */
-@media (max-width: 768px) {
+/* Tabletas y móviles: los paneles pasan a una sola columna */
+@media (max-width: 900px) {
     .pagina-inicio {
-        align-items: stretch;
-        padding: 0;
+        align-items: flex-start;
+        padding: 24px;
     }
 
     .contenedor-inicio {
         width: 100%;
-        min-height: 100vh;
-        min-height: 100svh;
-        grid-template-columns: 1fr;
-        border: 0;
-        border-radius: 0;
-        box-shadow: none;
+        min-height: 0;
+        grid-template-columns: minmax(0, 1fr);
+        border-radius: 16px;
     }
 
     .panel-marca {
-        min-height: 300px;
-        padding: 42px 28px 36px;
+        min-height: 250px;
+        padding: 32px 28px;
     }
 
     .contenido-marca {
@@ -373,12 +312,12 @@ body {
     }
 
     .titular {
-        font-size: clamp(2.2rem, 11vw, 3rem);
+        font-size: clamp(2.25rem, 6vw, 3rem);
     }
 
     .panel-formulario {
-        min-height: 420px;
-        padding: 42px 28px 50px;
+        min-height: 0;
+        padding: 32px 28px;
         border-top: 1px solid rgba(154, 164, 179, 0.18);
         border-left: 0;
     }
@@ -389,21 +328,25 @@ body {
     }
 }
 
-@media (prefers-reduced-motion: reduce) {
-    .cinta-eventos {
-        animation: none;
+@media (max-width: 768px) {
+    .pagina-inicio {
+        padding: 16px;
     }
 }
 
 /* Pantallas pequeñas */
 @media (max-width: 480px) {
+    .pagina-inicio {
+        padding: 10px;
+    }
+
     .solo-escritorio {
         display: none;
     }
 
     .panel-marca {
-        min-height: auto;
-        padding: 36px 22px 32px;
+        min-height: 220px;
+        padding: 26px 22px;
     }
 
     .texto-superior {
@@ -426,10 +369,16 @@ body {
     }
 
     .panel-formulario {
-        padding: 34px 22px 44px;
+        padding: 28px 22px;
     }
 
     .encabezado-inicio h2 {
-        font-size: 2rem;
+        font-size: 1.875rem;
+    }
+}
+
+@media (max-height: 700px) {
+    .pagina-inicio {
+        align-items: flex-start;
     }
 }

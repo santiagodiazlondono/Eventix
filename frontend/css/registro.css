@@ -50,9 +50,20 @@ img {
 }
 
 .pantalla-registro {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
     display: flex;
     flex-direction: column;
     min-height: 100vh;
+    background:
+        linear-gradient(115deg, rgba(7, 10, 17, 0.3), rgba(7, 10, 17, 0.7)),
+        radial-gradient(ellipse at 50% 45%, rgba(16, 40, 69, 0.5), transparent 68%);
+}
+
+.pantalla-registro > section {
+    position: relative;
+    z-index: 1;
 }
 
 .panel-presentacion {
@@ -60,7 +71,13 @@ img {
     flex-direction: column;
     justify-content: center;
     padding: 3rem 1.5rem;
-    background-color: var(--color-panel-izquierdo);
+    background: linear-gradient(
+        115deg,
+        rgba(17, 22, 31, 0.72),
+        rgba(17, 22, 31, 0.82)
+    );
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
 }
 
 .rotulo-sistema {
@@ -103,7 +120,9 @@ img {
     align-items: center;
     justify-content: center;
     padding: 3rem 1.5rem;
-    background-color: var(--color-panel-derecho);
+    background-color: rgba(13, 17, 25, 0.86);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
 }
 
 .caja-acceso {
@@ -298,5 +317,271 @@ img {
     *::before,
     *::after {
         transition: none !important;
+    }
+}
+
+body {
+    padding: 0;
+    background-color: #080b12;
+}
+
+.pantalla-registro {
+    position: relative;
+    isolation: isolate;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 100vh;
+    min-height: 100svh;
+    padding: 32px;
+    overflow: hidden;
+    background:
+        linear-gradient(115deg, rgba(7, 10, 17, 0.28), rgba(7, 10, 17, 0.68)),
+        radial-gradient(ellipse at 50% 45%, rgba(16, 40, 69, 0.5), transparent 68%);
+}
+
+.contenedor-registro {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: 1.08fr 0.92fr;
+    width: min(100%, 960px);
+    min-height: 560px;
+    height: auto;
+    border: 1px solid rgba(190, 204, 226, 0.2);
+    border-radius: 24px;
+    background: rgba(12, 16, 23, 0.4);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+    overflow: hidden;
+    box-shadow: 0 28px 90px rgba(0, 0, 0, 0.42);
+}
+
+.contenedor-registro > section {
+    position: relative;
+    z-index: 1;
+    min-width: 0;
+}
+
+.pantalla-registro .panel-presentacion {
+    display: flex;
+    align-items: center;
+    padding: 48px clamp(32px, 4.5vw, 56px);
+    border-right: 0;
+    background: linear-gradient(
+        115deg,
+        rgba(15, 21, 32, 0.36),
+        rgba(15, 21, 32, 0.58)
+    );
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+}
+
+.contenido-marca {
+    width: 100%;
+    max-width: 420px;
+    margin-left: auto;
+}
+
+.pantalla-registro .rotulo-sistema {
+    margin: 0 0 18px;
+    font-size: 0.72rem;
+    letter-spacing: 0.02em;
+}
+
+.pantalla-registro .titulo-principal {
+    max-width: 420px;
+    margin: 0;
+    font-size: clamp(2.25rem, 3.5vw, 3rem);
+    line-height: 1.12;
+    letter-spacing: -0.03em;
+}
+
+.pantalla-registro .descripcion-sistema {
+    max-width: 360px;
+    margin: 18px 0 0;
+    font-size: 0.88rem;
+    line-height: 1.55;
+}
+
+.pantalla-registro .codigo-barras {
+    width: 120px;
+    height: 2px;
+    margin-top: 24px;
+    border-radius: 999px;
+    background: linear-gradient(
+        90deg,
+        rgba(0, 240, 199, 0.72),
+        rgba(0, 240, 199, 0.12) 62%,
+        transparent
+    );
+}
+
+.pantalla-registro .panel-acceso {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px clamp(28px, 3.8vw, 48px);
+    border-left: 1px solid rgba(154, 164, 179, 0.18);
+    background: rgba(9, 13, 20, 0.82);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+}
+
+.pantalla-registro .caja-acceso {
+    width: 100%;
+    max-width: 400px;
+}
+
+.pantalla-registro .marca {
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.pantalla-registro .marca-logo img {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+}
+
+.pantalla-registro .marca-nombre {
+    font-size: 0.75rem;
+}
+
+.pantalla-registro .titulo-formulario {
+    margin-bottom: 16px;
+    font-size: 1.875rem;
+    line-height: 1.12;
+    letter-spacing: -0.03em;
+}
+
+.pantalla-registro .formulario-registro {
+    column-gap: 1.25rem;
+    row-gap: 14px;
+}
+
+.pantalla-registro .campo {
+    gap: 0;
+    margin: 0;
+}
+
+.pantalla-registro .etiqueta-campo {
+    margin-bottom: 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.pantalla-registro .entrada-texto {
+    min-height: 46px;
+    padding: 0.6rem 0.9rem;
+    border-radius: 8px;
+    font-size: 0.88rem;
+}
+
+.pantalla-registro .boton-principal {
+    min-height: 46px;
+    padding: 0.7rem 1rem;
+    margin-top: 2px;
+    border-radius: 8px;
+    font-size: 0.88rem;
+}
+
+.pantalla-registro .enlaces-apoyo {
+    margin-top: 16px;
+}
+
+.pantalla-registro .linea-enlace {
+    margin: 0;
+    font-size: 0.76rem;
+    line-height: 1.9;
+}
+
+@media (max-width: 768px) {
+    .pantalla-registro {
+        align-items: flex-start;
+        min-height: 100vh;
+        min-height: 100svh;
+        padding: 16px;
+    }
+
+    .contenedor-registro {
+        grid-template-columns: minmax(0, 1fr);
+        width: 100%;
+        min-height: 0;
+        border-radius: 16px;
+    }
+
+    .pantalla-registro .panel-presentacion {
+        min-height: 250px;
+        padding: 32px 28px;
+    }
+
+    .pantalla-registro .panel-acceso {
+        min-height: 0;
+        padding: 32px 28px;
+        border-top: 1px solid rgba(154, 164, 179, 0.18);
+        border-left: 0;
+    }
+
+    .contenido-marca {
+        max-width: 520px;
+        margin: 0 auto;
+    }
+}
+
+@media (min-width: 769px) and (max-width: 900px) {
+    .pantalla-registro {
+        align-items: flex-start;
+        padding: 24px;
+    }
+
+    .contenedor-registro {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .pantalla-registro .panel-presentacion {
+        min-height: 250px;
+        padding: 32px;
+    }
+
+    .pantalla-registro .panel-acceso {
+        padding: 32px;
+        border-top: 1px solid rgba(154, 164, 179, 0.18);
+        border-left: 0;
+    }
+
+    .contenido-marca {
+        max-width: 520px;
+        margin: 0 auto;
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        padding: 0;
+    }
+
+    .pantalla-registro {
+        padding: 10px;
+    }
+
+    .pantalla-registro .panel-presentacion {
+        min-height: 220px;
+        padding: 26px 22px;
+    }
+
+    .pantalla-registro .panel-acceso {
+        padding: 28px 22px;
+    }
+
+    .pantalla-registro .titulo-principal {
+        font-size: 2.15rem;
+    }
+}
+
+@media (max-height: 700px) {
+    .pantalla-registro {
+        align-items: flex-start;
     }
 }

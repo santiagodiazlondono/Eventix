@@ -1,0 +1,75 @@
+.fondo-eventos {
+    position: fixed;
+    z-index: 0;
+    inset: -16% -12%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    gap: 36px;
+    overflow: hidden;
+    transform: rotate(-7deg) scale(1.08);
+    pointer-events: none;
+}
+
+.pagina-inicio .fondo-eventos,
+.pantalla-registro .fondo-eventos {
+    position: absolute;
+}
+
+.fila-eventos {
+    overflow: hidden;
+    opacity: 0.48;
+    mask-image: linear-gradient(
+        to bottom,
+        transparent,
+        #000 12%,
+        #000 88%,
+        transparent
+    );
+}
+
+.cinta-eventos {
+    display: flex;
+    width: max-content;
+    animation: desplazamiento-eventos 76s linear infinite;
+    will-change: transform;
+}
+
+.fila-eventos-inversa .cinta-eventos {
+    animation-direction: reverse;
+    animation-duration: 92s;
+}
+
+.grupo-eventos {
+    display: flex;
+    flex: 0 0 auto;
+    gap: 18px;
+    padding-right: 18px;
+}
+
+.cinta-eventos img {
+    display: block;
+    width: clamp(220px, 25vw, 360px);
+    aspect-ratio: 16 / 9;
+    flex: 0 0 auto;
+    object-fit: cover;
+    border: 1px solid rgba(213, 228, 255, 0.18);
+    border-radius: 16px;
+    box-shadow: 0 16px 42px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes desplazamiento-eventos {
+    from {
+        transform: translateX(0);
+    }
+
+    to {
+        transform: translateX(-50%);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .cinta-eventos {
+        animation: none;
+    }
+}
