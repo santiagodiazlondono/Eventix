@@ -62,50 +62,11 @@
 
   <div class="event-reservation-container">
     
-    <!-- Detalle del Evento con Carrusel de Imágenes Ampliado -->
     <div class="event-details-col">
       
-      <!-- CARRUSEL DE IMÁGENES DEL EVENTO (Tamaño grande) -->
-      <div class="carousel" role="region" aria-roledescription="carrusel" aria-label="Galería del evento" style="margin-bottom: 2rem;" hidden>
-        <ul class="carousel-track" style="display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none;">
-          <li class="slide" id="slide-1" aria-roledescription="diapositiva" aria-label="1 de 3: Imagen principal del evento" style="flex: 0 0 100%; scroll-snap-align: start;">
-            <article class="slide-card" style="background: transparent; border: none; box-shadow: none; padding: 0;">
-              <div class="slide-media" style="border-radius: 14px; overflow: hidden; position: relative; aspect-ratio: 16/9; background: #05070a;">
-                <img id="event-img" src="../assets/eventos/noche-sinfonica.svg" alt="Imagen principal del evento" class="event-hero-img" width="1200" height="675" style="width: 100%; height: 100%; object-fit: cover; display: block;">
-                <a class="slide-arrow slide-arrow--prev" href="#slide-3" aria-label="Imagen anterior"><svg aria-hidden="true"><use href="#i-prev"/></svg></a>
-                <a class="slide-arrow slide-arrow--next" href="#slide-2" aria-label="Imagen siguiente"><svg aria-hidden="true"><use href="#i-next"/></svg></a>
-              </div>
-            </article>
-          </li>
-          <li class="slide" id="slide-2" aria-roledescription="diapositiva" aria-label="2 de 3: Vista del recinto" style="flex: 0 0 100%; scroll-snap-align: start;">
-            <article class="slide-card" style="background: transparent; border: none; box-shadow: none; padding: 0;">
-              <div class="slide-media" style="border-radius: 14px; overflow: hidden; position: relative; aspect-ratio: 16/9; background: #05070a;">
-                <img src="../assets/eventos/jardin-espejos.svg" alt="Vista del escenario y recinto" class="event-hero-img" width="1200" height="675" style="width: 100%; height: 100%; object-fit: cover; display: block;" loading="lazy">
-                <a class="slide-arrow slide-arrow--prev" href="#slide-1" aria-label="Imagen anterior"><svg aria-hidden="true"><use href="#i-prev"/></svg></a>
-                <a class="slide-arrow slide-arrow--next" href="#slide-3" aria-label="Imagen siguiente"><svg aria-hidden="true"><use href="#i-next"/></svg></a>
-              </div>
-            </article>
-          </li>
-          <li class="slide" id="slide-3" aria-roledescription="diapositiva" aria-label="3 de 3: Distribución de localidades" style="flex: 0 0 100%; scroll-snap-align: start;">
-            <article class="slide-card" style="background: transparent; border: none; box-shadow: none; padding: 0;">
-              <div class="slide-media" style="border-radius: 14px; overflow: hidden; position: relative; aspect-ratio: 16/9; background: #05070a;">
-                <img src="../assets/eventos/stand-up.svg" alt="Distribución de localidades y aforo" class="event-hero-img" width="1200" height="675" style="width: 100%; height: 100%; object-fit: cover; display: block;" loading="lazy">
-                <a class="slide-arrow slide-arrow--prev" href="#slide-2" aria-label="Imagen anterior"><svg aria-hidden="true"><use href="#i-prev"/></svg></a>
-                <a class="slide-arrow slide-arrow--next" href="#slide-1" aria-label="Imagen siguiente"><svg aria-hidden="true"><use href="#i-next"/></svg></a>
-              </div>
-            </article>
-          </li>
-        </ul>
-        <div class="carousel-controls" style="margin-top: 0.75rem;">
-          <div class="carousel-progress" aria-hidden="true"><span></span></div>
-          <p class="carousel-status" style="font-size: 0.78rem; color: var(--text-muted);">Desliza o usa las flechas para ver más fotos del evento</p>
-        </div>
-        <ol class="carousel-dots" aria-label="Elegir imagen de galería" style="margin-top: 0.6rem; display: flex; justify-content: center; gap: 0.5rem; list-style: none; padding: 0;">
-          <li><a href="#slide-1" aria-label="Ir a imagen 1" style="display: block; width: 9px; height: 9px; border-radius: 50%; background: rgba(255,255,255,0.3);"></a></li>
-          <li><a href="#slide-2" aria-label="Ir a imagen 2" style="display: block; width: 9px; height: 9px; border-radius: 50%; background: rgba(255,255,255,0.3);"></a></li>
-          <li><a href="#slide-3" aria-label="Ir a imagen 3" style="display: block; width: 9px; height: 9px; border-radius: 50%; background: rgba(255,255,255,0.3);"></a></li>
-        </ol>
-      </div>
+      <figure id="event-image-container" class="event-banner" hidden>
+        <img id="event-img" alt="" class="event-hero-img" width="1200" height="675">
+      </figure>
 
       <h1 id="event-title" class="event-main-title">Cargando evento...</h1>
       
@@ -134,6 +95,18 @@
           <span class="info-label">CAPACIDAD</span>
           <span id="event-capacidad" class="info-value">Cargando...</span>
         </div>
+        <div class="info-item">
+          <span class="info-label">GENERAL</span>
+          <span id="localidad-general" class="info-value">Cargando...</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">VIP</span>
+          <span id="localidad-vip" class="info-value">Cargando...</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">PREFERENCIAL</span>
+          <span id="localidad-preferencial" class="info-value">Cargando...</span>
+        </div>
       </div>
 
       <div class="event-description">
@@ -151,11 +124,21 @@
         </div>
 
         <div class="zones-grid">
-          <div class="zone-card active" data-zone="preferencial" style="cursor: pointer;">
+          <button class="zone-card active" type="button" data-zone="General" aria-pressed="true">
             <span class="zone-name">General</span>
-            <span id="event-price" class="zone-price">Cargando...</span>
-            <span id="event-stock" class="zone-stock">Aforo por consultar</span>
-          </div>
+            <span id="price-general" class="zone-price">Cargando...</span>
+            <span id="stock-general" class="zone-stock">Aforo por consultar</span>
+          </button>
+          <button class="zone-card" type="button" data-zone="VIP" aria-pressed="false">
+            <span class="zone-name">VIP</span>
+            <span id="price-vip" class="zone-price">Cargando...</span>
+            <span id="stock-vip" class="zone-stock">Aforo por consultar</span>
+          </button>
+          <button class="zone-card" type="button" data-zone="Preferencial" aria-pressed="false">
+            <span class="zone-name">Preferencial</span>
+            <span id="price-preferencial" class="zone-price">Cargando...</span>
+            <span id="stock-preferencial" class="zone-stock">Aforo por consultar</span>
+          </button>
         </div>
 
         <!-- Selector de Cantidad -->
@@ -171,7 +154,7 @@
         <!-- Desglose de Precios Dinámico -->
         <div class="price-summary">
           <div class="summary-line">
-            <span>Precio base</span>
+            <span id="selected-zone-label">Precio General</span>
             <span id="base-price-val">Cargando...</span>
           </div>
           <div class="summary-line">

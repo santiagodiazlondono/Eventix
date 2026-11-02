@@ -240,6 +240,13 @@ body {
     background: #1557c4;
 }
 
+#login-message {
+    margin-top: 12px;
+    color: #fb7185;
+    font-size: 0.82rem;
+    line-height: 1.5;
+}
+
 .enlaces-inicio {
     margin-top: 18px;
     text-align: center;

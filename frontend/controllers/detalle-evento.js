@@ -3,13 +3,16 @@ document.addEventListener("DOMContentLoaded", async function () {
   var quantity = 2;
   var eventId = new URLSearchParams(window.location.search).get("id");
   var confirmButton = document.querySelector(".btn-block");
-  var zone = document.querySelector(".zone-card");
+  var zoneCards = document.querySelectorAll(".zone-card");
   var quantityNumber = document.querySelector(".qty-number");
   var quantityButtons = document.querySelectorAll(".qty-btn");
   var minusButton = quantityButtons[0];
   var plusButton = quantityButtons[1];
   var price = 0;
   var eventCode = "";
+  var currentEvent = null;
+  var selectedLocality = "General";
+  var availableForLocality = 0;
 
   function setText(id, value) {
     var element = document.getElementById(id);
@@ -40,7 +43,44 @@ document.addEventListener("DOMContentLoaded", async function () {
     setText("service-val", formatCurrency(serviceTotal));
     setText("grand-total-val", formatCurrency(subtotal + serviceTotal));
     minusButton.disabled = quantity <= 1;
-    plusButton.disabled = quantity >= 10;
+    plusButton.disabled = quantity >= Math.min(10, availableForLocality);
+  }
+
+  function selectLocality(locality) {
+    var config = {
+      General: {
+        price: Number(currentEvent.precio_base),
+        capacity: Number(currentEvent.disponible_general !== undefined
+          ? currentEvent.disponible_general
+          : currentEvent.capacidad_general)
+      },
+      VIP: {
+        price: Number(currentEvent.precio_vip),
+        capacity: Number(currentEvent.disponible_vip !== undefined
+          ? currentEvent.disponible_vip
+          : currentEvent.capacidad_vip)
+      },
+      Preferencial: {
+        price: Number(currentEvent.precio_preferencial),
+        capacity: Number(currentEvent.disponible_preferencial !== undefined
+          ? currentEvent.disponible_preferencial
+          : currentEvent.capacidad_preferencial)
+      }
+    }[locality];
+
+    selectedLocality = locality;
+    price = config.price;
+    availableForLocality = config.capacity;
+    quantity = Math.min(quantity, Math.max(availableForLocality, 1));
+    zoneCards.forEach(function (card) {
+      var active = card.dataset.zone === locality;
+      card.classList.toggle("active", active);
+      card.setAttribute("aria-pressed", String(active));
+    });
+    document.getElementById("selected-zone-label").textContent =
+      "Precio " + locality;
+    confirmButton.disabled = availableForLocality < 1;
+    updateSummary();
   }
 
   if (!eventId) {
@@ -53,8 +93,8 @@ document.addEventListener("DOMContentLoaded", async function () {
   try {
     var result = await window.Eventix.get("/eventos/" + encodeURIComponent(eventId));
     var event = result.evento;
+    currentEvent = event;
     eventCode = event.codigo;
-    price = Number(event.precio_base);
 
     document.title = event.nombre + " · Eventix";
     setText("event-title", event.nombre);
@@ -65,8 +105,69 @@ document.addEventListener("DOMContentLoaded", async function () {
     setText("event-fin", formatDate(event.fecha_hora_fin_estimada));
     setText("event-capacidad", Number(event.capacidad_total).toLocaleString("es-CO") + " espectadores");
     setText("event-desc", event.descripcion || "Este evento no tiene descripción.");
-    setText("event-price", formatCurrency(price));
-    setText("event-stock", "Aforo total: " + Number(event.capacidad_total).toLocaleString("es-CO"));
+    var eventImage = document.getElementById("event-img");
+    if (event.url_imagen) {
+      eventImage.src = event.url_imagen;
+      eventImage.alt = "Imagen de " + event.nombre;
+      document.getElementById("event-image-container").hidden = false;
+    }
+
+    [
+      {
+        name: "General",
+        price: event.precio_base,
+        capacity: event.disponible_general !== undefined
+          ? event.disponible_general
+          : event.capacidad_general
+      },
+      {
+        name: "VIP",
+        price: event.precio_vip,
+        capacity: event.disponible_vip !== undefined
+          ? event.disponible_vip
+          : event.capacidad_vip
+      },
+      {
+        name: "Preferencial",
+        price: event.precio_preferencial,
+        capacity: event.disponible_preferencial !== undefined
+          ? event.disponible_preferencial
+          : event.capacidad_preferencial
+      }
+    ].forEach(function (locality) {
+      var key = locality.name.toLowerCase();
+      var capacity = Number(locality.capacity);
+      setText(
+        "price-" + key,
+        locality.price === null || locality.price === undefined
+          ? "Precio no configurado"
+          : formatCurrency(locality.price)
+      );
+      setText(
+        "stock-" + key,
+        capacity > 0
+          ? capacity.toLocaleString("es-CO") + " disponibles"
+          : "Agotada"
+      );
+      var card = document.querySelector('[data-zone="' + locality.name + '"]');
+      card.disabled = capacity < 1;
+      if (card.disabled) card.setAttribute("aria-label", locality.name + ", agotada");
+    });
+    setText(
+      "localidad-general",
+      Number(event.capacidad_general).toLocaleString("es-CO") +
+        " entradas · " + formatCurrency(event.precio_base)
+    );
+    setText(
+      "localidad-vip",
+      Number(event.capacidad_vip).toLocaleString("es-CO") +
+        " entradas · " + (event.precio_vip ? formatCurrency(event.precio_vip) : "Precio no configurado")
+    );
+    setText(
+      "localidad-preferencial",
+      Number(event.capacidad_preferencial).toLocaleString("es-CO") +
+        " entradas · " + (event.precio_preferencial ? formatCurrency(event.precio_preferencial) : "Precio no configurado")
+    );
 
     var badge = document.getElementById("event-badge");
     badge.textContent = event.estado || "Estado por confirmar";
@@ -78,7 +179,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     if (normalizedStatus.includes("programado")) badge.classList.add("badge-programado");
     if (normalizedStatus.includes("vivo")) badge.classList.add("badge-envivo");
 
-    updateSummary();
+    selectLocality("General");
   } catch (error) {
     console.error("No se pudo cargar el detalle del evento:", error);
     setText("event-title", "No se pudo cargar el evento");
@@ -101,6 +202,12 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
   });
 
+  zoneCards.forEach(function (card) {
+    card.addEventListener("click", function () {
+      selectLocality(card.dataset.zone);
+    });
+  });
+
   confirmButton.addEventListener("click", async function () {
     confirmButton.disabled = true;
     confirmButton.textContent = "Procesando reserva...";
@@ -110,10 +217,14 @@ document.addEventListener("DOMContentLoaded", async function () {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           codigo_evento: eventCode,
-          numero_entradas: quantity
+          numero_entradas: quantity,
+          localidad: selectedLocality
         })
       });
-      window.alert("Reserva creada. Número: " + result.reserva.id_reserva);
+      window.alert(
+        "Reserva creada para " + result.reserva.localidad +
+          ". Número: " + result.reserva.id_reserva
+      );
     } catch (error) {
       if (error.message.includes("iniciar sesión")) {
         window.alert("Para reservar, primero inicia sesión con una cuenta de cliente.");

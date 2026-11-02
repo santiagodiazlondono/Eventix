@@ -83,6 +83,13 @@
     card.className = "event-card";
     var thumb = document.createElement("div");
     thumb.className = "event-thumb";
+    if (event.url_imagen) {
+      var image = document.createElement("img");
+      image.src = event.url_imagen;
+      image.alt = "";
+      image.loading = "lazy";
+      thumb.appendChild(image);
+    }
     var code = document.createElement("span");
     code.className = "event-kind";
     code.textContent = event.codigo;
@@ -128,6 +135,15 @@
 
     var thumb = document.createElement("div");
     thumb.className = "event-thumb";
+    if (event.url_imagen) {
+      var image = document.createElement("img");
+      image.src = event.url_imagen;
+      image.alt = "";
+      image.width = 640;
+      image.height = 360;
+      image.loading = "lazy";
+      thumb.appendChild(image);
+    }
     var code = document.createElement("span");
     code.className = "event-kind";
     code.textContent = event.codigo;
@@ -179,7 +195,9 @@
     }, options || {}));
     var result = await response.json();
     if (!response.ok) {
-      throw new Error(result.error || "No fue posible consultar el servidor.");
+      var error = new Error(result.error || "No fue posible consultar el servidor.");
+      error.status = response.status;
+      throw error;
     }
     return result;
   }

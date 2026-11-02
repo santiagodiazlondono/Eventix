@@ -10,10 +10,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../css/styles.css">
   <link rel="stylesheet" href="../css/agente-registro.css">
-    <link rel="stylesheet" href="../css/agente-mis-eventos.css">
-
-
-
+  <script src="../controllers/eventos.js" defer></script>
+  <script src="../controllers/agente-eventos.js" defer></script>
 </head>
 <body class="admin-body">
 
@@ -77,114 +75,112 @@
           <p>Completa la información para publicar el evento en el catálogo.</p>
         </div>
 
-        <form class="agent-register-form">
+        <form class="agent-register-form" id="formulario-evento">
           
           <!-- Nombre del evento -->
           <div class="agent-field">
-            <label>Nombre del evento</label>
-            <input type="text" placeholder="Ej. Noche Sinfónica de Verano">
+            <label for="nombre-evento">Nombre del evento</label>
+            <input id="nombre-evento" name="nombre_evento" type="text" maxlength="150" placeholder="Ej. Noche Sinfónica de Verano" required>
           </div>
 
           <!-- Código del evento -->
           <div class="agent-field">
-            <label>Código del evento</label>
-            <input type="text" value="Autogenerado: EVT-0163" readonly class="font-mono text-muted">
+            <label for="codigo-evento">Código único del evento</label>
+            <input id="codigo-evento" name="codigo_evento" type="text" maxlength="50" placeholder="Ej. EVT-0163" class="font-mono" required>
           </div>
 
           <!-- Teatro / recinto -->
           <div class="agent-field">
-            <label>Teatro / recinto</label>
-            <input type="text" placeholder="Teatro Municipal">
+            <label for="teatro-evento">Teatro / recinto</label>
+            <input id="teatro-evento" name="teatro" type="text" maxlength="150" placeholder="Teatro Municipal" required>
           </div>
 
           <!-- Ciudad -->
           <div class="agent-field">
-            <label>Ciudad</label>
-            <select class="agent-select">
-              <option value="Tulua">Tuluá</option>
-              <option value="Cali">Cali</option>
-              <option value="Bogota">Bogotá</option>
+            <label for="ciudad-evento">Ciudad</label>
+            <select id="ciudad-evento" name="id_ciudad" class="agent-select" required>
+              <option value="">Cargando ciudades...</option>
             </select>
-          </div>
-
-          <!-- Capacidad total -->
-          <div class="agent-field">
-            <label>Capacidad total</label>
-            <input type="number" placeholder="450">
           </div>
 
           <!-- Precio base -->
           <div class="agent-field">
-            <label>Precio base</label>
-            <input type="text" placeholder="$85.000">
+            <label for="precio-base">Precio base (localidad General)</label>
+            <input id="precio-base" name="precio_base" type="number" min="0.01" max="99999999.99" step="0.01" placeholder="85000" required>
+          </div>
+
+          <div class="agent-field">
+            <label for="url-imagen">URL de imagen (opcional)</label>
+            <input id="url-imagen" name="url_imagen" type="url" maxlength="255" placeholder="https://ejemplo.com/evento.jpg">
           </div>
 
           <!-- Fecha y hora de inicio -->
           <div class="agent-field">
-            <label>Fecha y hora de inicio</label>
-            <input type="datetime-local">
+            <label for="fecha-inicio">Fecha y hora de inicio</label>
+            <input id="fecha-inicio" name="fecha_hora_inicio" type="datetime-local" required>
           </div>
 
           <!-- Fecha y hora fin -->
           <div class="agent-field">
-            <label>Fecha y hora fin (estimada)</label>
-            <input type="datetime-local">
+            <label for="fecha-fin">Fecha y hora fin (estimada)</label>
+            <input id="fecha-fin" name="fecha_hora_fin_estimada" type="datetime-local" required>
           </div>
 
           <!-- Estado -->
           <div class="agent-field">
-            <label>Estado</label>
-            <select class="agent-select">
-              <option value="boleteria">En boletería</option>
-              <option value="programado">Programado</option>
-              <option value="envivo">En vivo</option>
-              <option value="cancelado">Cancelado</option>
-            </select>
+            <span class="agent-field-label">Estado</span>
+            <p class="agent-form-note">El evento se publicará inicialmente como Programado.</p>
           </div>
 
           <!-- Observaciones -->
           <div class="agent-field">
-            <label>Observaciones</label>
-            <input type="text" placeholder="Ej. Ingreso desde las 7:00 pm">
+            <label for="observaciones-evento">Observaciones</label>
+            <input id="observaciones-evento" name="observaciones" type="text" maxlength="5000" placeholder="Ej. Ingreso desde las 7:00 p. m.">
           </div>
 
           <!-- Descripción -->
           <div class="agent-field agent-field--full">
-            <label>Descripción</label>
-            <textarea rows="3" placeholder="Describe el evento para los asistentes..." class="agent-textarea"></textarea>
+            <label for="descripcion-evento">Descripción</label>
+            <textarea id="descripcion-evento" name="descripcion" rows="3" maxlength="10000" placeholder="Describe el evento para los asistentes..." class="agent-textarea" required></textarea>
           </div>
 
-          <!-- Botón de subir imágenes o videos -->
-          <div class="agent-upload-box agent-field--full">
-            <svg aria-hidden="true"><use href="#i-upload"/></svg>
-            <h3>Archivos multimedia del evento</h3>
-            <p>Sube imágenes o videos para la galería y carrusel principal de la vista de detalle.</p>
-            <label class="btn btn-ghost agent-upload-btn">
-              <span>Seleccionar archivos</span>
-              <input type="file" multiple accept="image/*,video/*" class="sr-only-input">
-            </label>
-          </div>
-
-          <!-- Localidad / Precios -->
+          <!-- Aforo y precios por localidad -->
           <div class="agent-localities-grid agent-field--full">
             <div class="agent-locality-col">
-              <label>Localidad 1</label>
-              <input type="text" value="Preferencial" class="mb-sm">
-              <input type="text" placeholder="$85.000">
+              <h3>General</h3>
+              <p>Usa el precio base indicado arriba.</p>
+              <label for="capacidad-general">Entradas</label>
+              <input id="capacidad-general" name="capacidad_general" type="number" min="1" max="2147483647" step="1" placeholder="200" required>
             </div>
             <div class="agent-locality-col">
-              <label>Localidad 2</label>
-              <input type="text" value="VIP" class="mb-sm">
-              <input type="text" placeholder="$140.000">
+              <h3>VIP</h3>
+              <label for="capacidad-vip">Entradas</label>
+              <input id="capacidad-vip" name="capacidad_vip" type="number" min="1" max="2147483647" step="1" placeholder="50" required>
+              <label for="precio-vip">Precio</label>
+              <input id="precio-vip" name="precio_vip" type="number" min="0.01" max="99999999.99" step="0.01" placeholder="140000" required>
             </div>
+            <div class="agent-locality-col">
+              <h3>Preferencial</h3>
+              <label for="capacidad-preferencial">Entradas</label>
+              <input id="capacidad-preferencial" name="capacidad_preferencial" type="number" min="1" max="2147483647" step="1" placeholder="100" required>
+              <label for="precio-preferencial">Precio</label>
+              <input id="precio-preferencial" name="precio_preferencial" type="number" min="0.01" max="99999999.99" step="0.01" placeholder="110000" required>
+            </div>
+          </div>
+
+          <div class="agent-field agent-field--full agent-capacity-total">
+            <span>Aforo total</span>
+            <output id="capacidad-total-vista">0</output>
+            <small>Es la suma de las entradas General, VIP y Preferencial.</small>
           </div>
 
           <!-- Botones de Acción Final -->
           <div class="agent-modal-actions agent-field--full">
-            <button type="button" class="btn btn-ghost agent-btn-discard">Descartar</button>
-            <button type="submit" class="btn btn-primary">Publicar evento</button>
+            <button type="reset" class="btn btn-ghost agent-btn-discard">Limpiar formulario</button>
+            <button id="publicar-evento" type="submit" class="btn btn-primary">Publicar evento</button>
           </div>
 
+          <p id="estado-formulario-evento" class="agent-form-message agent-field--full" role="status" aria-live="polite" hidden></p>
         </form>
       </section>
 

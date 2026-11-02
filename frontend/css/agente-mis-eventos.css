@@ -37,6 +37,10 @@
   border-bottom: 1px solid rgba(255, 255, 255, 0.04);
 }
 
+.agent-edit-event {
+  white-space: nowrap;
+}
+
 .agent-table tr:last-child td {
   border-bottom: none;
 }
@@ -103,8 +107,8 @@
   padding: 2rem 1rem;
 }
 
-.agent-modal:target {
-  display: block !important;
+.agent-modal.is-open {
+  display: block;
 }
 
 .agent-modal-box {
@@ -131,6 +135,8 @@
   align-items: center;
   justify-content: center;
   text-decoration: none;
+  border: 0;
+  cursor: pointer;
 }
 
 .agent-modal-close svg {
@@ -182,7 +188,8 @@
 
 .agent-modal-form input[type="text"],
 .agent-modal-form input[type="number"],
-.agent-modal-form input[type="datetime-local"] {
+.agent-modal-form input[type="datetime-local"],
+.agent-modal-form input[type="url"] {
   width: 100%;
   padding: 0.75rem 1rem;
   background: rgba(255, 255, 255, 0.03);
@@ -290,6 +297,5 @@
   display: inline-flex;
   align-items: center;
 }
-
 
 
