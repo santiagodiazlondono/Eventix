@@ -271,6 +271,7 @@ const eventSelect = `
          e.precio_vip,
          e.precio_preferencial,
          e.url_imagen,
+         ee.id_estado_evento,
          ci.nombre AS ciudad,
          d.nombre AS departamento,
          p.nombre AS pais,
@@ -400,6 +401,104 @@ app.get('/api/agente/eventos', authenticateAgent, asyncRoute(async (req, res) =>
     [req.user.identificacion]
   );
   res.json({ eventos: result.rows });
+}));
+
+app.get('/api/estados-evento', asyncRoute(async (req, res) => {
+  const result = await pool.query(
+    'SELECT id_estado_evento, nombre FROM estadoevento ORDER BY nombre'
+  );
+  res.json({ estados: result.rows });
+}));
+
+app.patch('/api/agente/eventos/:codigo/estado', authenticateAgent, asyncRoute(async (req, res) => {
+  const code = String(req.params.codigo || '').trim();
+  const stateId = parseInteger(req.body && req.body.id_estado_evento);
+  if (!code || code.length > 50 || !Number.isSafeInteger(stateId) || stateId < 1) {
+    res.status(400).json({ error: 'El código o estado del evento no es válido.' });
+    return;
+  }
+
+  const result = await pool.query(
+    `UPDATE evento e
+     SET id_estado_evento = ee.id_estado_evento
+     FROM estadoevento ee
+     WHERE e.codigo_evento = $1
+       AND e.identificacion_agente = $2
+       AND ee.id_estado_evento = $3
+     RETURNING e.codigo_evento AS codigo, ee.id_estado_evento, ee.nombre AS estado`,
+    [code, req.user.identificacion, stateId]
+  );
+  if (result.rowCount === 0) {
+    const ownedEvent = await pool.query(
+      `SELECT 1 FROM evento
+       WHERE codigo_evento = $1 AND identificacion_agente = $2`,
+      [code, req.user.identificacion]
+    );
+    if (ownedEvent.rowCount === 0) {
+      res.status(404).json({ error: 'No se encontró el evento o no tienes permiso para modificarlo.' });
+      return;
+    }
+    res.status(400).json({ error: 'El estado seleccionado no existe.' });
+    return;
+  }
+
+  res.json({ evento: result.rows[0] });
+}));
+
+app.delete('/api/agente/eventos/:codigo', authenticateAgent, asyncRoute(async (req, res) => {
+  const code = String(req.params.codigo || '').trim();
+  if (!code || code.length > 50) {
+    res.status(400).json({ error: 'El código del evento no es válido.' });
+    return;
+  }
+
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const event = await client.query(
+      `SELECT codigo_evento
+       FROM evento
+       WHERE codigo_evento = $1 AND identificacion_agente = $2
+       FOR UPDATE`,
+      [code, req.user.identificacion]
+    );
+    if (event.rowCount === 0) {
+      await client.query('ROLLBACK');
+      res.status(404).json({ error: 'No se encontró el evento o no tienes permiso para eliminarlo.' });
+      return;
+    }
+
+    const reservations = await client.query(
+      'SELECT 1 FROM reserva WHERE codigo_evento = $1 LIMIT 1',
+      [code]
+    );
+    if (reservations.rowCount > 0) {
+      await client.query('ROLLBACK');
+      res.status(409).json({
+        error: 'No se puede eliminar un evento con reservas. Cambia su estado a Cancelado para conservar el historial.'
+      });
+      return;
+    }
+
+    await client.query(
+      `DELETE FROM evento
+       WHERE codigo_evento = $1 AND identificacion_agente = $2`,
+      [code, req.user.identificacion]
+    );
+    await client.query('COMMIT');
+    res.status(204).end();
+  } catch (error) {
+    await client.query('ROLLBACK');
+    if (error.code === '23503') {
+      res.status(409).json({
+        error: 'No se puede eliminar el evento porque existen registros asociados.'
+      });
+      return;
+    }
+    throw error;
+  } finally {
+    client.release();
+  }
 }));
 
 app.put('/api/agente/eventos/:codigo', authenticateAgent, asyncRoute(async (req, res) => {

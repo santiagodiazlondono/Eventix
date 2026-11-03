@@ -193,7 +193,7 @@
       credentials: "include",
       headers: { Accept: "application/json" }
     }, options || {}));
-    var result = await response.json();
+    var result = response.status === 204 ? {} : await response.json();
     if (!response.ok) {
       var error = new Error(result.error || "No fue posible consultar el servidor.");
       error.status = response.status;

@@ -70,6 +70,9 @@ Para comprobar la sintaxis de los dos archivos de servidor, ejecuta `npm.cmd run
 | `GET` | `/api/eventos/:codigo` | Público | Detalle de un evento. |
 | `GET` | `/api/agente/eventos` | Agente o modo local | Eventos publicados por el agente autenticado. |
 | `PUT` | `/api/agente/eventos/:codigo` | Agente o modo local | Actualiza los datos y la ubicación de un evento propio. |
+| `PATCH` | `/api/agente/eventos/:codigo/estado` | Agente o modo local | Cambia el estado de un evento propio. |
+| `DELETE` | `/api/agente/eventos/:codigo` | Agente o modo local | Elimina un evento propio si aún no tiene reservas. |
+| `GET` | `/api/estados-evento` | Público | Estados disponibles para eventos. |
 | `POST` | `/api/eventos` | Agente o modo local | Publica un evento en estado `Programado`. |
 | `POST` | `/api/auth/registro` | Público | Crea una cuenta de cliente. |
 | `POST` | `/api/auth/login` | Público | Inicia sesión con correo y contraseña. |

@@ -12,6 +12,7 @@
   var departmentSelect = document.getElementById("editar-departamento");
   var editCitySelect = document.getElementById("editar-ciudad");
   var agentEvents = [];
+  var eventStates = [];
 
   function updateCapacityTotal() {
     if (!form) return 0;
@@ -111,10 +112,18 @@
       });
 
       var statusCell = document.createElement("td");
-      var badge = document.createElement("span");
-      badge.className = "badge " + statusClass(event.estado);
-      badge.textContent = event.estado || "Sin estado";
-      statusCell.appendChild(badge);
+      var stateSelect = document.createElement("select");
+      stateSelect.className = "agent-select agent-status-select";
+      stateSelect.setAttribute("aria-label", "Estado de " + event.nombre);
+      eventStates.forEach(function (state) {
+        stateSelect.add(new Option(state.nombre, state.id_estado_evento));
+      });
+      stateSelect.value = String(event.id_estado_evento);
+      statusCell.appendChild(stateSelect);
+      var currentBadge = document.createElement("span");
+      currentBadge.className = "badge " + statusClass(event.estado);
+      currentBadge.textContent = event.estado || "Sin estado";
+      statusCell.appendChild(currentBadge);
       row.appendChild(statusCell);
 
       var actionsCell = document.createElement("td");
@@ -127,6 +136,53 @@
         openEditor(event.codigo);
       });
       actionsCell.appendChild(editButton);
+
+      var saveStateButton = document.createElement("button");
+      saveStateButton.type = "button";
+      saveStateButton.className = "btn btn-ghost agent-save-state";
+      saveStateButton.textContent = "Guardar estado";
+      saveStateButton.addEventListener("click", async function () {
+        saveStateButton.disabled = true;
+        try {
+          await window.Eventix.get(
+            "/agente/eventos/" + encodeURIComponent(event.codigo) + "/estado",
+            {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ id_estado_evento: stateSelect.value })
+            }
+          );
+          await refreshAgentEvents();
+        } catch (error) {
+          window.alert(error.message);
+        } finally {
+          saveStateButton.disabled = false;
+        }
+      });
+      actionsCell.appendChild(saveStateButton);
+
+      var deleteButton = document.createElement("button");
+      deleteButton.type = "button";
+      deleteButton.className = "btn btn-ghost agent-delete-event";
+      deleteButton.textContent = "Eliminar";
+      deleteButton.setAttribute("aria-label", "Eliminar " + event.nombre);
+      deleteButton.addEventListener("click", async function () {
+        if (!window.confirm(
+          '¿Eliminar definitivamente el evento "' + event.nombre + '"? Esta acción no se puede deshacer.'
+        )) return;
+        deleteButton.disabled = true;
+        try {
+          await window.Eventix.get(
+            "/agente/eventos/" + encodeURIComponent(event.codigo),
+            { method: "DELETE" }
+          );
+          await refreshAgentEvents();
+        } catch (error) {
+          window.alert(error.message);
+          deleteButton.disabled = false;
+        }
+      });
+      actionsCell.appendChild(deleteButton);
       row.appendChild(actionsCell);
       tableBody.appendChild(row);
     });
@@ -138,6 +194,12 @@
         : "Aún no has publicado eventos.";
       message.hidden = events.length > 0;
     }
+  }
+
+  async function refreshAgentEvents() {
+    var result = await window.Eventix.get("/agente/eventos");
+    agentEvents = result.eventos || [];
+    renderAgentEvents(agentEvents);
   }
 
   function setEditMessage(message, type) {
@@ -277,10 +339,10 @@
     })
     .then(function () {
       if (eventsTable) {
-        return window.Eventix.get("/agente/eventos")
+        return window.Eventix.get("/estados-evento")
           .then(function (result) {
-            agentEvents = result.eventos || [];
-            renderAgentEvents(agentEvents);
+            eventStates = result.estados || [];
+            return refreshAgentEvents();
           });
       }
     })
@@ -339,9 +401,7 @@
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(data)
         });
-        var result = await window.Eventix.get("/agente/eventos");
-        agentEvents = result.eventos || [];
-        renderAgentEvents(agentEvents);
+        await refreshAgentEvents();
         closeEditor();
       } catch (error) {
         setEditMessage(error.message, "error");
