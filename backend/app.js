@@ -13,10 +13,15 @@ const app = express();
 const port = Number(process.env.PORT) || 5000;
 const serviceFeePerTicket = 4000;
 const jwtSecret = process.env.JWT_SECRET;
-const localAgentModeEnabled =
-  process.env.NODE_ENV === 'development' &&
-  process.env.ENABLE_LOCAL_AGENT_MODE !== 'false';
-const localAgentIdentification = process.env.LOCAL_AGENT_IDENTIFICACION || '';
+const jwtExpiresIn = process.env.JWT_EXPIRES_IN || '1h';
+const jwtCookieMaxAge = (() => {
+  const match = /^([1-9]\d*)(s|m|h|d)$/.exec(jwtExpiresIn);
+  if (!match) {
+    throw new Error('JWT_EXPIRES_IN debe tener el formato 15m, 1h o 7d.');
+  }
+  const units = { s: 1000, m: 60000, h: 3600000, d: 86400000 };
+  return Number(match[1]) * units[match[2]];
+})();
 const allowedOrigins = new Set(
   (process.env.CORS_ORIGINS || '')
     .split(',')
@@ -30,11 +35,6 @@ if (!process.env.DATABASE_URL) {
 
 if (!jwtSecret || jwtSecret.length < 32) {
   throw new Error('JWT_SECRET debe tener al menos 32 caracteres.');
-}
-
-if (process.env.ENABLE_LOCAL_AGENT_MODE === 'true' &&
-    process.env.NODE_ENV === 'production') {
-  throw new Error('ENABLE_LOCAL_AGENT_MODE no se puede activar en producción.');
 }
 
 const pool = new Pool({
@@ -75,12 +75,14 @@ app.use((req, res, next) => {
 });
 app.use(express.json({ limit: '16kb' }));
 
-const authLimiter = rateLimit({
+const authRateLimitOptions = {
   windowMs: 15 * 60 * 1000,
   limit: 20,
   standardHeaders: 'draft-7',
   legacyHeaders: false
-});
+};
+const registerLimiter = rateLimit(authRateLimitOptions);
+const loginLimiter = rateLimit(authRateLimitOptions);
 
 function createToken(person) {
   return jwt.sign(
@@ -90,7 +92,7 @@ function createToken(person) {
       ver: person.auth_version
     },
     jwtSecret,
-    { expiresIn: '1h' }
+    { expiresIn: jwtExpiresIn }
   );
 }
 
@@ -99,7 +101,7 @@ function setAuthCookie(res, token) {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
-    maxAge: 60 * 60 * 1000,
+    maxAge: jwtCookieMaxAge,
     path: '/api'
   });
 }
@@ -168,56 +170,15 @@ async function authenticate(req, res, next) {
   }
 }
 
-function requireClient(req, res, next) {
-  if (req.user.role !== 'cliente') {
-    res.status(403).json({ error: 'Esta operación está disponible para clientes.' });
-    return;
-  }
-
-  next();
-}
-
-function requireAgent(req, res, next) {
-  if (req.user.role !== 'agente') {
-    res.status(403).json({ error: 'Esta operación está disponible para agentes.' });
-    return;
-  }
-
-  next();
-}
-
-function isLoopbackRequest(req) {
-  const address = req.socket.remoteAddress || '';
-  return address === '::1' ||
-    address === '127.0.0.1' ||
-    address.startsWith('127.') ||
-    address.startsWith('::ffff:127.');
-}
-
-function authenticateAgent(req, res, next) {
-  if (!localAgentModeEnabled || !isLoopbackRequest(req)) {
-    authenticate(req, res, () => requireAgent(req, res, next));
-    return;
-  }
-
-  pool.query(
-    `SELECT identificacion
-     FROM agente
-     WHERE ($1 = '' OR identificacion = $1)
-     ORDER BY identificacion
-     LIMIT 1`,
-    [localAgentIdentification]
-  ).then((result) => {
-    if (result.rowCount === 0) {
-      res.status(503).json({
-        error: 'El modo local necesita al menos un registro en Agente. Configura LOCAL_AGENT_IDENTIFICACION con el identificador de un agente existente.'
-      });
+function authorize(...roles) {
+  return (req, res, next) => {
+    if (!req.user || !roles.includes(req.user.role)) {
+      res.status(403).json({ error: 'No tienes permiso para realizar esta operación.' });
       return;
     }
 
-    req.user = { identificacion: result.rows[0].identificacion, role: 'agente' };
     next();
-  }).catch(next);
+  };
 }
 
 function parseInteger(value) {
@@ -286,10 +247,6 @@ app.get('/api/health', asyncRoute(async (req, res) => {
   await pool.query('SELECT 1');
   res.json({ status: 'ok' });
 }));
-
-app.get('/api/dev/agent-mode', (req, res) => {
-  res.json({ enabled: localAgentModeEnabled && isLoopbackRequest(req) });
-});
 
 app.get('/api/ciudades', asyncRoute(async (req, res) => {
   const result = await pool.query(
@@ -381,10 +338,12 @@ app.get('/api/eventos/:codigo', asyncRoute(async (req, res) => {
   res.json({ evento: result.rows[0] });
 }));
 
-app.get('/api/agente/eventos', authenticateAgent, asyncRoute(async (req, res) => {
+app.get('/api/agente/eventos', authenticate, authorize('agente'), asyncRoute(async (req, res) => {
   const agentEventSelect = eventSelect.replace(
     'e.url_imagen,',
-    'e.url_imagen,\n         COALESCE(reservas.reservadas, 0) AS entradas_reservadas,'
+    `e.url_imagen,
+         e.identificacion_agente = $1 AS puede_editar,
+         COALESCE(reservas.reservadas, 0) AS entradas_reservadas,`
   );
   const result = await pool.query(
     `${agentEventSelect}
@@ -395,14 +354,13 @@ app.get('/api/agente/eventos', authenticateAgent, asyncRoute(async (req, res) =>
        WHERE r.codigo_evento = e.codigo_evento
          AND LOWER(TRIM(er.nombre)) NOT IN ('cancelada', 'cancelado', 'anulada', 'anulado')
      ) reservas ON TRUE
-     WHERE e.identificacion_agente = $1
      ORDER BY e.fecha_hora_inicio DESC`,
     [req.user.identificacion]
   );
   res.json({ eventos: result.rows });
 }));
 
-app.put('/api/agente/eventos/:codigo', authenticateAgent, asyncRoute(async (req, res) => {
+app.put('/api/agente/eventos/:codigo', authenticate, authorize('agente'), asyncRoute(async (req, res) => {
   const body = req.body || {};
   const code = String(req.params.codigo || '').trim();
   const name = typeof body.nombre_evento === 'string' ? body.nombre_evento.trim() : '';
@@ -541,7 +499,7 @@ app.put('/api/agente/eventos/:codigo', authenticateAgent, asyncRoute(async (req,
   }
 }));
 
-app.post('/api/eventos', authenticateAgent, asyncRoute(async (req, res) => {
+app.post('/api/eventos', authenticate, authorize('agente'), asyncRoute(async (req, res) => {
   const body = req.body || {};
   const code = typeof body.codigo_evento === 'string' ? body.codigo_evento.trim() : '';
   const name = typeof body.nombre_evento === 'string' ? body.nombre_evento.trim() : '';
@@ -689,7 +647,7 @@ app.post('/api/eventos', authenticateAgent, asyncRoute(async (req, res) => {
   }
 }));
 
-app.post('/api/auth/registro', authLimiter, asyncRoute(async (req, res) => {
+const registerHandler = asyncRoute(async (req, res) => {
   const body = req.body || {};
   const {
     identificacion,
@@ -701,24 +659,35 @@ app.post('/api/auth/registro', authLimiter, asyncRoute(async (req, res) => {
     numero_telefono: phone,
     id_ciudad: cityIdValue,
     direccion,
-    contrasena: password
+    contrasena: password,
+    rol: requestedRole,
+    role: requestedEnglishRole
   } = body;
 
   const email = String(correo || emailAddress || '').trim().toLowerCase();
+  const role = String(requestedRole || requestedEnglishRole || 'cliente').trim().toLowerCase();
   const id = String(identificacion || body.num_identificacion || '').trim();
   const cityId = parseInteger(cityIdValue);
   const nameParts = String(fullName || '').trim().split(/\s+/).filter(Boolean);
   const names = String(givenNames || nameParts.shift() || '').trim();
   const surnames = String(apellidos || nameParts.join(' ')).trim();
 
-  if (!id || id.length > 20 || !names || names.length > 100 ||
+  if (!['cliente', 'agente'].includes(role) ||
+      !id || id.length > 20 || !names || names.length > 100 ||
       !surnames || surnames.length > 100 ||
       !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 150 ||
       !Number.isSafeInteger(cityId) || cityId < 1 ||
-      !password || typeof password !== 'string' || password.length < 8 || password.length > 72 ||
+      !password || typeof password !== 'string' ||
+      Array.from(password).length < 8 ||
+      Buffer.byteLength(password, 'utf8') < 8 ||
+      Buffer.byteLength(password, 'utf8') > 72 ||
       !phone || String(phone).trim().length > 20 ||
       (direccion && String(direccion).trim().length > 150)) {
-    res.status(400).json({ error: 'Revisa los datos del registro e inténtalo de nuevo.' });
+    res.status(400).json({
+      error: role === 'administrador'
+        ? 'No es posible registrar una cuenta de administrador.'
+        : 'Revisa los datos del registro e inténtalo de nuevo.'
+    });
     return;
   }
 
@@ -747,17 +716,24 @@ app.post('/api/auth/registro', authLimiter, asyncRoute(async (req, res) => {
       'INSERT INTO personatelefono (identificacion, telefono) VALUES ($1, $2)',
       [id, String(phone).trim()]
     );
-    await client.query(
-      'INSERT INTO cliente (identificacion) VALUES ($1)',
-      [id]
-    );
+    if (role === 'cliente') {
+      await client.query(
+        'INSERT INTO cliente (identificacion, cantidad_puntos) VALUES ($1, 0)',
+        [id]
+      );
+    } else {
+      await client.query(
+        'INSERT INTO agente (identificacion) VALUES ($1)',
+        [id]
+      );
+    }
 
     const user = {
       identificacion: id,
       nombres: names,
       apellidos: surnames,
       correo_electronico: email,
-      role: 'cliente',
+      role,
       auth_version: 0
     };
     const token = createToken(user);
@@ -775,14 +751,17 @@ app.post('/api/auth/registro', authLimiter, asyncRoute(async (req, res) => {
   } finally {
     client.release();
   }
-}));
+});
 
-app.post('/api/auth/login', authLimiter, asyncRoute(async (req, res) => {
+app.post(['/api/auth/register', '/api/auth/registro'], registerLimiter, registerHandler);
+
+app.post('/api/auth/login', loginLimiter, asyncRoute(async (req, res) => {
   const body = req.body || {};
   const email = String(body.correo || body.correo_electronico || '').trim().toLowerCase();
   const password = body.contrasena;
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ||
-      typeof password !== 'string' || !password || password.length > 72) {
+      typeof password !== 'string' || !password ||
+      Buffer.byteLength(password, 'utf8') > 72) {
     res.status(400).json({ error: 'Ingresa un correo y una contraseña válidos.' });
     return;
   }
@@ -800,14 +779,14 @@ app.post('/api/auth/login', authLimiter, asyncRoute(async (req, res) => {
      LEFT JOIN cliente c ON c.identificacion = p.identificacion
      LEFT JOIN agente a ON a.identificacion = p.identificacion
      LEFT JOIN administrador ad ON ad.identificacion = p.identificacion
-     WHERE LOWER(p.correo_electronico) = $1`,
+     WHERE LOWER(TRIM(p.correo_electronico)) = $1`,
     [email]
   );
   const person = result.rows[0];
 
   if (!person || !person.password_hash || !person.role ||
       !(await bcrypt.compare(password, person.password_hash))) {
-    res.status(401).json({ error: 'El correo o la contraseña son incorrectos.' });
+    res.status(401).json({ error: 'Credenciales inválidas' });
     return;
   }
 
@@ -832,10 +811,108 @@ app.get('/api/auth/me', authenticate, asyncRoute(async (req, res) => {
      WHERE identificacion = $1`,
     [req.user.identificacion]
   );
-  res.json({ usuario: { ...result.rows[0], role: req.user.role } });
+  if (result.rowCount === 0) {
+    res.status(401).json({ error: 'La sesión expiró o no es válida.' });
+    return;
+  }
+  res.json({ usuario: publicPerson({ ...result.rows[0], role: req.user.role }) });
 }));
 
-app.get('/api/reservas', authenticate, requireClient, asyncRoute(async (req, res) => {
+app.get('/api/agente/reservas', authenticate, authorize('agente'), asyncRoute(async (req, res) => {
+  const result = await pool.query(
+    `SELECT r.id_reserva, r.fecha_hora_reserva, r.valor_total,
+            r.numero_entradas, r.localidad, er.id_estado_reserva,
+            er.nombre AS estado, e.codigo_evento AS codigo,
+            e.nombre_evento AS evento, p.nombres || ' ' || p.apellidos AS cliente
+     FROM reserva r
+     JOIN estadoreserva er ON er.id_estado_reserva = r.id_estado_reserva
+     JOIN evento e ON e.codigo_evento = r.codigo_evento
+     JOIN persona p ON p.identificacion = r.identificacion_cliente
+     ORDER BY r.fecha_hora_reserva DESC`
+  );
+  res.json({ reservas: result.rows });
+}));
+
+app.get('/api/agente/estados-reserva', authenticate, authorize('agente'), asyncRoute(async (req, res) => {
+  const result = await pool.query(
+    `SELECT id_estado_reserva, nombre
+     FROM estadoreserva
+     ORDER BY id_estado_reserva`
+  );
+  res.json({ estados: result.rows });
+}));
+
+app.patch('/api/agente/reservas/:id', authenticate, authorize('agente'), asyncRoute(async (req, res) => {
+  const reservationId = parseInteger(req.params.id);
+  const state = typeof req.body?.estado === 'string' ? req.body.estado.trim() : '';
+  if (!reservationId || reservationId < 1 || !state || state.length > 50) {
+    res.status(400).json({ error: 'El identificador o el estado de la reserva no es válido.' });
+    return;
+  }
+
+  const result = await pool.query(
+    `WITH selected_state AS (
+       SELECT id_estado_reserva
+       FROM estadoreserva
+       WHERE LOWER(TRIM(nombre)) = LOWER(TRIM($2))
+       ORDER BY id_estado_reserva
+       LIMIT 1
+     )
+     UPDATE reserva r
+     SET id_estado_reserva = selected_state.id_estado_reserva
+     FROM selected_state
+     WHERE r.id_reserva = $1
+     RETURNING r.id_reserva, r.id_estado_reserva`,
+    [reservationId, state]
+  );
+  if (result.rowCount === 0) {
+    res.status(404).json({ error: 'No se encontró la reserva o el estado solicitado.' });
+    return;
+  }
+  res.json({ reserva: result.rows[0] });
+}));
+
+app.get('/api/admin/reportes', authenticate, authorize('administrador'), asyncRoute(async (req, res) => {
+  const [counts, reservationsByEventMonth, revenueByMonth] = await Promise.all([
+    pool.query(
+      `SELECT (SELECT COUNT(*) FROM cliente)::int AS clientes,
+              (SELECT COUNT(*) FROM agente)::int AS agentes,
+              (SELECT COUNT(*) FROM administrador)::int AS administradores,
+              (SELECT COUNT(*) FROM reserva)::int AS reservas,
+              (SELECT COUNT(*) FROM evento)::int AS eventos`
+    ),
+    pool.query(
+      `SELECT e.codigo_evento AS codigo, e.nombre_evento AS evento,
+              EXTRACT(YEAR FROM r.fecha_hora_reserva)::int AS anio,
+              EXTRACT(MONTH FROM r.fecha_hora_reserva)::int AS mes,
+              COUNT(*)::int AS reservas,
+              COALESCE(SUM(r.valor_total), 0)::numeric AS ingresos
+       FROM reserva r
+       JOIN evento e ON e.codigo_evento = r.codigo_evento
+       GROUP BY e.codigo_evento, e.nombre_evento,
+                EXTRACT(YEAR FROM r.fecha_hora_reserva),
+                EXTRACT(MONTH FROM r.fecha_hora_reserva)
+       ORDER BY anio DESC, mes DESC, evento`
+    ),
+    pool.query(
+      `SELECT EXTRACT(YEAR FROM fecha_hora_reserva)::int AS anio,
+              EXTRACT(MONTH FROM fecha_hora_reserva)::int AS mes,
+              COUNT(*)::int AS reservas,
+              COALESCE(SUM(valor_total), 0)::numeric AS ingresos
+       FROM reserva
+       GROUP BY EXTRACT(YEAR FROM fecha_hora_reserva),
+                EXTRACT(MONTH FROM fecha_hora_reserva)
+       ORDER BY anio DESC, mes DESC`
+    )
+  ]);
+  res.json({
+    resumen: counts.rows[0],
+    reservasPorEventoMes: reservationsByEventMonth.rows,
+    ingresosPorMes: revenueByMonth.rows
+  });
+}));
+
+app.get('/api/reservas', authenticate, authorize('cliente'), asyncRoute(async (req, res) => {
   const result = await pool.query(
     `SELECT r.id_reserva, r.fecha_hora_reserva, r.valor_total,
             r.numero_entradas, r.localidad, er.nombre AS estado,
@@ -852,7 +929,7 @@ app.get('/api/reservas', authenticate, requireClient, asyncRoute(async (req, res
   res.json({ reservas: result.rows });
 }));
 
-app.post('/api/reservas', authenticate, requireClient, asyncRoute(async (req, res) => {
+app.post('/api/reservas', authenticate, authorize('cliente'), asyncRoute(async (req, res) => {
   const body = req.body || {};
   const codigo = String(body.codigo_evento || '').trim();
   const quantity = parseInteger(body.numero_entradas);
@@ -949,18 +1026,20 @@ app.post('/api/reservas', authenticate, requireClient, asyncRoute(async (req, re
     const reservationState = await client.query(
       `SELECT id_estado_reserva
        FROM estadoreserva
-       WHERE LOWER(TRIM(nombre)) IN ('reservada', 'confirmada', 'confirmado')
+       WHERE LOWER(TRIM(nombre)) IN ('reservada', 'confirmada', 'confirmado', 'pendiente')
        ORDER BY CASE LOWER(TRIM(nombre))
-         WHEN 'reservada' THEN 0
-         WHEN 'confirmada' THEN 1
-         ELSE 2
+         WHEN 'pendiente' THEN 0
+         WHEN 'reservada' THEN 1
+         WHEN 'confirmada' THEN 2
+         WHEN 'confirmado' THEN 2
+         ELSE 3
        END
        LIMIT 1`
     );
     if (reservationState.rowCount === 0) {
       await client.query('ROLLBACK');
       res.status(503).json({
-        error: 'Configura al menos un estado de reserva: Reservada o Confirmada.'
+        error: 'Configura al menos un estado de reserva: Pendiente, Reservada o Confirmada.'
       });
       return;
     }

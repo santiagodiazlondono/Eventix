@@ -13,6 +13,9 @@
     <!-- Estilos de la vista de registro -->
     <link rel="stylesheet" href="../css/registro.css">
     <link rel="stylesheet" href="../css/cintas-eventos.css">
+    <script src="../controllers/eventos.js" defer></script>
+    <script src="../models/auth.js" defer></script>
+    <script src="../controllers/auth.js" defer></script>
 </head>
 <body>
 
@@ -107,6 +110,14 @@
                      Los campos se acomodan en dos columnas. -->
                 <form class="formulario-registro" id="formulario-registro" action="#" method="post">
 
+                    <div class="campo campo-ancho-completo">
+                        <label class="etiqueta-campo" for="rol">Tipo de cuenta</label>
+                        <select class="entrada-texto" id="rol" name="rol" required>
+                            <option value="cliente">Cliente</option>
+                            <option value="agente">Agente</option>
+                        </select>
+                    </div>
+
                     <!-- Campo: nombre completo -->
                     <div class="campo" id="campo-nombre">
                         <label class="etiqueta-campo" id="etiqueta-nombre" for="nombre-completo">
@@ -181,14 +192,14 @@
                             Ciudad
                         </label>
 
-                        <input
+                        <select
                             class="entrada-texto"
-                            type="text"
                             id="ciudad"
                             name="id_ciudad"
-                            placeholder="Tulua"
                             required
                         >
+                            <option value="">Cargando ciudades...</option>
+                        </select>
                     </div>
 
                     <!-- Campo: dirección -->
@@ -230,6 +241,7 @@
                     <button class="boton-principal campo-ancho-completo" id="boton-crear-cuenta" type="submit">
                         Crear cuenta
                     </button>
+                    <p class="campo-ancho-completo" data-auth-message role="alert" hidden></p>
 
                 </form>
 
@@ -238,7 +250,7 @@
 
                     <p class="linea-enlace" id="linea-login">
                         ¿Ya tienes cuenta?
-                        <a class="enlace" id="enlace-login" href="login.html">Inicia sesión</a>
+                        <a class="enlace" id="enlace-login" href="Login.html">Inicia sesión</a>
                     </p>
 
                 </nav>

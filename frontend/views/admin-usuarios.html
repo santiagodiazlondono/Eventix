@@ -10,9 +10,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../css/styles.css">
   <link rel="stylesheet" href="../css/admin-usuarios.css">
-
+  <script src="../models/auth.js" defer></script>
+  <script src="../controllers/auth.js" defer></script>
 </head>
-<body class="admin-body">
+<body class="admin-body" data-required-role="administrador">
 
   <!-- Iconos reutilizables -->
   <svg class="sprite" aria-hidden="true">
@@ -181,7 +182,7 @@
       <nav class="footer-nav" aria-label="Cuenta">
         <h2>Tu cuenta</h2>
         <ul>
-          <li><a href="login.html">Iniciar sesión</a></li>
+          <li><a href="Login.html">Iniciar sesión</a></li>
           <li><a href="registro.html">Crear cuenta de cliente</a></li>
           <li><a href="registro.html?rol=agente">Crear cuenta de agente</a></li>
         </ul>

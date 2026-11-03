@@ -10,9 +10,12 @@
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../css/styles.css">
   <link rel="stylesheet" href="../css/agente-reservas.css">
-
+  <script src="../models/auth.js" defer></script>
+  <script src="../controllers/auth.js" defer></script>
+  <script src="../models/paneles.js" defer></script>
+  <script src="../controllers/paneles.js" defer></script>
 </head>
-<body class="admin-body">
+<body class="admin-body" data-required-role="agente" data-panel="agente-reservas">
 
   <!-- Iconos reutilizables -->
   <svg class="sprite" aria-hidden="true">
@@ -40,7 +43,7 @@
       <nav class="main-nav" aria-label="Navegación de agente">
         <ul class="nav-links">
           <li><a href="agente-registro.html">Registrar evento</a></li>
-          <li><a href="agente-mis-eventos.html">Mis eventos</a></li>
+          <li><a href="agente-mis-eventos.html">Todos los eventos</a></li>
           <li><a href="agente-reservas.html" class="is-active">Gestión de reservas</a></li>
           <li><a href="agente-perfil.html">Mi perfil</a></li>
         </ul>
@@ -72,7 +75,7 @@
         <!-- Título y Filtros -->
         <div class="agent-reservations-header">
           <h2 id="reservas-title">Reservas solicitadas</h2>
-          <p>Actualiza el estado de las reservas de tus eventos.</p>
+          <p>Consulta todas las reservas y actualiza su estado.</p>
 
           <div class="agent-filter-row">
             <div class="agent-filter-group">
@@ -111,7 +114,7 @@
                 <th>ESTADO</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody id="reservas-agente-lista">
               <!-- Fila 1 -->
               <tr>
                 <td class="font-weight-500">Laura Ramirez T..</td>
@@ -174,6 +177,7 @@
               </tr>
             </tbody>
           </table>
+          <p id="reservas-agente-mensaje" role="status" hidden></p>
         </div>
       </section>
 
@@ -203,7 +207,7 @@
       <nav class="footer-nav" aria-label="Cuenta">
         <h2>Tu cuenta</h2>
         <ul>
-          <li><a href="login.html">Iniciar sesión</a></li>
+          <li><a href="Login.html">Iniciar sesión</a></li>
           <li><a href="registro.html">Crear cuenta de cliente</a></li>
           <li><a href="registro.html?rol=agente">Crear cuenta de agente</a></li>
         </ul>

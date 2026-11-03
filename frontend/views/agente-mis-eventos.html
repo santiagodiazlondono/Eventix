@@ -11,9 +11,11 @@
   <link rel="stylesheet" href="../css/styles.css">
   <link rel="stylesheet" href="../css/agente-mis-eventos.css">
   <script src="../controllers/eventos.js" defer></script>
+  <script src="../models/auth.js" defer></script>
+  <script src="../controllers/auth.js" defer></script>
   <script src="../controllers/agente-eventos.js" defer></script>
 </head>
-<body class="admin-body">
+<body class="admin-body" data-required-role="agente">
 
   <!-- Iconos reutilizables -->
   <svg class="sprite" aria-hidden="true">
@@ -44,7 +46,7 @@
       <nav class="main-nav" aria-label="Navegación de agente">
         <ul class="nav-links">
           <li><a href="agente-registro.html">Registrar evento</a></li>
-          <li><a href="agente-mis-eventos.html" class="is-active">Mis eventos</a></li>
+          <li><a href="agente-mis-eventos.html" class="is-active">Todos los eventos</a></li>
           <li><a href="agente-reservas.html">Gestión de reservas</a></li>
           <li><a href="agente-perfil.html">Mi perfil</a></li>
         </ul>
@@ -67,7 +69,7 @@
       <!-- Encabezado superior -->
       <div class="agent-section-header">
         <span class="agent-subtitle">Agente</span>
-        <h1 class="admin-title">Mis eventos</h1>
+        <h1 class="admin-title">Todos los eventos</h1>
       </div>
 
       <!-- Tarjeta contenedora de la tabla -->
@@ -225,7 +227,7 @@
       <nav class="footer-nav" aria-label="Cuenta">
         <h2>Tu cuenta</h2>
         <ul>
-          <li><a href="login.html">Iniciar sesión</a></li>
+          <li><a href="Login.html">Iniciar sesión</a></li>
           <li><a href="registro.html">Crear cuenta de cliente</a></li>
           <li><a href="registro.html?rol=agente">Crear cuenta de agente</a></li>
         </ul>

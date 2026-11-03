@@ -11,7 +11,9 @@
     <link rel="stylesheet" href="../css/base.css">
     <link rel="stylesheet" href="../css/perfil.css">
 </head>
-<body>
+<body data-required-role="cliente">
+    <script src="../models/auth.js" defer></script>
+    <script src="../controllers/auth.js" defer></script>
     <div class="app">
         <aside class="barra-lateral" aria-label="Navegación de cliente">
             <a class="marca" href="Index.html" aria-label="Eventix, inicio">
@@ -31,11 +33,11 @@
                     <span class="punto-nav" aria-hidden="true"></span>
                     Catálogo de eventos
                 </a>
-                <a class="enlace-nav" href="misreservas.html">
+                <a class="enlace-nav" href="cliente-misreservas.html">
                     <span class="punto-nav" aria-hidden="true"></span>
                     Mis reservas
                 </a>
-                <a class="enlace-nav activo" href="perfil.html" aria-current="page">
+                <a class="enlace-nav activo" href="cliente-perfil.html" aria-current="page">
                     <span class="punto-nav" aria-hidden="true"></span>
                     Mi perfil
                 </a>
@@ -48,14 +50,14 @@
                     <p class="contexto">CLIENTE</p>
                     <h1>Mi perfil</h1>
                 </div>
-                <span class="avatar-superior" aria-label="Perfil de Laura Ramírez Toro">LR</span>
+                <span class="avatar-superior js-user-avatar" aria-hidden="true">U</span>
             </header>
 
             <main class="contenido-principal">
                 <section class="identidad-cliente" aria-label="Resumen del perfil">
                     <div class="avatar-cliente" aria-hidden="true">LR</div>
                     <div>
-                        <h2>Laura Ramírez Toro</h2>
+                        <h2 class="js-user-name">Mi perfil</h2>
                         <p>Cliente <span aria-hidden="true">·</span> Miembro desde enero de 2025</p>
                     </div>
                 </section>

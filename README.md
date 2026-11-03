@@ -11,6 +11,8 @@ Eventix es un prototipo de una plataforma web para descubrir eventos y reservar 
 - Vista de detalle con información y precio base consultados desde la base de datos.
 - Selector de cantidad de entradas de 1 a 10 y cálculo del subtotal, cargo de servicio y total.
 - API para consultar eventos y ciudades, registrar e iniciar sesión como cliente y crear/consultar reservas.
+- Registro público de clientes y agentes, login por cookie segura y paneles con autorización por rol.
+- Panel de cliente para consultar sus reservas, panel de agente para gestionar eventos y reservas, y dashboard administrativo con reportes reales.
 - Validación de capacidad y cálculo de precios en el servidor.
 
 El cargo de servicio ($4.000 por entrada) es ilustrativo; no representa una transacción real.
@@ -97,15 +99,15 @@ Si no hay eventos registrados, las listas se muestran vacías. Si la API no est�
 
 ## Limitaciones actuales y siguientes pasos
 
-- No hay integración de pagos ni panel administrativo protegido.
-- Los formularios de inicio de sesión y registro todavía no están conectados a la API; las reservas requieren una sesión autenticada.
+- No hay integración de pagos ni recuperación de contraseñas.
+- El alta de administradores es privada y se realiza con el seed del backend; no existe auto-registro administrativo.
 
 ## Seguridad antes de usar o publicar
 
 - **Rota las credenciales que compartiste en el chat y las credenciales de correo que estuvieron en el historial del repositorio.** Aunque se retiraron del archivo actual, pueden seguir presentes en el historial de Git. Usa únicamente variables locales en `.env`.
 - Configura `CORS_ORIGINS` para los orígenes reales del frontend antes de publicar el servicio.
 - La API no procesa pagos; una reserva no equivale a una compra pagada.
-- Para habilitar el registro de eventos y las reservas por localidad, ejecuta en orden ambas migraciones SQL de Neon; las instrucciones están en [backend/README.md](backend/README.md).
+- Para habilitar el registro de usuarios, los estados de reserva y las reservas por localidad, ejecuta en orden las migraciones SQL de Neon; las instrucciones están en [backend/README.md](backend/README.md).
 
 ## Contexto académico
 

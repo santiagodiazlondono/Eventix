@@ -11,9 +11,11 @@
   
   <!-- Controlador de eventos y detalle -->
   <script src="../controllers/eventos.js" defer></script>
+  <script src="../models/auth.js" defer></script>
+  <script src="../controllers/auth.js" defer></script>
   <script src="../controllers/detalle-evento.js" defer></script>
 </head>
-<body class="admin-body">
+<body class="admin-body" data-optional-session="true">
 
   <!-- Iconos reutilizables (sprite del sistema Eventix) -->
   <svg class="sprite" aria-hidden="true">
@@ -46,7 +48,7 @@
           <li><a href="index.html#organizadores">Para organizadores</a></li>
         </ul>
         <div class="nav-actions">
-          <a class="btn btn-ghost" href="login.html">Iniciar sesión</a>
+          <a class="btn btn-ghost" href="Login.html">Iniciar sesión</a>
           <a class="btn btn-primary" href="registro.html">Crear cuenta</a>
         </div>
       </nav>
@@ -200,7 +202,7 @@
       <nav class="footer-nav" aria-label="Cuenta">
         <h2>Tu cuenta</h2>
         <ul>
-          <li><a href="login.html">Iniciar sesión</a></li>
+          <li><a href="Login.html">Iniciar sesión</a></li>
           <li><a href="registro.html">Crear cuenta de cliente</a></li>
           <li><a href="registro.html?rol=agente">Crear cuenta de agente</a></li>
         </ul>

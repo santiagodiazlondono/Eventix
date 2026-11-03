@@ -10,10 +10,13 @@
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../css/styles.css">
   <link rel="stylesheet" href="../css/admin-panel.css">
-
+  <script src="../models/auth.js" defer></script>
+  <script src="../controllers/auth.js" defer></script>
+  <script src="../models/paneles.js" defer></script>
+  <script src="../controllers/paneles.js" defer></script>
 
 </head>
-<body class="admin-body">
+<body class="admin-body" data-required-role="administrador" data-panel="admin">
 
   
   <!-- ============ ENCABEZADO ============ -->
@@ -66,28 +69,28 @@
       <div class="metrics-grid">
         <article class="metric-card">
           <span class="metric-label">Clientes</span>
-          <span class="metric-value">1.284</span>
-          <span class="metric-trend">↑ 6.2% este mes</span>
+          <span class="metric-value" data-admin-metric="clientes">0</span>
+          <span class="metric-trend">Conteo actual</span>
         </article>
         <article class="metric-card">
           <span class="metric-label">Agentes</span>
-          <span class="metric-value">37</span>
-          <span class="metric-trend">↑ 2 nuevos</span>
+          <span class="metric-value" data-admin-metric="agentes">0</span>
+          <span class="metric-trend">Conteo actual</span>
         </article>
         <article class="metric-card">
           <span class="metric-label">Administrador</span>
-          <span class="metric-value">5</span>
-          <span class="metric-trend metric-trend--neutral">Sin cambios</span>
+          <span class="metric-value" data-admin-metric="administradores">0</span>
+          <span class="metric-trend metric-trend--neutral">Conteo actual</span>
         </article>
         <article class="metric-card">
           <span class="metric-label">Eventos</span>
-          <span class="metric-value">162</span>
-          <span class="metric-trend">↑ 14 este mes</span>
+          <span class="metric-value" data-admin-metric="eventos">0</span>
+          <span class="metric-trend">Conteo actual</span>
         </article>
         <article class="metric-card">
           <span class="metric-label">Reservas</span>
-          <span class="metric-value">4.930</span>
-          <span class="metric-trend">↑ 312 este mes</span>
+          <span class="metric-value" data-admin-metric="reservas">0</span>
+          <span class="metric-trend">Conteo actual</span>
         </article>
       </div>
     </section>
@@ -131,7 +134,7 @@
       <div class="section-head admin-head-gap">
         <h2>Reportes comerciales y de operación</h2>
       </div>
-      <p class="admin-lead">Indicadores de ingresos, reservas y cancelaciones — 2026.</p>
+      <p class="admin-lead">Indicadores calculados a partir de los datos guardados en Eventix.</p>
 
       <!-- Gráfico de Ingresos totales por mes -->
       <div class="distribution-card admin-mb-md">
@@ -172,7 +175,7 @@
       </div>
 
       <!-- Promedios -->
-      <div class="metrics-grid admin-metrics-duo admin-mb-md">
+      <div class="metrics-grid admin-metrics-duo admin-mb-md" data-demo-report>
         <article class="metric-card">
           <span class="metric-label">Promedio de ingresos por agente</span>
           <span class="metric-value admin-val-accent">6.245.642</span>
@@ -196,7 +199,7 @@
               <th class="admin-text-right">Total</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody data-report-monthly>
             <tr>
               <td>Noche Sinfónica</td>
               <td>23</td><td>54</td><td>34</td><td>56</td><td>46</td><td>54</td><td>36</td><td>42</td><td>67</td><td>54</td><td>34</td><td>29</td>
@@ -222,7 +225,7 @@
       </div>
 
       <!-- Eventos por agente y Eventos por ciudad -->
-      <div class="metrics-grid admin-metrics-duo admin-mb-md">
+      <div class="metrics-grid admin-metrics-duo admin-mb-md" data-demo-report>
         <div class="distribution-card admin-card-flat">
           <h2 class="admin-card-title">Eventos por agente</h2>
           <div class="role-list">
@@ -272,7 +275,7 @@
       </div>
 
       <!-- Historial de reservas por cliente -->
-      <div class="distribution-card admin-mb-md admin-table-scroll">
+      <div class="distribution-card admin-mb-md admin-table-scroll" data-demo-report>
         <div class="distribution-header admin-head-sm">
           <h2>Historial de reservas por cliente</h2>
         </div>
@@ -327,7 +330,7 @@
       </div>
 
       <!-- Reservas canceladas y Eventos cancelados -->
-      <div class="metrics-grid admin-metrics-duo">
+      <div class="metrics-grid admin-metrics-duo" data-demo-report>
         <div class="distribution-card admin-card-flat">
           <h2 class="admin-card-title">Reservas canceladas y su causa</h2>
           <div class="admin-cancel-list">
@@ -384,6 +387,7 @@
       </div>
     </section>
 
+    <p data-admin-report-message role="alert" hidden></p>
   </main>
 
   <!-- ============ PIE DE PÁGINA ============ -->
@@ -409,7 +413,7 @@
       <nav class="footer-nav" aria-label="Cuenta">
         <h2>Tu cuenta</h2>
         <ul>
-          <li><a href="login.html">Iniciar sesión</a></li>
+          <li><a href="Login.html">Iniciar sesión</a></li>
           <li><a href="registro.html">Crear cuenta de cliente</a></li>
           <li><a href="registro.html?rol=agente">Crear cuenta de agente</a></li>
         </ul>

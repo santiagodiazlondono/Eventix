@@ -118,15 +118,19 @@
       row.appendChild(statusCell);
 
       var actionsCell = document.createElement("td");
-      var editButton = document.createElement("button");
-      editButton.type = "button";
-      editButton.className = "btn btn-ghost agent-edit-event";
-      editButton.textContent = "Editar";
-      editButton.setAttribute("aria-label", "Editar " + event.nombre);
-      editButton.addEventListener("click", function () {
-        openEditor(event.codigo);
-      });
-      actionsCell.appendChild(editButton);
+      if (event.puede_editar) {
+        var editButton = document.createElement("button");
+        editButton.type = "button";
+        editButton.className = "btn btn-ghost agent-edit-event";
+        editButton.textContent = "Editar";
+        editButton.setAttribute("aria-label", "Editar " + event.nombre);
+        editButton.addEventListener("click", function () {
+          openEditor(event.codigo);
+        });
+        actionsCell.appendChild(editButton);
+      } else {
+        actionsCell.textContent = "—";
+      }
       row.appendChild(actionsCell);
       tableBody.appendChild(row);
     });
@@ -135,7 +139,7 @@
     if (message) {
       message.textContent = events.length
         ? ""
-        : "Aún no has publicado eventos.";
+        : "No hay eventos disponibles.";
       message.hidden = events.length > 0;
     }
   }
@@ -251,15 +255,11 @@
 
   if (!form && !eventsTable) return;
 
-  window.Eventix.get("/dev/agent-mode")
-    .then(function (result) {
-      if (result.enabled) return;
-
-      return window.Eventix.get("/auth/me").then(function (userResult) {
-        if (!userResult.usuario || userResult.usuario.role !== "agente") {
-          throw new Error("Tu cuenta no tiene permisos de agente.");
-        }
-      });
+  window.Eventix.get("/auth/me")
+    .then(function (userResult) {
+      if (!userResult.usuario || userResult.usuario.role !== "agente") {
+        throw new Error("Tu cuenta no tiene permisos de agente.");
+      }
     })
     .then(function () {
       if (form) {
