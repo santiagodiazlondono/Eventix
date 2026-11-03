@@ -41,6 +41,21 @@
   white-space: nowrap;
 }
 
+.agent-status-select {
+  min-width: 9rem;
+  margin-bottom: 0.5rem;
+}
+
+.agent-save-state,
+.agent-delete-event {
+  margin: 0.2rem;
+  white-space: nowrap;
+}
+
+.agent-delete-event {
+  color: #fb7185;
+}
+
 .agent-table tr:last-child td {
   border-bottom: none;
 }
@@ -177,6 +192,21 @@
   grid-column: span 2;
 }
 
+@media (max-width: 700px) {
+  .agent-modal-box {
+    padding: 1.5rem;
+  }
+
+  .agent-modal-form {
+    grid-template-columns: 1fr;
+  }
+
+  .agent-modal-form .agent-field,
+  .agent-modal-form .agent-field--full {
+    grid-column: 1;
+  }
+}
+
 .agent-modal-form label {
   display: block;
   font-size: 0.8rem;
@@ -297,5 +327,4 @@
   display: inline-flex;
   align-items: center;
 }
-
 

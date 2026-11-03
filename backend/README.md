@@ -62,14 +62,13 @@ El seed es transaccional e idempotente. Si el correo ya pertenece a un administr
 | `GET` | `/api/departamentos/:id_departamento/ciudades` | Público | Ciudades del departamento indicado. |
 | `GET` | `/api/eventos` | Público | Eventos que no estén cancelados. |
 | `GET` | `/api/eventos/:codigo` | Público | Detalle de un evento. |
-| `GET` | `/api/agente/eventos` | Agente | Consulta todos los eventos; permite editar los propios. |
-| `PUT` | `/api/agente/eventos/:codigo` | Agente | Actualiza un evento propio. |
+| `GET` | `/api/agente/eventos` | Agente | Lista eventos y permite editar solo los propios. |
+| `PUT` | `/api/agente/eventos/:codigo` | Agente | Actualiza los datos y la ubicación de un evento propio. |
+| `PATCH` | `/api/agente/eventos/:codigo/estado` | Agente | Cambia el estado de un evento propio. |
+| `DELETE` | `/api/agente/eventos/:codigo` | Agente | Elimina un evento propio si aún no tiene reservas. |
+| `GET` | `/api/estados-evento` | Público | Estados disponibles para eventos. |
 | `POST` | `/api/eventos` | Agente | Publica un evento en estado `Programado`. |
-| `GET` | `/api/agente/reservas` | Agente | Consulta todas las reservas. |
-| `GET` | `/api/agente/estados-reserva` | Agente | Consulta estados disponibles. |
-| `PATCH` | `/api/agente/reservas/:id` | Agente | Actualiza el estado de una reserva. |
-| `POST` | `/api/auth/register` | Público | Crea una cuenta de cliente o agente. |
-| `POST` | `/api/auth/registro` | Público | Alias compatible para registrar una cuenta. |
+| `POST` | `/api/auth/registro` | Público | Crea una cuenta de cliente o agente. |
 | `POST` | `/api/auth/login` | Público | Inicia sesión con correo y contraseña. |
 | `POST` | `/api/auth/logout` | Público | Cierra la sesión eliminando la cookie `HttpOnly`. |
 | `GET` | `/api/auth/me` | Sesión | Devuelve la cuenta autenticada. |
