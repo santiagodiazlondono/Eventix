@@ -771,22 +771,34 @@ const registerHandler = asyncRoute(async (req, res) => {
   const names = String(givenNames || nameParts.shift() || '').trim();
   const surnames = String(apellidos || nameParts.join(' ')).trim();
 
-  if (!['cliente', 'agente'].includes(role) ||
-      !id || id.length > 20 || !names || names.length > 100 ||
-      !surnames || surnames.length > 100 ||
-      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 150 ||
-      !Number.isSafeInteger(cityId) || cityId < 1 ||
-      !password || typeof password !== 'string' ||
+  let validationError = null;
+  if (role === 'administrador') {
+    validationError = 'No es posible registrar una cuenta de administrador.';
+  } else if (!['cliente', 'agente'].includes(role)) {
+    validationError = 'Selecciona un tipo de cuenta válido.';
+  } else if (!id || id.length > 20) {
+    validationError = 'Ingresa una identificación de hasta 20 caracteres.';
+  } else if (!names || !surnames) {
+    validationError = 'Ingresa tu nombre y apellido.';
+  } else if (names.length > 100 || surnames.length > 100) {
+    validationError = 'El nombre y el apellido deben tener máximo 100 caracteres cada uno.';
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 150) {
+    validationError = 'Ingresa un correo electrónico válido de máximo 150 caracteres.';
+  } else if (!Number.isSafeInteger(cityId) || cityId < 1) {
+    validationError = 'Selecciona una ciudad válida.';
+  } else if (typeof password !== 'string' ||
       Array.from(password).length < 8 ||
       Buffer.byteLength(password, 'utf8') < 8 ||
-      Buffer.byteLength(password, 'utf8') > 72 ||
-      !phone || String(phone).trim().length > 20 ||
-      (direccion && String(direccion).trim().length > 150)) {
-    res.status(400).json({
-      error: role === 'administrador'
-        ? 'No es posible registrar una cuenta de administrador.'
-        : 'Revisa los datos del registro e inténtalo de nuevo.'
-    });
+      Buffer.byteLength(password, 'utf8') > 72) {
+    validationError = 'La contraseña debe tener al menos 8 caracteres y máximo 72 bytes.';
+  } else if (!phone || String(phone).trim().length > 20) {
+    validationError = 'Ingresa un teléfono de hasta 20 caracteres.';
+  } else if (direccion && String(direccion).trim().length > 150) {
+    validationError = 'La dirección no puede superar los 150 caracteres.';
+  }
+
+  if (validationError) {
+    res.status(400).json({ error: validationError });
     return;
   }
 

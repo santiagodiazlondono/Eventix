@@ -90,6 +90,12 @@
       event.preventDefault();
       var message = registrationForm.querySelector("[data-auth-message]");
       if (message) message.hidden = true;
+      var nameInput = registrationForm.elements.nombre_completo;
+      if (nameInput && nameInput.value.trim().split(/\s+/).filter(Boolean).length < 2) {
+        report(registrationForm, new Error("Ingresa tu nombre y apellido."));
+        nameInput.focus();
+        return;
+      }
       submitButton.disabled = true;
       submitButton.textContent = "Creando cuenta...";
       try {
