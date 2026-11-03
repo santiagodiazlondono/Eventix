@@ -30,6 +30,7 @@ Eventix/
 ├── backend/
 │   ├── app.js                    # Rutas y lógica de la API
 │   ├── server.js                 # Inicio del servidor
+│   ├── migrations/               # Cambios requeridos en el esquema PostgreSQL
 │   ├── package.json              # Dependencias y comandos
 │   └── .env.example              # Variables de entorno de ejemplo
 ├── frontend/
@@ -104,6 +105,7 @@ Si no hay eventos registrados, las listas se muestran vacías. Si la API no est�
 - **Rota las credenciales que compartiste en el chat y las credenciales de correo que estuvieron en el historial del repositorio.** Aunque se retiraron del archivo actual, pueden seguir presentes en el historial de Git. Usa únicamente variables locales en `.env`.
 - Configura `CORS_ORIGINS` para los orígenes reales del frontend antes de publicar el servicio.
 - La API no procesa pagos; una reserva no equivale a una compra pagada.
+- Para habilitar el registro de eventos y las reservas por localidad, ejecuta en orden ambas migraciones SQL de Neon; las instrucciones están en [backend/README.md](backend/README.md).
 
 ## Contexto académico
 

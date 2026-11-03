@@ -10,7 +10,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../css/styles.css">
   <link rel="stylesheet" href="../css/agente-mis-eventos.css">
-
+  <script src="../controllers/eventos.js" defer></script>
+  <script src="../controllers/agente-eventos.js" defer></script>
 </head>
 <body class="admin-body">
 
@@ -82,76 +83,16 @@
               <tr>
                 <th>CÓDIGO</th>
                 <th>EVENTO</th>
-                <th>CIUDAD</th>
+                <th>UBICACIÓN</th>
                 <th>FECHA</th>
                 <th>AFORO</th>
                 <th>ESTADO</th>
-                <th class="text-right">ACCIONES</th>
+                <th>ACCIONES</th>
               </tr>
             </thead>
-            <tbody>
-              <!-- Fila 1 -->
-              <tr>
-                <td class="font-mono text-muted">EVT-0142</td>
-                <td class="font-weight-500">Noche sinfónica de Verano</td>
-                <td class="text-muted">Tuluá</td>
-                <td class="text-muted">14 nov 2026</td>
-                <td class="font-mono">312 / 450</td>
-                <td><span class="badge badge-boleteria">En boletería</span></td>
-                <td class="text-right">
-                  <div class="agent-action-links">
-                    <a href="#modal-editar" aria-label="Editar evento" class="icon-edit"><svg><use href="#i-edit"/></svg></a>
-                    <a href="#eliminar" aria-label="Eliminar evento" class="icon-trash"><svg><use href="#i-trash"/></svg></a>
-                  </div>
-                </td>
-              </tr>
-              <!-- Fila 2 -->
-              <tr>
-                <td class="font-mono text-muted">EVT-0142</td>
-                <td class="font-weight-500">Stand Up: Noche de Comedia</td>
-                <td class="text-muted">Tuluá</td>
-                <td class="text-muted">14 nov 2026</td>
-                <td class="font-mono">180 / 180</td>
-                <td><span class="badge badge-envivo">En vivo</span></td>
-                <td class="text-right">
-                  <div class="agent-action-links">
-                    <a href="#modal-editar" aria-label="Editar evento" class="icon-edit"><svg><use href="#i-edit"/></svg></a>
-                    <a href="#eliminar" aria-label="Eliminar evento" class="icon-trash"><svg><use href="#i-trash"/></svg></a>
-                  </div>
-                </td>
-              </tr>
-              <!-- Fila 3 -->
-              <tr>
-                <td class="font-mono text-muted">EVT-0142</td>
-                <td class="font-weight-500">Obra: El Jardín de los Espejos</td>
-                <td class="text-muted">Cali</td>
-                <td class="text-muted">14 nov 2026</td>
-                <td class="font-mono">210 / 210</td>
-                <td><span class="badge badge-programado badge-finalizado">Finalizado</span></td>
-                <td class="text-right">
-                  <div class="agent-action-links">
-                    <a href="#modal-editar" aria-label="Editar evento" class="icon-edit"><svg><use href="#i-edit"/></svg></a>
-                    <a href="#eliminar" aria-label="Eliminar evento" class="icon-trash"><svg><use href="#i-trash"/></svg></a>
-                  </div>
-                </td>
-              </tr>
-              <!-- Fila 4 -->
-              <tr>
-                <td class="font-mono text-muted">EVT-0142</td>
-                <td class="font-weight-500">Feria Gastronómica y Cultural</td>
-                <td class="text-muted">Tuluá</td>
-                <td class="text-muted">14 nov 2026</td>
-                <td class="font-mono">0 / 300</td>
-                <td><span class="badge badge-programado badge-cancelado">Cancelado</span></td>
-                <td class="text-right">
-                  <div class="agent-action-links">
-                    <a href="#modal-editar" aria-label="Editar evento" class="icon-edit"><svg><use href="#i-edit"/></svg></a>
-                    <a href="#eliminar" aria-label="Eliminar evento" class="icon-trash"><svg><use href="#i-trash"/></svg></a>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
+            <tbody id="mis-eventos-lista"></tbody>
           </table>
+          <p id="mis-eventos-mensaje" role="status" aria-live="polite">Cargando tus eventos...</p>
         </div>
       </section>
 
@@ -159,116 +100,104 @@
   </main>
 
   <!-- ============ MODAL DE EDICIÓN ============ -->
-  <div id="modal-editar" class="agent-modal">
-    <div class="agent-modal-box">
-      
-      <a href="#" class="agent-modal-close" aria-label="Cerrar modal">
+  <div id="modal-editar" class="agent-modal" aria-hidden="true">
+    <div class="agent-modal-box" role="dialog" aria-modal="true" aria-labelledby="modal-editar-titulo">
+      <button type="button" class="agent-modal-close" data-close-editor aria-label="Cerrar modal">
         <svg aria-hidden="true"><use href="#i-close"/></svg>
-      </a>
+      </button>
 
       <div class="agent-modal-header">
         <span class="agent-subtitle">Agente</span>
-        <h2>Modificación del evento</h2>
-        <p>Completa la información para editar el evento en el catálogo.</p>
+        <h2 id="modal-editar-titulo">Editar evento</h2>
+        <p>Actualiza los datos del evento y su ubicación.</p>
       </div>
 
-      <form class="agent-modal-form">
-        
+      <form id="formulario-editar-evento" class="agent-modal-form">
+        <input id="editar-codigo" name="codigo" type="hidden">
         <div class="agent-field">
-          <label>Nombre del evento</label>
-          <input type="text" value="Noche Sinfónica de Verano">
+          <label for="editar-nombre">Nombre del evento</label>
+          <input id="editar-nombre" name="nombre_evento" type="text" maxlength="150" required>
         </div>
-
         <div class="agent-field">
-          <label>Código del evento</label>
-          <input type="text" value="Autogenerado: EVT-0163" readonly class="font-mono text-muted">
+          <label for="editar-teatro">Teatro / recinto</label>
+          <input id="editar-teatro" name="teatro" type="text" maxlength="150" required>
         </div>
-
-        <div class="agent-field">
-          <label>Teatro / recinto</label>
-          <input type="text" value="Teatro Municipal">
-        </div>
-
-        <div class="agent-field">
-          <label>Ciudad</label>
-          <select class="agent-select">
-            <option value="Tulua" selected>Tulua</option>
-            <option value="Cali">Cali</option>
-            <option value="Bogota">Bogotá</option>
-          </select>
-        </div>
-
-        <div class="agent-field">
-          <label>Capacidad total</label>
-          <input type="number" value="450">
-        </div>
-
-        <div class="agent-field">
-          <label>Precio base</label>
-          <input type="text" value="$85.000">
-        </div>
-
-        <div class="agent-field">
-          <label>Fecha y hora de inicio</label>
-          <input type="datetime-local">
-        </div>
-
-        <div class="agent-field">
-          <label>Fecha y hora fin (estimada)</label>
-          <input type="datetime-local">
-        </div>
-
-        <div class="agent-field">
-          <label>Estado</label>
-          <select class="agent-select">
-            <option value="cancelado" selected>Cancelado</option>
-            <option value="boleteria">En boletería</option>
-            <option value="programado">Programado</option>
-            <option value="envivo">En vivo</option>
-          </select>
-        </div>
-
-        <div class="agent-field">
-          <label>Observaciones</label>
-          <input type="text" placeholder="Ej. Ingreso desde las 7:00 pm">
-        </div>
-
         <div class="agent-field agent-field--full">
-          <label>Descripción</label>
-          <textarea rows="3" class="agent-textarea">La Orquesta Filarmónica del Valle presenta un repertorio único...</textarea>
+          <span class="agent-field-label">Ubicación geográfica</span>
         </div>
-
-        <!-- Botón de subir archivos -->
-        <div class="agent-upload-box agent-field--full">
-          <svg aria-hidden="true"><use href="#i-upload"/></svg>
-          <h3>Actualizar archivos multimedia</h3>
-          <p>Sube nuevas imágenes o videos para la galería y carrusel.</p>
-          <label class="btn btn-ghost agent-upload-btn">
-            <span>Seleccionar archivos</span>
-            <input type="file" multiple accept="image/*,video/*" class="sr-only-input">
-          </label>
+        <div class="agent-field">
+          <label for="editar-pais">País</label>
+          <select id="editar-pais" name="id_pais" class="agent-select" required>
+            <option value="">Cargando países...</option>
+          </select>
         </div>
-
-        <!-- Localidades -->
+        <div class="agent-field">
+          <label for="editar-departamento">Departamento</label>
+          <select id="editar-departamento" name="id_departamento" class="agent-select" required disabled>
+            <option value="">Selecciona un país</option>
+          </select>
+        </div>
+        <div class="agent-field">
+          <label for="editar-ciudad">Ciudad</label>
+          <select id="editar-ciudad" name="id_ciudad" class="agent-select" required disabled>
+            <option value="">Selecciona un departamento</option>
+          </select>
+        </div>
+        <div class="agent-field">
+          <label for="editar-fecha-inicio">Fecha y hora de inicio</label>
+          <input id="editar-fecha-inicio" name="fecha_hora_inicio" type="datetime-local" required>
+        </div>
+        <div class="agent-field">
+          <label for="editar-fecha-fin">Fecha y hora fin estimada</label>
+          <input id="editar-fecha-fin" name="fecha_hora_fin_estimada" type="datetime-local" required>
+        </div>
+        <div class="agent-field">
+          <label for="editar-precio-general">Precio General</label>
+          <input id="editar-precio-general" name="precio_base" type="number" min="0.01" max="99999999.99" step="0.01" required>
+        </div>
+        <div class="agent-field">
+          <label for="editar-precio-vip">Precio VIP</label>
+          <input id="editar-precio-vip" name="precio_vip" type="number" min="0.01" max="99999999.99" step="0.01" required>
+        </div>
+        <div class="agent-field">
+          <label for="editar-precio-preferencial">Precio Preferencial</label>
+          <input id="editar-precio-preferencial" name="precio_preferencial" type="number" min="0.01" max="99999999.99" step="0.01" required>
+        </div>
         <div class="agent-localities-grid agent-field--full">
           <div class="agent-locality-col">
-            <label>Localidad 1</label>
-            <input type="text" value="Preferencial" class="mb-sm">
-            <input type="text" value="$85.000">
+            <label for="editar-capacidad-general">Aforo General</label>
+            <input id="editar-capacidad-general" name="capacidad_general" type="number" min="0" step="1" required>
           </div>
           <div class="agent-locality-col">
-            <label>Localidad 2</label>
-            <input type="text" value="VIP" class="mb-sm">
-            <input type="text" value="$85.000">
+            <label for="editar-capacidad-vip">Aforo VIP</label>
+            <input id="editar-capacidad-vip" name="capacidad_vip" type="number" min="0" step="1" required>
+          </div>
+          <div class="agent-locality-col">
+            <label for="editar-capacidad-preferencial">Aforo Preferencial</label>
+            <input id="editar-capacidad-preferencial" name="capacidad_preferencial" type="number" min="0" step="1" required>
           </div>
         </div>
-
-        <!-- Botones de Acción -->
-        <div class="agent-modal-actions agent-field--full">
-          <a href="#" class="btn btn-ghost agent-btn-discard">Descartar</a>
-          <button type="submit" class="btn btn-primary">Aplicar cambios</button>
+        <div class="agent-field agent-field--full agent-capacity-total">
+          <span>Aforo total</span>
+          <output id="editar-capacidad-total">0</output>
         </div>
-
+        <div class="agent-field">
+          <label for="editar-imagen">URL de imagen</label>
+          <input id="editar-imagen" name="url_imagen" type="url" maxlength="255">
+        </div>
+        <div class="agent-field">
+          <label for="editar-observaciones">Observaciones</label>
+          <input id="editar-observaciones" name="observaciones" type="text" maxlength="5000">
+        </div>
+        <div class="agent-field agent-field--full">
+          <label for="editar-descripcion">Descripción</label>
+          <textarea id="editar-descripcion" name="descripcion" rows="4" maxlength="10000" class="agent-textarea" required></textarea>
+        </div>
+        <p id="editar-evento-mensaje" class="agent-form-message agent-field--full" role="status" aria-live="polite" hidden></p>
+        <div class="agent-modal-actions agent-field--full">
+          <button type="button" class="btn btn-ghost agent-btn-discard" data-close-editor>Cancelar</button>
+          <button id="guardar-cambios-evento" type="submit" class="btn btn-primary">Guardar cambios</button>
+        </div>
       </form>
     </div>
   </div>

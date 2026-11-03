@@ -35,7 +35,10 @@
 
 .agent-register-form input[type="text"],
 .agent-register-form input[type="number"],
-.agent-register-form input[type="datetime-local"] {
+.agent-register-form input[type="datetime-local"],
+.agent-register-form input[type="url"],
+.agent-register-form select,
+.agent-register-form textarea {
   width: 100%;
   padding: 0.75rem 1rem;
   background: rgba(255, 255, 255, 0.03);
@@ -45,3 +48,112 @@
   font-family: var(--font-sans);
 }
 
+.agent-register-form select,
+.agent-register-form textarea {
+  background: #0a0d14;
+}
+
+.agent-localities-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.agent-locality-col {
+  display: grid;
+  align-content: start;
+  gap: 0.75rem;
+  padding: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.agent-locality-col h3 {
+  color: var(--text);
+  font-size: 1rem;
+}
+
+.agent-locality-col p,
+.agent-form-note {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.agent-field-label {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.agent-locality-col label {
+  margin-bottom: -0.5rem;
+}
+
+.agent-locality-col input {
+  min-width: 0;
+  width: 100%;
+  padding: 0.7rem 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text);
+}
+
+.agent-form-message {
+  padding: 0.9rem 1rem;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+}
+
+.agent-form-message[data-type="error"] {
+  color: #fb7185;
+}
+
+.agent-form-message[data-type="success"] {
+  color: #2dd4bf;
+}
+
+.agent-capacity-total {
+  display: grid;
+  gap: 0.25rem;
+  color: var(--text-muted);
+}
+
+.agent-capacity-total output {
+  color: var(--text);
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.agent-capacity-total small {
+  font-size: 0.8rem;
+}
+
+.agent-register-form button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+@media (max-width: 700px) {
+  .agent-form-card {
+    padding: 1.25rem;
+  }
+
+  .agent-register-form {
+    grid-template-columns: 1fr;
+  }
+
+  .agent-register-form .agent-field,
+  .agent-register-form .agent-field--full {
+    grid-column: 1;
+  }
+
+  .agent-localities-grid {
+    grid-template-columns: 1fr;
+  }
+}
