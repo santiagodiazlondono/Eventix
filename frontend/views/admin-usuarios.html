@@ -12,6 +12,7 @@
   <link rel="stylesheet" href="../css/admin-usuarios.css">
   <script src="../models/auth.js" defer></script>
   <script src="../controllers/auth.js" defer></script>
+  <script src="../controllers/admin-usuarios.js" defer></script>
 </head>
 <body class="admin-body" data-required-role="administrador">
 
@@ -61,24 +62,24 @@
       <!-- Encabezado de la vista -->
       <div class="admin-header-path">Administración del Sistema</div>
       <h1 class="admin-title">Gestión de Usuarios</h1>
-      <p class="admin-lead">Control general de cuentas, asignación de roles de agentes y clientes, y estados de acceso en la plataforma.</p>
+      <p class="admin-lead">Consulta y administra cuentas de clientes, agentes y administradores.</p>
 
       <!-- Barra de herramientas con buscador y filtro -->
       <div class="events-toolbar users-toolbar">
         <div class="search-field search-field--text users-search-box">
           <div class="input-icon">
             <svg aria-hidden="true"><use href="#i-search"/></svg>
-            <input type="search" placeholder="Buscar por nombre o correo..." aria-label="Buscar usuarios">
+            <input id="buscar-usuarios" type="search" placeholder="Buscar por nombre, correo o identificación..." aria-label="Buscar usuarios">
           </div>
         </div>
         <div class="users-toolbar-actions">
           <select class="search users-role-select" aria-label="Filtrar por rol">
             <option value="">Todos los roles</option>
-            <option value="admin">Admin</option>
-            <option value="organizador">Organizador / Agente</option>
+            <option value="administrador">Administrador</option>
+            <option value="agente">Agente</option>
             <option value="cliente">Cliente</option>
           </select>
-          <a class="btn btn-primary users-add-btn" href="#nuevo-usuario">+ Nuevo usuario</a>
+          <button class="btn btn-primary users-add-btn" id="agregar-usuario" type="button">+ Nuevo usuario</button>
         </div>
       </div>
 
@@ -96,68 +97,59 @@
             <thead>
               <tr>
                 <th>Usuario / Correo</th>
+                <th>Identificación</th>
                 <th>Rol</th>
-                <th>Estado</th>
-                <th>Registro</th>
+                <th>Teléfono</th>
+                <th>Ubicación</th>
                 <th class="admin-text-right">Acciones</th>
               </tr>
             </thead>
-            <tbody>
-              <tr>
-                <td>
-                  <div class="user-name">Santiago Rodríguez Díaz</div>
-                  <div class="user-email">santiago.rodriguez@uceva.edu.co</div>
-                </td>
-                <td><span class="badge badge-boleteria">Admin</span></td>
-                <td><span class="admin-status-ok">● Activo</span></td>
-                <td class="user-date"><time datetime="2025-01-12">12 ene 2025</time></td>
-                <td class="admin-text-right">
-                  <a class="btn btn-ghost user-edit-btn" href="#editar">Editar</a>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <div class="user-name">Santiago Díaz Londoño</div>
-                  <div class="user-email">santiago.diaz@uceva.edu.co</div>
-                </td>
-                <td><span class="badge badge-envivo">Organizador</span></td>
-                <td><span class="admin-status-ok">● Activo</span></td>
-                <td class="user-date"><time datetime="2026-03-14">14 mar 2026</time></td>
-                <td class="admin-text-right">
-                  <a class="btn btn-ghost user-edit-btn" href="#editar">Editar</a>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <div class="user-name">Noemiguel Moreno</div>
-                  <div class="user-email">noemiguel.moreno@uceva.edu.co</div>
-                </td>
-                <td><span class="badge badge-programado">Cliente</span></td>
-                <td><span class="admin-status-err">● Suspendido</span></td>
-                <td class="user-date"><time datetime="2026-02-02">02 feb 2026</time></td>
-                <td class="admin-text-right">
-                  <a class="btn btn-ghost user-edit-btn" href="#editar">Editar</a>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <div class="user-name">Brayan Castaño</div>
-                  <div class="user-email">brayan.castano@uceva.edu.co</div>
-                </td>
-                <td><span class="badge badge-programado">Cliente</span></td>
-                <td><span class="admin-status-ok">● Activo</span></td>
-                <td class="user-date"><time datetime="2026-04-19">19 abr 2026</time></td>
-                <td class="admin-text-right">
-                  <a class="btn btn-ghost user-edit-btn" href="#editar">Editar</a>
-                </td>
-              </tr>
-            </tbody>
+            <tbody id="usuarios-lista"></tbody>
           </table>
+          <p id="usuarios-mensaje" role="status" aria-live="polite">Cargando usuarios...</p>
         </div>
       </section>
 
     </div>
   </main>
+
+  <div id="modal-usuario" class="admin-crud-modal" aria-hidden="true">
+    <section class="admin-crud-dialog" role="dialog" aria-modal="true" aria-labelledby="modal-usuario-titulo">
+      <button type="button" class="admin-crud-close" data-close-usuario aria-label="Cerrar">×</button>
+      <h2 id="modal-usuario-titulo">Nuevo usuario</h2>
+      <form id="formulario-usuario" class="admin-crud-form">
+        <label for="usuario-identificacion">Identificación</label>
+        <input id="usuario-identificacion" name="identificacion" maxlength="20" required>
+        <label for="usuario-nombres">Nombres</label>
+        <input id="usuario-nombres" name="nombres" maxlength="100" required>
+        <label for="usuario-apellidos">Apellidos</label>
+        <input id="usuario-apellidos" name="apellidos" maxlength="100" required>
+        <label for="usuario-correo">Correo</label>
+        <input id="usuario-correo" name="correo_electronico" type="email" maxlength="150" required>
+        <label for="usuario-telefono">Teléfono</label>
+        <input id="usuario-telefono" name="telefono" maxlength="20" required>
+        <label for="usuario-ciudad">Ciudad</label>
+        <select id="usuario-ciudad" name="id_ciudad" required>
+          <option value="">Cargando ciudades...</option>
+        </select>
+        <label for="usuario-direccion">Dirección</label>
+        <input id="usuario-direccion" name="calle" maxlength="150">
+        <label for="usuario-rol">Rol</label>
+        <select id="usuario-rol" name="role" required>
+          <option value="cliente">Cliente</option>
+          <option value="agente">Agente</option>
+          <option value="administrador">Administrador</option>
+        </select>
+        <label for="usuario-contrasena">Contraseña <span id="contrasena-ayuda"></span></label>
+        <input id="usuario-contrasena" name="contrasena" type="password" minlength="8" maxlength="72" autocomplete="new-password">
+        <p id="usuario-form-mensaje" class="admin-crud-message" role="alert" hidden></p>
+        <div class="admin-crud-actions">
+          <button type="button" class="btn btn-ghost" data-close-usuario>Cancelar</button>
+          <button id="guardar-usuario" type="submit" class="btn btn-primary">Guardar</button>
+        </div>
+      </form>
+    </section>
+  </div>
 
   <!-- ============ PIE DE PÁGINA ============ -->
   <footer class="site-footer">

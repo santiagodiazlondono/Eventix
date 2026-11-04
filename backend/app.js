@@ -983,6 +983,615 @@ app.patch('/api/agente/reservas/:id', authenticate, authorize('agente'), asyncRo
   res.json({ reserva: result.rows[0] });
 }));
 
+const adminUserRoles = new Set(['cliente', 'agente', 'administrador']);
+
+function validateAdminUser(body, isNew) {
+  const identification = String(body.identificacion || '').trim();
+  const names = String(body.nombres || '').trim();
+  const surnames = String(body.apellidos || '').trim();
+  const email = String(body.correo_electronico || '').trim().toLowerCase();
+  const phone = String(body.telefono || '').trim();
+  const address = String(body.calle || '').trim();
+  const role = String(body.role || '').trim().toLowerCase();
+  const cityId = parseInteger(body.id_ciudad);
+  const password = body.contrasena;
+
+  if ((!identification && isNew) || identification.length > 20 ||
+      !names || names.length > 100 || !surnames || surnames.length > 100 ||
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 150 ||
+      !phone || phone.length > 20 || address.length > 150 ||
+      !adminUserRoles.has(role) || !Number.isSafeInteger(cityId) || cityId < 1 ||
+      (isNew && (typeof password !== 'string' ||
+        Array.from(password).length < 8 ||
+        Buffer.byteLength(password, 'utf8') < 8 ||
+        Buffer.byteLength(password, 'utf8') > 72)) ||
+      (!isNew && password !== undefined && password !== '' &&
+        (typeof password !== 'string' ||
+          Array.from(password).length < 8 ||
+          Buffer.byteLength(password, 'utf8') < 8 ||
+          Buffer.byteLength(password, 'utf8') > 72))) {
+    return { error: 'Revisa identificación, nombres, apellidos, correo, teléfono, ciudad, rol y contraseña.' };
+  }
+
+  return {
+    identification,
+    names,
+    surnames,
+    email,
+    phone,
+    address,
+    role,
+    cityId,
+    password: password || ''
+  };
+}
+
+function accountRoleSql(alias) {
+  return `CASE
+    WHEN ${alias}.identificacion IS NOT NULL THEN 'administrador'
+    WHEN agent.identificacion IS NOT NULL THEN 'agente'
+    WHEN client.identificacion IS NOT NULL THEN 'cliente'
+    ELSE NULL
+  END`;
+}
+
+app.get('/api/admin/usuarios', authenticate, authorize('administrador'), asyncRoute(async (req, res) => {
+  const role = req.query.rol ? String(req.query.rol).trim().toLowerCase() : null;
+  if (role && !adminUserRoles.has(role)) {
+    res.status(400).json({ error: 'El rol solicitado no es válido.' });
+    return;
+  }
+
+  const result = await pool.query(
+    `WITH usuarios AS (
+       SELECT p.identificacion, p.nombres, p.apellidos,
+              p.correo_electronico, p.calle, p.id_ciudad,
+              ci.nombre AS ciudad,
+              d.nombre AS departamento,
+              country.nombre AS pais,
+              phone.telefono,
+              ${accountRoleSql('admin')} AS role
+       FROM persona p
+       LEFT JOIN cliente client ON client.identificacion = p.identificacion
+       LEFT JOIN agente agent ON agent.identificacion = p.identificacion
+       LEFT JOIN administrador admin ON admin.identificacion = p.identificacion
+       LEFT JOIN ciudad ci ON ci.id_ciudad = p.id_ciudad
+       LEFT JOIN departamento d ON d.id_departamento = ci.id_departamento
+       LEFT JOIN pais country ON country.id_pais = d.id_pais
+       LEFT JOIN LATERAL (
+         SELECT telefono
+         FROM personatelefono
+         WHERE identificacion = p.identificacion
+         ORDER BY telefono
+         LIMIT 1
+       ) phone ON TRUE
+     )
+     SELECT * FROM usuarios
+     WHERE role IS NOT NULL AND ($1::text IS NULL OR role = $1)
+     ORDER BY nombres, apellidos, identificacion`,
+    [role]
+  );
+  res.json({ usuarios: result.rows });
+}));
+
+app.post('/api/admin/usuarios', authenticate, authorize('administrador'), asyncRoute(async (req, res) => {
+  const user = validateAdminUser(req.body || {}, true);
+  if (user.error) {
+    res.status(400).json({ error: user.error });
+    return;
+  }
+  const passwordHash = await bcrypt.hash(user.password, 12);
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const city = await client.query('SELECT 1 FROM ciudad WHERE id_ciudad = $1', [user.cityId]);
+    if (city.rowCount === 0) {
+      await client.query('ROLLBACK');
+      res.status(400).json({ error: 'La ciudad seleccionada no existe.' });
+      return;
+    }
+
+    await client.query(
+      `INSERT INTO persona
+         (identificacion, id_ciudad, nombres, apellidos, correo_electronico,
+          calle, password_hash, auth_version)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, 0)`,
+      [
+        user.identification, user.cityId, user.names, user.surnames,
+        user.email, user.address || null, passwordHash
+      ]
+    );
+    await client.query(
+      'INSERT INTO personatelefono (identificacion, telefono) VALUES ($1, $2)',
+      [user.identification, user.phone]
+    );
+    if (user.role === 'cliente') {
+      await client.query(
+        'INSERT INTO cliente (identificacion, cantidad_puntos) VALUES ($1, 0)',
+        [user.identification]
+      );
+    } else {
+      const table = user.role === 'agente' ? 'agente' : 'administrador';
+      await client.query(`INSERT INTO ${table} (identificacion) VALUES ($1)`, [user.identification]);
+    }
+    await client.query('COMMIT');
+    res.status(201).json({
+      usuario: {
+        identificacion: user.identification,
+        nombres: user.names,
+        apellidos: user.surnames,
+        correo_electronico: user.email,
+        role: user.role
+      }
+    });
+  } catch (error) {
+    await client.query('ROLLBACK');
+    if (error.code === '23505') {
+      res.status(409).json({ error: 'La identificación o el correo ya están registrados.' });
+      return;
+    }
+    throw error;
+  } finally {
+    client.release();
+  }
+}));
+
+app.put('/api/admin/usuarios/:identificacion', authenticate, authorize('administrador'), asyncRoute(async (req, res) => {
+  const user = validateAdminUser({
+    ...(req.body || {}),
+    identificacion: req.params.identificacion
+  }, false);
+  if (user.error || !user.identification) {
+    res.status(400).json({ error: user.error || 'La identificación no es válida.' });
+    return;
+  }
+  const passwordHash = user.password ? await bcrypt.hash(user.password, 12) : null;
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const currentResult = await client.query(
+      `SELECT p.identificacion,
+              CASE
+                WHEN admin.identificacion IS NOT NULL THEN 'administrador'
+                WHEN agent.identificacion IS NOT NULL THEN 'agente'
+                WHEN customer.identificacion IS NOT NULL THEN 'cliente'
+                ELSE NULL
+              END AS role
+       FROM persona p
+       LEFT JOIN administrador admin ON admin.identificacion = p.identificacion
+       LEFT JOIN agente agent ON agent.identificacion = p.identificacion
+       LEFT JOIN cliente customer ON customer.identificacion = p.identificacion
+       WHERE p.identificacion = $1
+       FOR UPDATE OF p`,
+      [user.identification]
+    );
+    const current = currentResult.rows[0];
+    if (!current || !current.role) {
+      await client.query('ROLLBACK');
+      res.status(404).json({ error: 'No se encontró una cuenta válida con esa identificación.' });
+      return;
+    }
+
+    const roleChanged = current.role !== user.role;
+    if (roleChanged && user.identification === req.user.identificacion) {
+      await client.query('ROLLBACK');
+      res.status(409).json({ error: 'No puedes cambiar tu propio rol administrativo.' });
+      return;
+    }
+    if (roleChanged && current.role === 'administrador') {
+      await client.query('LOCK TABLE administrador IN EXCLUSIVE MODE');
+      const admins = await client.query('SELECT COUNT(*)::int AS total FROM administrador');
+      if (admins.rows[0].total <= 1) {
+        await client.query('ROLLBACK');
+        res.status(409).json({ error: 'No puedes quitar el rol del último administrador.' });
+        return;
+      }
+    }
+    if (roleChanged && current.role === 'cliente') {
+      const reservations = await client.query(
+        'SELECT 1 FROM reserva WHERE identificacion_cliente = $1 LIMIT 1',
+        [user.identification]
+      );
+      if (reservations.rowCount > 0) {
+        await client.query('ROLLBACK');
+        res.status(409).json({ error: 'No se puede cambiar el rol de un cliente con reservas asociadas.' });
+        return;
+      }
+    }
+    if (roleChanged && current.role === 'agente') {
+      const events = await client.query(
+        'SELECT 1 FROM evento WHERE identificacion_agente = $1 LIMIT 1',
+        [user.identification]
+      );
+      if (events.rowCount > 0) {
+        await client.query('ROLLBACK');
+        res.status(409).json({ error: 'No se puede cambiar el rol de un agente con eventos asociados.' });
+        return;
+      }
+    }
+
+    const city = await client.query('SELECT 1 FROM ciudad WHERE id_ciudad = $1', [user.cityId]);
+    if (city.rowCount === 0) {
+      await client.query('ROLLBACK');
+      res.status(400).json({ error: 'La ciudad seleccionada no existe.' });
+      return;
+    }
+
+    await client.query(
+      `UPDATE persona
+       SET id_ciudad = $1,
+           nombres = $2,
+           apellidos = $3,
+           correo_electronico = $4,
+           calle = $5,
+           password_hash = COALESCE($6, password_hash),
+           auth_version = auth_version + CASE WHEN $7 THEN 1 ELSE 0 END
+       WHERE identificacion = $8`,
+      [
+        user.cityId, user.names, user.surnames, user.email, user.address || null,
+        passwordHash, roleChanged || Boolean(passwordHash), user.identification
+      ]
+    );
+    await client.query(
+      'DELETE FROM personatelefono WHERE identificacion = $1',
+      [user.identification]
+    );
+    await client.query(
+      'INSERT INTO personatelefono (identificacion, telefono) VALUES ($1, $2)',
+      [user.identification, user.phone]
+    );
+
+    if (roleChanged) {
+      const oldTable = current.role === 'cliente'
+        ? 'cliente'
+        : current.role === 'agente' ? 'agente' : 'administrador';
+      const newTable = user.role === 'cliente'
+        ? 'cliente'
+        : user.role === 'agente' ? 'agente' : 'administrador';
+      await client.query(`DELETE FROM ${oldTable} WHERE identificacion = $1`, [user.identification]);
+      if (newTable === 'cliente') {
+        await client.query(
+          'INSERT INTO cliente (identificacion, cantidad_puntos) VALUES ($1, 0)',
+          [user.identification]
+        );
+      } else {
+        await client.query(
+          `INSERT INTO ${newTable} (identificacion) VALUES ($1)`,
+          [user.identification]
+        );
+      }
+    }
+    await client.query('COMMIT');
+    res.json({
+      usuario: {
+        identificacion: user.identification,
+        nombres: user.names,
+        apellidos: user.surnames,
+        correo_electronico: user.email,
+        role: user.role
+      }
+    });
+  } catch (error) {
+    await client.query('ROLLBACK');
+    if (error.code === '23505') {
+      res.status(409).json({ error: 'El correo electrónico ya está registrado.' });
+      return;
+    }
+    throw error;
+  } finally {
+    client.release();
+  }
+}));
+
+app.delete('/api/admin/usuarios/:identificacion', authenticate, authorize('administrador'), asyncRoute(async (req, res) => {
+  const identification = String(req.params.identificacion || '').trim();
+  if (!identification || identification.length > 20) {
+    res.status(400).json({ error: 'La identificación no es válida.' });
+    return;
+  }
+  if (identification === req.user.identificacion) {
+    res.status(409).json({ error: 'No puedes eliminar la cuenta con la que tienes esta sesión.' });
+    return;
+  }
+
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const accountResult = await client.query(
+      `SELECT CASE
+                WHEN admin.identificacion IS NOT NULL THEN 'administrador'
+                WHEN agent.identificacion IS NOT NULL THEN 'agente'
+                WHEN customer.identificacion IS NOT NULL THEN 'cliente'
+                ELSE NULL
+              END AS role
+       FROM persona p
+       LEFT JOIN administrador admin ON admin.identificacion = p.identificacion
+       LEFT JOIN agente agent ON agent.identificacion = p.identificacion
+       LEFT JOIN cliente customer ON customer.identificacion = p.identificacion
+       WHERE p.identificacion = $1
+       FOR UPDATE OF p`,
+      [identification]
+    );
+    const account = accountResult.rows[0];
+    if (!account || !account.role) {
+      await client.query('ROLLBACK');
+      res.status(404).json({ error: 'No se encontró una cuenta válida con esa identificación.' });
+      return;
+    }
+    if (account.role === 'administrador') {
+      await client.query('LOCK TABLE administrador IN EXCLUSIVE MODE');
+      const admins = await client.query('SELECT COUNT(*)::int AS total FROM administrador');
+      if (admins.rows[0].total <= 1) {
+        await client.query('ROLLBACK');
+        res.status(409).json({ error: 'No puedes eliminar el último administrador.' });
+        return;
+      }
+    }
+    if (account.role === 'cliente') {
+      const reservations = await client.query(
+        'SELECT 1 FROM reserva WHERE identificacion_cliente = $1 LIMIT 1',
+        [identification]
+      );
+      if (reservations.rowCount > 0) {
+        await client.query('ROLLBACK');
+        res.status(409).json({ error: 'No se puede eliminar un cliente con reservas asociadas.' });
+        return;
+      }
+    }
+    if (account.role === 'agente') {
+      const events = await client.query(
+        'SELECT 1 FROM evento WHERE identificacion_agente = $1 LIMIT 1',
+        [identification]
+      );
+      if (events.rowCount > 0) {
+        await client.query('ROLLBACK');
+        res.status(409).json({ error: 'No se puede eliminar un agente con eventos asociados.' });
+        return;
+      }
+    }
+
+    const subtype = account.role === 'cliente'
+      ? 'cliente'
+      : account.role === 'agente' ? 'agente' : 'administrador';
+    await client.query(`DELETE FROM ${subtype} WHERE identificacion = $1`, [identification]);
+    await client.query('DELETE FROM personatelefono WHERE identificacion = $1', [identification]);
+    await client.query('DELETE FROM persona WHERE identificacion = $1', [identification]);
+    await client.query('COMMIT');
+    res.status(204).end();
+  } catch (error) {
+    await client.query('ROLLBACK');
+    if (error.code === '23503') {
+      res.status(409).json({ error: 'No se puede eliminar la cuenta porque tiene registros asociados.' });
+      return;
+    }
+    throw error;
+  } finally {
+    client.release();
+  }
+}));
+
+const adminCatalogTypes = {
+  paises: { table: 'pais', id: 'id_pais', parent: null },
+  departamentos: { table: 'departamento', id: 'id_departamento', parent: 'id_pais' },
+  ciudades: { table: 'ciudad', id: 'id_ciudad', parent: 'id_departamento' }
+};
+
+function validateCatalogName(value) {
+  const name = typeof value === 'string' ? value.trim() : '';
+  return name && name.length <= 100 ? name : null;
+}
+
+app.get('/api/admin/catalogos/paises', authenticate, authorize('administrador'), asyncRoute(async (req, res) => {
+  const result = await pool.query(
+    `SELECT p.id_pais, p.nombre,
+            COUNT(d.id_departamento)::int AS cantidad_departamentos
+     FROM pais p
+     LEFT JOIN departamento d ON d.id_pais = p.id_pais
+     GROUP BY p.id_pais, p.nombre
+     ORDER BY p.nombre`
+  );
+  res.json({ paises: result.rows });
+}));
+
+app.get('/api/admin/catalogos/departamentos', authenticate, authorize('administrador'), asyncRoute(async (req, res) => {
+  const result = await pool.query(
+    `SELECT d.id_departamento, d.nombre, d.id_pais,
+            p.nombre AS pais, COUNT(c.id_ciudad)::int AS cantidad_ciudades
+     FROM departamento d
+     JOIN pais p ON p.id_pais = d.id_pais
+     LEFT JOIN ciudad c ON c.id_departamento = d.id_departamento
+     GROUP BY d.id_departamento, d.nombre, d.id_pais, p.nombre
+     ORDER BY p.nombre, d.nombre`
+  );
+  res.json({ departamentos: result.rows });
+}));
+
+app.get('/api/admin/catalogos/ciudades', authenticate, authorize('administrador'), asyncRoute(async (req, res) => {
+  const result = await pool.query(
+    `SELECT c.id_ciudad, c.nombre, c.id_departamento,
+            d.nombre AS departamento, d.id_pais, p.nombre AS pais
+     FROM ciudad c
+     JOIN departamento d ON d.id_departamento = c.id_departamento
+     JOIN pais p ON p.id_pais = d.id_pais
+     ORDER BY p.nombre, d.nombre, c.nombre`
+  );
+  res.json({ ciudades: result.rows });
+}));
+
+app.post('/api/admin/catalogos/:tipo', authenticate, authorize('administrador'), asyncRoute(async (req, res) => {
+  const definition = adminCatalogTypes[req.params.tipo];
+  const name = validateCatalogName(req.body && req.body.nombre);
+  if (!definition || !name) {
+    res.status(400).json({ error: 'El tipo de catálogo o el nombre no es válido (máximo 100 caracteres).' });
+    return;
+  }
+  const parentId = definition.parent
+    ? parseInteger(req.body && req.body[definition.parent])
+    : null;
+  if (definition.parent && (!Number.isSafeInteger(parentId) || parentId < 1)) {
+    res.status(400).json({ error: 'Selecciona el catálogo superior correspondiente.' });
+    return;
+  }
+
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    await client.query(`LOCK TABLE ${definition.table} IN EXCLUSIVE MODE`);
+    if (definition.parent) {
+      const parentTable = definition.parent === 'id_pais' ? 'pais' : 'departamento';
+      const parentIdColumn = definition.parent;
+      const parent = await client.query(
+        `SELECT 1 FROM ${parentTable} WHERE ${parentIdColumn} = $1`,
+        [parentId]
+      );
+      if (parent.rowCount === 0) {
+        await client.query('ROLLBACK');
+        res.status(400).json({ error: 'El catálogo superior seleccionado no existe.' });
+        return;
+      }
+    }
+
+    const duplicate = await client.query(
+      `SELECT 1 FROM ${definition.table}
+       WHERE LOWER(TRIM(nombre)) = LOWER(TRIM($1))${
+         definition.parent ? ` AND ${definition.parent} = $2` : ''
+       }
+       LIMIT 1`,
+      definition.parent ? [name, parentId] : [name]
+    );
+    if (duplicate.rowCount > 0) {
+      await client.query('ROLLBACK');
+      res.status(409).json({ error: 'Ya existe un registro con ese nombre en el catálogo seleccionado.' });
+      return;
+    }
+
+    const columns = definition.parent ? `nombre, ${definition.parent}` : 'nombre';
+    const values = definition.parent ? [name, parentId] : [name];
+    const placeholders = definition.parent ? '$1, $2' : '$1';
+    const result = await client.query(
+      `INSERT INTO ${definition.table} (${columns})
+       VALUES (${placeholders})
+       RETURNING ${definition.id}, nombre`,
+      values
+    );
+    await client.query('COMMIT');
+    res.status(201).json({ registro: result.rows[0] });
+  } catch (error) {
+    await client.query('ROLLBACK');
+    if (error.code === '23505') {
+      res.status(409).json({ error: 'Ya existe un registro con ese nombre en el catálogo seleccionado.' });
+      return;
+    }
+    throw error;
+  } finally {
+    client.release();
+  }
+}));
+
+app.put('/api/admin/catalogos/:tipo/:id', authenticate, authorize('administrador'), asyncRoute(async (req, res) => {
+  const definition = adminCatalogTypes[req.params.tipo];
+  const id = parseInteger(req.params.id);
+  const name = validateCatalogName(req.body && req.body.nombre);
+  const parentId = definition && definition.parent
+    ? parseInteger(req.body && req.body[definition.parent])
+    : null;
+  if (!definition || !Number.isSafeInteger(id) || id < 1 || !name ||
+      (definition.parent && (!Number.isSafeInteger(parentId) || parentId < 1))) {
+    res.status(400).json({ error: 'El catálogo, identificador, nombre o catálogo superior no es válido.' });
+    return;
+  }
+
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    await client.query(`LOCK TABLE ${definition.table} IN EXCLUSIVE MODE`);
+    const existing = await client.query(
+      `SELECT 1 FROM ${definition.table} WHERE ${definition.id} = $1 FOR UPDATE`,
+      [id]
+    );
+    if (existing.rowCount === 0) {
+      await client.query('ROLLBACK');
+      res.status(404).json({ error: 'No se encontró el registro del catálogo.' });
+      return;
+    }
+    if (definition.parent) {
+      const parentTable = definition.parent === 'id_pais' ? 'pais' : 'departamento';
+      const parent = await client.query(
+        `SELECT 1 FROM ${parentTable} WHERE ${definition.parent} = $1`,
+        [parentId]
+      );
+      if (parent.rowCount === 0) {
+        await client.query('ROLLBACK');
+        res.status(400).json({ error: 'El catálogo superior seleccionado no existe.' });
+        return;
+      }
+    }
+    const duplicate = await client.query(
+      `SELECT 1 FROM ${definition.table}
+       WHERE LOWER(TRIM(nombre)) = LOWER(TRIM($1))
+         AND ${definition.id} <> $2${
+           definition.parent ? ` AND ${definition.parent} = $3` : ''
+         }
+       LIMIT 1`,
+      definition.parent ? [name, id, parentId] : [name, id]
+    );
+    if (duplicate.rowCount > 0) {
+      await client.query('ROLLBACK');
+      res.status(409).json({ error: 'Ya existe un registro con ese nombre en el catálogo seleccionado.' });
+      return;
+    }
+
+    const result = await client.query(
+      `UPDATE ${definition.table}
+       SET nombre = $1${definition.parent ? `, ${definition.parent} = $2` : ''}
+       WHERE ${definition.id} = ${definition.parent ? '$3' : '$2'}
+       RETURNING ${definition.id}, nombre${definition.parent ? `, ${definition.parent}` : ''}`,
+      definition.parent ? [name, parentId, id] : [name, id]
+    );
+    await client.query('COMMIT');
+    res.json({ registro: result.rows[0] });
+  } catch (error) {
+    await client.query('ROLLBACK');
+    if (error.code === '23505') {
+      res.status(409).json({ error: 'Ya existe un registro con ese nombre en el catálogo seleccionado.' });
+      return;
+    }
+    throw error;
+  } finally {
+    client.release();
+  }
+}));
+
+app.delete('/api/admin/catalogos/:tipo/:id', authenticate, authorize('administrador'), asyncRoute(async (req, res) => {
+  const definition = adminCatalogTypes[req.params.tipo];
+  const id = parseInteger(req.params.id);
+  if (!definition || !Number.isSafeInteger(id) || id < 1) {
+    res.status(400).json({ error: 'El catálogo o identificador no es válido.' });
+    return;
+  }
+  try {
+    const result = await pool.query(
+      `DELETE FROM ${definition.table}
+       WHERE ${definition.id} = $1
+       RETURNING ${definition.id}`,
+      [id]
+    );
+    if (result.rowCount === 0) {
+      res.status(404).json({ error: 'No se encontró el registro del catálogo.' });
+      return;
+    }
+    res.status(204).end();
+  } catch (error) {
+    if (error.code === '23503') {
+      res.status(409).json({
+        error: 'No se puede eliminar porque existen departamentos, ciudades, usuarios o eventos asociados.'
+      });
+      return;
+    }
+    throw error;
+  }
+}));
+
 app.get('/api/admin/reportes', authenticate, authorize('administrador'), asyncRoute(async (req, res) => {
   const [counts, reservationsByEventMonth, revenueByMonth] = await Promise.all([
     pool.query(

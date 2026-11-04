@@ -75,6 +75,13 @@ El seed es transaccional e idempotente. Si el correo ya pertenece a un administr
 | `GET` | `/api/reservas` | Cliente | Consulta las reservas del cliente autenticado. |
 | `POST` | `/api/reservas` | Cliente | Crea una reserva y comprueba la capacidad. |
 | `GET` | `/api/admin/reportes` | Administrador | Devuelve conteos, reservas por evento/mes e ingresos mensuales. |
+| `GET/POST` | `/api/admin/usuarios` | Administrador | Lista cuentas y crea clientes, agentes o administradores. |
+| `PUT/DELETE` | `/api/admin/usuarios/:identificacion` | Administrador | Actualiza o elimina una cuenta respetando reservas, eventos y el último administrador. |
+| `GET` | `/api/admin/catalogos/paises` | Administrador | Lista países con sus departamentos. |
+| `GET` | `/api/admin/catalogos/departamentos` | Administrador | Lista departamentos con país y cantidad de ciudades. |
+| `GET` | `/api/admin/catalogos/ciudades` | Administrador | Lista ciudades con su departamento y país. |
+| `POST` | `/api/admin/catalogos/:tipo` | Administrador | Crea país, departamento o ciudad (`tipo`: `paises`, `departamentos` o `ciudades`). |
+| `PUT/DELETE` | `/api/admin/catalogos/:tipo/:id` | Administrador | Actualiza o elimina un elemento geográfico. No permite borrar elementos con registros asociados. |
 
 El registro recibe `identificacion`, `nombre_completo`, `correo`, `numero_telefono`, `id_ciudad`, `direccion`, `contrasena` y `rol` (`cliente` o `agente`). La contraseña debe tener al menos 8 caracteres. El inicio de sesión recibe `correo` y `contrasena`; las sesiones usan una cookie `HttpOnly`, `SameSite=Lax` y `Secure` en producción. Las solicitudes del navegador incluyen credenciales.
 

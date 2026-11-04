@@ -80,3 +80,106 @@
   font-size: 0.78rem;
   min-height: auto;
 }
+
+.user-delete-btn {
+  padding: 0.3rem 0.7rem;
+  min-height: auto;
+  color: #fb7185;
+}
+
+.admin-crud-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  overflow-y: auto;
+  padding: 2rem 1rem;
+  background: rgba(5, 7, 10, 0.85);
+}
+
+.admin-crud-modal.is-open {
+  display: block;
+}
+
+.admin-crud-dialog {
+  position: relative;
+  width: min(100%, 680px);
+  margin: 0 auto;
+  padding: 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  background: #0a0d14;
+}
+
+.admin-crud-dialog h2 {
+  margin: 0 2.5rem 1.5rem 0;
+  color: var(--text);
+}
+
+.admin-crud-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text);
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+.admin-crud-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem 1rem;
+}
+
+.admin-crud-form label {
+  align-self: end;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+}
+
+.admin-crud-form input,
+.admin-crud-form select {
+  width: 100%;
+  min-height: 2.7rem;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  background: #111827;
+  color: var(--text);
+}
+
+.admin-crud-message,
+.admin-crud-actions {
+  grid-column: 1 / -1;
+}
+
+.admin-crud-message[data-type="error"] {
+  color: #fb7185;
+}
+
+.admin-crud-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+@media (max-width: 650px) {
+  .users-toolbar-actions,
+  .admin-crud-form {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-crud-form {
+    display: grid;
+  }
+
+  .admin-crud-dialog {
+    padding: 1.25rem;
+  }
+}

@@ -9,10 +9,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../css/admin-catalogos.css">
-    <link rel="stylesheet" href="../css/styles.css">
-      <link rel="stylesheet" href="../css/agente-reservas.css">
+  <link rel="stylesheet" href="../css/styles.css">
   <script src="../models/auth.js" defer></script>
   <script src="../controllers/auth.js" defer></script>
+  <script src="../controllers/admin-catalogos.js" defer></script>
 
 </head>
 <body class="admin-body" data-required-role="administrador">
@@ -72,84 +72,44 @@
       <!-- Pestañas de navegación de catálogos -->
       <div class="catalog-tabs-wrap">
         <ul class="catalog-tabs">
-          <li><a href="#países" class="catalog-tab-link is-active">Países</a></li>
-          <li><a href="#departamentos" class="catalog-tab-link">Departamentos</a></li>
-          <li><a href="#ciudades" class="catalog-tab-link">Ciudades</a></li>
-          <li><a href="#administrador" class="catalog-tab-link">Administrador</a></li>
+          <li><a href="#paises" data-catalog-tab="paises" class="catalog-tab-link is-active">Países</a></li>
+          <li><a href="#departamentos" data-catalog-tab="departamentos" class="catalog-tab-link">Departamentos</a></li>
+          <li><a href="#ciudades" data-catalog-tab="ciudades" class="catalog-tab-link">Ciudades</a></li>
+          <li><a href="#administradores" data-catalog-tab="administradores" class="catalog-tab-link">Administradores</a></li>
         </ul>
       </div>
 
-      <!-- Botón de acción superior derecha -->
       <div class="catalog-action-bar">
-        <a class="btn btn-primary catalog-add-btn" href="#agregar-pais">
-          <span class="catalog-add-icon">+</span> Agregar país
-        </a>
+        <button id="catalogo-agregar" class="btn btn-primary catalog-add-btn" type="button">+ Agregar país</button>
       </div>
 
-      <!-- Tabla de Contenido / Catálogo de Países -->
       <section class="distribution-card admin-card-flat catalog-card-table" aria-labelledby="catalogos-title">
         <div class="admin-table-scroll">
           <table class="report-table catalog-table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>NOMBRE</th>
-                <th>DEPARTAMENTOS</th>
-                <th class="text-right">ACCIONES</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td class="font-mono text-muted">01</td>
-                <td class="font-weight-500 text-main">Colombia</td>
-                <td class="font-mono text-main">32</td>
-                <td class="text-right">
-                  <div class="catalog-actions-group">
-                    <a href="#editar" aria-label="Editar Colombia" class="icon-edit"><svg><use href="#i-edit"/></svg></a>
-                    <a href="#eliminar" aria-label="Eliminar Colombia" class="icon-trash"><svg><use href="#i-trash"/></svg></a>
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <td class="font-mono text-muted">02</td>
-                <td class="font-weight-500 text-main">Ecuador</td>
-                <td class="font-mono text-main">24</td>
-                <td class="text-right">
-                  <div class="catalog-actions-group">
-                    <a href="#editar" aria-label="Editar Ecuador" class="icon-edit"><svg><use href="#i-edit"/></svg></a>
-                    <a href="#eliminar" aria-label="Eliminar Ecuador" class="icon-trash"><svg><use href="#i-trash"/></svg></a>
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <td class="font-mono text-muted">03</td>
-                <td class="font-weight-500 text-main">Peru</td>
-                <td class="font-mono text-main">25</td>
-                <td class="text-right">
-                  <div class="catalog-actions-group">
-                    <a href="#editar" aria-label="Editar Peru" class="icon-edit"><svg><use href="#i-edit"/></svg></a>
-                    <a href="#eliminar" aria-label="Eliminar Peru" class="icon-trash"><svg><use href="#i-trash"/></svg></a>
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <td class="font-mono text-muted">04</td>
-                <td class="font-weight-500 text-main">Venezuela</td>
-                <td class="font-mono text-main">23</td>
-                <td class="text-right">
-                  <div class="catalog-actions-group">
-                    <a href="#editar" aria-label="Editar Venezuela" class="icon-edit"><svg><use href="#i-edit"/></svg></a>
-                    <a href="#eliminar" aria-label="Eliminar Venezuela" class="icon-trash"><svg><use href="#i-trash"/></svg></a>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
+            <thead id="catalogo-encabezado"></thead>
+            <tbody id="catalogo-lista"></tbody>
           </table>
+          <p id="catalogo-mensaje" role="status" aria-live="polite">Cargando catálogo...</p>
         </div>
       </section>
 
     </div>
   </main>
+
+  <div id="modal-catalogo" class="catalog-modal" aria-hidden="true">
+    <section class="catalog-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="catalogo-modal-titulo">
+      <button type="button" class="catalog-modal-close" data-close-catalogo aria-label="Cerrar">×</button>
+      <h2 id="catalogo-modal-titulo">Agregar registro</h2>
+      <form id="formulario-catalogo" class="catalog-modal-form">
+        <div id="catalogo-campos" class="catalog-modal-fields"></div>
+        <p id="catalogo-form-mensaje" role="alert" hidden></p>
+        <div class="catalog-modal-actions">
+          <button type="button" class="btn btn-ghost" data-close-catalogo>Cancelar</button>
+          <button id="catalogo-guardar" type="submit" class="btn btn-primary">Guardar</button>
+        </div>
+      </form>
+    </section>
+  </div>
 
   <!-- ============ PIE DE PÁGINA ============ -->
   <footer class="site-footer">
