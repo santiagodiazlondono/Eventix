@@ -8,6 +8,7 @@ const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 const jwt = require('jsonwebtoken');
 const { Pool } = require('pg');
+const { sendReservationEmail } = require('./email');
 
 const app = express();
 const port = Number(process.env.PORT) || 5000;
@@ -1649,6 +1650,43 @@ app.get('/api/reservas', authenticate, authorize('cliente'), asyncRoute(async (r
   res.json({ reservas: result.rows });
 }));
 
+async function getReservationEmailDetails(client, reservationId) {
+  const result = await client.query(
+    `SELECT r.id_reserva,
+            TO_CHAR(r.fecha_hora_reserva, 'DD/MM/YYYY HH24:MI') AS fecha_reserva,
+            r.valor_total::text AS valor_total,
+            r.numero_entradas, r.localidad, er.nombre AS estado,
+            p.nombres, p.apellidos, p.correo_electronico,
+            e.nombre_evento AS evento,
+            TO_CHAR(e.fecha_hora_inicio, 'DD/MM/YYYY HH24:MI') AS fecha_evento,
+            e.teatro, ci.nombre AS ciudad
+     FROM reserva r
+     JOIN estadoreserva er ON er.id_estado_reserva = r.id_estado_reserva
+     JOIN persona p ON p.identificacion = r.identificacion_cliente
+     JOIN evento e ON e.codigo_evento = r.codigo_evento
+     JOIN ciudad ci ON ci.id_ciudad = e.id_ciudad
+     WHERE r.id_reserva = $1`,
+    [reservationId]
+  );
+  if (result.rowCount !== 1) {
+    throw new Error('No fue posible obtener los datos del comprobante de la reserva.');
+  }
+  return result.rows[0];
+}
+
+async function deliverReservationEmail(reservation, action) {
+  try {
+    const result = await sendReservationEmail(reservation, action);
+    if (!result.sent) {
+      console.warn('Comprobante de reserva no enviado:', result.reason);
+    }
+    return result.sent;
+  } catch (error) {
+    console.error('Error al enviar el comprobante de reserva:', error.message);
+    return false;
+  }
+}
+
 app.post('/api/reservas', authenticate, authorize('cliente'), asyncRoute(async (req, res) => {
   const body = req.body || {};
   const codigo = String(body.codigo_evento || '').trim();
@@ -1669,6 +1707,8 @@ app.post('/api/reservas', authenticate, authorize('cliente'), asyncRoute(async (
   }
 
   const client = await pool.connect();
+  let reservation;
+  let emailDetails;
   try {
     await client.query('BEGIN');
     const eventResult = await client.query(
@@ -1787,21 +1827,111 @@ app.post('/api/reservas', authenticate, authorize('cliente'), asyncRoute(async (
       ]
     );
 
+    emailDetails = await getReservationEmailDetails(
+      client,
+      reservationResult.rows[0].id_reserva
+    );
     await client.query('COMMIT');
-    res.status(201).json({
-      reserva: {
-        ...reservationResult.rows[0],
-        codigo_evento: codigo,
-        localidad: locality,
-        servicio_por_entrada: serviceFeePerTicket
-      }
-    });
+    reservation = {
+      ...reservationResult.rows[0],
+      codigo_evento: codigo,
+      localidad: locality,
+      servicio_por_entrada: serviceFeePerTicket
+    };
   } catch (error) {
     await client.query('ROLLBACK');
     throw error;
   } finally {
     client.release();
   }
+
+  const emailSent = await deliverReservationEmail(emailDetails, 'created');
+  res.status(201).json({
+    reserva: reservation,
+    correo_enviado: emailSent,
+    ...(emailSent ? {} : {
+      aviso: 'La reserva se creó, pero no fue posible enviar el comprobante por correo.'
+    })
+  });
+}));
+
+app.delete('/api/reservas/:id', authenticate, authorize('cliente'), asyncRoute(async (req, res) => {
+  const reservationId = parseInteger(req.params.id);
+  if (!reservationId || reservationId < 1) {
+    res.status(400).json({ error: 'El identificador de la reserva no es válido.' });
+    return;
+  }
+
+  const client = await pool.connect();
+  let reservation;
+  try {
+    await client.query('BEGIN');
+    const currentReservation = await client.query(
+      `SELECT r.id_reserva, er.nombre AS estado
+       FROM reserva r
+       JOIN estadoreserva er ON er.id_estado_reserva = r.id_estado_reserva
+       WHERE r.id_reserva = $1
+         AND r.identificacion_cliente = $2
+       FOR UPDATE OF r`,
+      [reservationId, req.user.identificacion]
+    );
+    if (currentReservation.rowCount === 0) {
+      await client.query('ROLLBACK');
+      res.status(404).json({ error: 'No se encontró la reserva solicitada.' });
+      return;
+    }
+
+    if (['cancelada', 'cancelado', 'anulada', 'anulado'].includes(
+      String(currentReservation.rows[0].estado).trim().toLowerCase()
+    )) {
+      await client.query('ROLLBACK');
+      res.status(409).json({ error: 'La reserva ya está cancelada.' });
+      return;
+    }
+
+    const cancelledState = await client.query(
+      `SELECT id_estado_reserva
+       FROM estadoreserva
+       WHERE LOWER(TRIM(nombre)) IN ('cancelada', 'cancelado', 'anulada', 'anulado')
+       ORDER BY CASE LOWER(TRIM(nombre))
+         WHEN 'cancelada' THEN 0
+         WHEN 'cancelado' THEN 1
+         WHEN 'anulada' THEN 2
+         ELSE 3
+       END
+       LIMIT 1`
+    );
+    if (cancelledState.rowCount === 0) {
+      await client.query('ROLLBACK');
+      res.status(503).json({
+        error: 'Configura el estado Cancelada antes de cancelar reservas.'
+      });
+      return;
+    }
+
+    await client.query(
+      `UPDATE reserva
+       SET id_estado_reserva = $1
+       WHERE id_reserva = $2`,
+      [cancelledState.rows[0].id_estado_reserva, reservationId]
+    );
+    reservation = await getReservationEmailDetails(client, reservationId);
+    await client.query('COMMIT');
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
+
+  const emailSent = await deliverReservationEmail(reservation, 'cancelled');
+  res.json({
+    reserva: reservation,
+    correo_enviado: emailSent,
+    ...(emailSent ? {} : {
+      aviso: 'La reserva se canceló, pero no fue posible enviar el comprobante por correo.'
+    })
+  });
 }));
 
 app.use((req, res) => {

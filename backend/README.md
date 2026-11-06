@@ -23,6 +23,8 @@ Copy-Item .env.example .env
 
 Configura `DATABASE_URL` con la cadena de conexión de Neon, `JWT_SECRET` con una clave aleatoria de al menos 32 caracteres y `CORS_ORIGINS` con el origen real del frontend. `JWT_EXPIRES_IN` define la duración de sesión (por ejemplo, `1h` o `7d`). No compartas ni subas `.env` al repositorio.
 
+Para enviar comprobantes de reservas, configura en `.env` las credenciales SMTP del proveedor de correo: `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS` y `SMTP_FROM`. El ejemplo está preparado para Gmail; usa una contraseña de aplicación de Google, no la contraseña normal de la cuenta. Si el proveedor no requiere autenticación, deja `SMTP_USER` y `SMTP_PASS` vacíos. Sin una configuración SMTP válida las reservas se guardan, pero la API devuelve `correo_enviado: false` y muestra un aviso al cliente.
+
 Genera un secreto local con:
 
 ```powershell
@@ -74,6 +76,7 @@ El seed es transaccional e idempotente. Si el correo ya pertenece a un administr
 | `GET` | `/api/auth/me` | Sesión | Devuelve la cuenta autenticada. |
 | `GET` | `/api/reservas` | Cliente | Consulta las reservas del cliente autenticado. |
 | `POST` | `/api/reservas` | Cliente | Crea una reserva y comprueba la capacidad. |
+| `DELETE` | `/api/reservas/:id` | Cliente | Cancela una reserva propia sin borrar su historial. |
 | `GET` | `/api/admin/reportes` | Administrador | Devuelve conteos, reservas por evento/mes e ingresos mensuales. |
 | `GET/POST` | `/api/admin/usuarios` | Administrador | Lista cuentas y crea clientes, agentes o administradores. |
 | `PUT/DELETE` | `/api/admin/usuarios/:identificacion` | Administrador | Actualiza o elimina una cuenta respetando reservas, eventos y el último administrador. |
@@ -86,6 +89,8 @@ El seed es transaccional e idempotente. Si el correo ya pertenece a un administr
 El registro recibe `identificacion`, `nombre_completo`, `correo`, `numero_telefono`, `id_ciudad`, `direccion`, `contrasena` y `rol` (`cliente` o `agente`). La contraseña debe tener al menos 8 caracteres. El inicio de sesión recibe `correo` y `contrasena`; las sesiones usan una cookie `HttpOnly`, `SameSite=Lax` y `Secure` en producción. Las solicitudes del navegador incluyen credenciales.
 
 Para crear una reserva se envía `codigo_evento`, `numero_entradas` (de 1 a 10) y la `localidad` (`General`, `VIP` o `Preferencial`). El servidor calcula el total con el precio de esa localidad más $4.000 de servicio por entrada, verifica su capacidad dentro de una transacción y no acepta un total enviado por el navegador.
+
+Al crear o cancelar una reserva, el backend envía un comprobante al correo asociado a la cuenta. La operación en la base de datos se confirma antes del envío para que un problema SMTP no revierta ni duplique el cambio; si falla el correo, se informa explícitamente en la respuesta.
 
 Para publicar un evento, el agente envía `codigo_evento`, `id_ciudad`, `nombre_evento`, `descripcion`, `teatro`, `fecha_hora_inicio`, `fecha_hora_fin_estimada`, `precio_base`, `precio_vip`, `precio_preferencial`, `capacidad_general`, `capacidad_vip`, `capacidad_preferencial` y, de forma opcional, `observaciones`/`url_imagen`. General usa `precio_base`. El backend verifica que las tres capacidades sean positivas y sumen `capacidad_total`; asocia el evento al agente de la sesión, no a una identificación enviada por el cliente.
 

@@ -27,10 +27,11 @@
     return value ? dateTime.format(new Date(value)) : "Fecha por confirmar";
   }
 
-  function showMessage(element, text) {
+  function showMessage(element, text, isError) {
     if (!element) return;
     element.textContent = text;
     element.hidden = false;
+    element.dataset.type = isError ? "error" : "success";
   }
 
   async function loadClientReservations() {
@@ -43,11 +44,12 @@
       body.replaceChildren();
       (result.reservas || []).forEach(function (reservation) {
         var row = document.createElement("tr");
-        cell(row, reservation.evento);
-        cell(row, formatReservationDate(reservation.fecha_hora_reserva));
-        cell(row, reservation.numero_entradas);
-        cell(row, currency.format(Number(reservation.valor_total)));
+        cell(row, reservation.evento).dataset.label = "Evento";
+        cell(row, formatReservationDate(reservation.fecha_hora_reserva)).dataset.label = "Fecha reserva";
+        cell(row, reservation.numero_entradas).dataset.label = "Entradas";
+        cell(row, currency.format(Number(reservation.valor_total))).dataset.label = "Valor total";
         var statusCell = document.createElement("td");
+        statusCell.dataset.label = "Estado";
         var statusBadge = document.createElement("span");
         var normalizedStatus = String(reservation.estado || "")
           .normalize("NFD")
@@ -62,7 +64,38 @@
         statusBadge.textContent = reservation.estado || "Sin estado";
         statusCell.appendChild(statusBadge);
         row.appendChild(statusCell);
-        cell(row, reservation.localidad);
+        cell(row, reservation.localidad).dataset.label = "Localidad";
+        var actions = document.createElement("td");
+        actions.className = "acciones";
+        actions.dataset.label = "Acciones";
+        if (!normalizedStatus.includes("cancel") && !normalizedStatus.includes("anulad")) {
+          var cancelButton = document.createElement("button");
+          cancelButton.type = "button";
+          cancelButton.className = "boton-cancelar";
+          cancelButton.textContent = "Cancelar";
+          cancelButton.addEventListener("click", async function () {
+            if (!window.confirm("¿Quieres cancelar esta reserva?")) return;
+            cancelButton.disabled = true;
+            try {
+              var cancellation = await panels.cancelClientReservation(reservation.id_reserva);
+              await loadClientReservations();
+              showMessage(
+                message,
+                cancellation.correo_enviado
+                  ? "Reserva cancelada. Enviamos el comprobante a tu correo."
+                  : "Reserva cancelada, pero no fue posible enviar el comprobante por correo.",
+                !cancellation.correo_enviado
+              );
+            } catch (error) {
+              cancelButton.disabled = false;
+              window.alert(error.message);
+            }
+          });
+          actions.appendChild(cancelButton);
+        } else {
+          actions.textContent = "—";
+        }
+        row.appendChild(actions);
         body.appendChild(row);
       });
       if (message) {

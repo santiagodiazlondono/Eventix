@@ -223,7 +223,10 @@ document.addEventListener("DOMContentLoaded", async function () {
       });
       window.alert(
         "Reserva creada para " + result.reserva.localidad +
-          ". Número: " + result.reserva.id_reserva
+          ". Número: " + result.reserva.id_reserva +
+          (result.correo_enviado
+            ? ". Enviamos el comprobante a tu correo."
+            : ". No pudimos enviar el comprobante por correo.")
       );
     } catch (error) {
       if (error.message.includes("iniciar sesión")) {

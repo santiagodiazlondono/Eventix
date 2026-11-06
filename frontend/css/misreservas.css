@@ -115,6 +115,27 @@
     background: rgba(61, 126, 255, 0.12);
 }
 
+.boton-cancelar {
+    padding: 0.4rem 0.7rem;
+    border: 1px solid #F26378;
+    border-radius: 0.3rem;
+    background: transparent;
+    color: #F26378;
+    font: inherit;
+    font-size: 0.7rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.boton-cancelar:hover {
+    background: rgba(242, 99, 120, 0.12);
+}
+
+.boton-cancelar:disabled {
+    cursor: wait;
+    opacity: 0.6;
+}
+
 /* Móvil: cada fila se convierte en tarjeta */
 @media (max-width: 640px) {
     .tarjeta-tabla {

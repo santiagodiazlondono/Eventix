@@ -7,7 +7,7 @@
   "scripts": {
     "start": "node server.js",
     "seed:admin": "node seed-admin.js",
-    "check": "node --check app.js && node --check server.js && node --check seed-admin.js"
+    "check": "node --check app.js && node --check server.js && node --check seed-admin.js && node --check email.js"
   },
   "engines": {
     "node": ">=20"
@@ -21,6 +21,7 @@
     "express-rate-limit": "^7.5.0",
     "helmet": "^8.0.0",
     "jsonwebtoken": "^9.0.2",
+    "nodemailer": "^10.3.1",
     "pg": "^8.13.1"
   }
 }

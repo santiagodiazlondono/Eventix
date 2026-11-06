@@ -17,6 +17,12 @@
     getClientReservations: function () {
       return get("/reservas");
     },
+    cancelClientReservation: function (id) {
+      return window.EventixAuth.request(
+        "/reservas/" + encodeURIComponent(id),
+        { method: "DELETE" }
+      );
+    },
     getAgentReservations: function () {
       return get("/agente/reservas");
     },
