@@ -144,6 +144,7 @@ async function authenticate(req, res, next) {
   try {
     const result = await pool.query(
       `SELECT p.auth_version,
+              a.estado_aprobacion,
               CASE
                 WHEN c.identificacion IS NOT NULL THEN 'cliente'
                 WHEN a.identificacion IS NOT NULL THEN 'agente'
@@ -161,6 +162,22 @@ async function authenticate(req, res, next) {
     const person = result.rows[0];
     if (!person || person.auth_version !== claims.ver || person.role !== claims.role) {
       res.status(401).json({ error: 'La sesión expiró o no es válida.' });
+      return;
+    }
+
+    if (person.role === 'agente' && person.estado_aprobacion !== 'aprobado') {
+      res.clearCookie('eventix_token', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/api'
+      });
+      const message = person.estado_aprobacion === 'pendiente'
+        ? 'Tu solicitud está pendiente de aprobación.'
+        : person.estado_aprobacion === 'rechazado'
+          ? 'Tu solicitud fue rechazada.'
+          : 'El acceso de agente no está aprobado.';
+      res.status(401).json({ error: message });
       return;
     }
 
@@ -835,7 +852,8 @@ const registerHandler = asyncRoute(async (req, res) => {
       );
     } else {
       await client.query(
-        'INSERT INTO agente (identificacion) VALUES ($1)',
+        `INSERT INTO agente (identificacion, estado_aprobacion)
+         VALUES ($1, 'pendiente')`,
         [id]
       );
     }
@@ -848,9 +866,17 @@ const registerHandler = asyncRoute(async (req, res) => {
       role,
       auth_version: 0
     };
-    const token = createToken(user);
 
     await client.query('COMMIT');
+    if (role === 'agente') {
+      res.status(201).json({
+        solicitud_enviada: true,
+        mensaje: 'Solicitud enviada, pendiente de aprobación.'
+      });
+      return;
+    }
+
+    const token = createToken(user);
     setAuthCookie(res, token);
     res.status(201).json({ usuario: publicPerson(user) });
   } catch (error) {
@@ -881,6 +907,7 @@ app.post('/api/auth/login', loginLimiter, asyncRoute(async (req, res) => {
   const result = await pool.query(
     `SELECT p.identificacion, p.nombres, p.apellidos, p.correo_electronico,
             p.password_hash, p.auth_version,
+            a.estado_aprobacion,
             CASE
               WHEN c.identificacion IS NOT NULL THEN 'cliente'
               WHEN a.identificacion IS NOT NULL THEN 'agente'
@@ -899,6 +926,16 @@ app.post('/api/auth/login', loginLimiter, asyncRoute(async (req, res) => {
   if (!person || !person.password_hash || !person.role ||
       !(await bcrypt.compare(password, person.password_hash))) {
     res.status(401).json({ error: 'Credenciales inválidas' });
+    return;
+  }
+
+  if (person.role === 'agente' && person.estado_aprobacion !== 'aprobado') {
+    const message = person.estado_aprobacion === 'pendiente'
+      ? 'Tu solicitud está pendiente de aprobación.'
+      : person.estado_aprobacion === 'rechazado'
+        ? 'Tu solicitud fue rechazada.'
+        : 'El acceso de agente no está aprobado.';
+    res.status(403).json({ error: message });
     return;
   }
 
@@ -1036,6 +1073,144 @@ function accountRoleSql(alias) {
   END`;
 }
 
+const agentApprovalStates = new Set(['pendiente', 'aprobado', 'rechazado']);
+
+const agentRequestSelect = `
+  SELECT a.identificacion, p.nombres, p.apellidos,
+         p.correo_electronico, ci.nombre AS ciudad,
+         ARRAY(
+           SELECT telefono
+           FROM personatelefono
+           WHERE identificacion = p.identificacion
+           ORDER BY telefono
+         ) AS telefonos,
+         a.experiencia, a.comision, a.estado_aprobacion,
+         a.fecha_solicitud, a.fecha_resolucion, a.resuelto_por,
+         a.motivo_rechazo
+  FROM agente a
+  JOIN persona p ON p.identificacion = a.identificacion
+  LEFT JOIN ciudad ci ON ci.id_ciudad = p.id_ciudad`;
+
+app.get('/api/admin/solicitudes-agente/contador', authenticate, authorize('administrador'), asyncRoute(async (req, res) => {
+  const result = await pool.query(
+    `SELECT COUNT(*)::integer AS pendientes
+     FROM agente
+     WHERE estado_aprobacion = 'pendiente'`
+  );
+  res.json({ pendientes: result.rows[0].pendientes });
+}));
+
+app.get('/api/admin/solicitudes-agente', authenticate, authorize('administrador'), asyncRoute(async (req, res) => {
+  const state = req.query.estado === undefined
+    ? 'pendiente'
+    : String(req.query.estado).trim().toLowerCase();
+  if (!agentApprovalStates.has(state)) {
+    res.status(400).json({ error: 'El estado solicitado no es válido.' });
+    return;
+  }
+
+  const result = await pool.query(
+    `${agentRequestSelect}
+     WHERE a.estado_aprobacion = $1
+     ORDER BY a.fecha_solicitud DESC, a.identificacion`,
+    [state]
+  );
+  res.json({ solicitudes: result.rows });
+}));
+
+app.get('/api/admin/solicitudes-agente/:identificacion', authenticate, authorize('administrador'), asyncRoute(async (req, res) => {
+  const identification = String(req.params.identificacion || '').trim();
+  if (!identification || identification.length > 20) {
+    res.status(400).json({ error: 'La identificación no es válida.' });
+    return;
+  }
+
+  const result = await pool.query(
+    `${agentRequestSelect}
+     WHERE a.identificacion = $1`,
+    [identification]
+  );
+  if (result.rowCount === 0) {
+    res.status(404).json({ error: 'No se encontró la solicitud de agente.' });
+    return;
+  }
+  res.json({ solicitud: result.rows[0] });
+}));
+
+async function resolveAgentApproval(req, res, nextState, expectedState, nextHandler) {
+  const identification = String(req.params.identificacion || '').trim();
+  if (!identification || identification.length > 20) {
+    res.status(400).json({ error: 'La identificación no es válida.' });
+    return;
+  }
+
+  let reason = null;
+  if (nextState === 'rechazado') {
+    const suppliedReason = req.body && req.body.motivo;
+    if (suppliedReason !== undefined && typeof suppliedReason !== 'string') {
+      res.status(400).json({ error: 'El motivo debe ser texto.' });
+      return;
+    }
+    reason = typeof suppliedReason === 'string' ? suppliedReason.trim() : null;
+    if (reason && reason.length > 1000) {
+      res.status(400).json({ error: 'El motivo no puede superar 1000 caracteres.' });
+      return;
+    }
+    reason = reason || null;
+  }
+
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const result = await client.query(
+      `UPDATE agente
+       SET estado_aprobacion = $2,
+           fecha_resolucion = CURRENT_TIMESTAMP,
+           resuelto_por = $3,
+           motivo_rechazo = $4
+       WHERE identificacion = $1
+         AND estado_aprobacion = $5
+       RETURNING identificacion, estado_aprobacion,
+                 fecha_resolucion, resuelto_por, motivo_rechazo`,
+      [identification, nextState, req.user.identificacion, reason, expectedState]
+    );
+
+    if (result.rowCount === 0) {
+      const current = await client.query(
+        'SELECT estado_aprobacion FROM agente WHERE identificacion = $1',
+        [identification]
+      );
+      await client.query('ROLLBACK');
+      if (current.rowCount === 0) {
+        res.status(404).json({ error: 'No se encontró la solicitud de agente.' });
+      } else {
+        res.status(409).json({ error: 'La solicitud ya fue resuelta o el acceso ya cambió.' });
+      }
+      return;
+    }
+
+    await client.query('COMMIT');
+    res.json({ solicitud: result.rows[0] });
+  } catch (error) {
+    await client.query('ROLLBACK');
+    nextHandler(error);
+  } finally {
+    client.release();
+  }
+}
+
+app.post('/api/admin/solicitudes-agente/:identificacion/aprobar', authenticate, authorize('administrador'), asyncRoute(async (req, res, next) => {
+  await resolveAgentApproval(req, res, 'aprobado', 'pendiente', next);
+}));
+
+app.post('/api/admin/solicitudes-agente/:identificacion/rechazar', authenticate, authorize('administrador'), asyncRoute(async (req, res, next) => {
+  await resolveAgentApproval(req, res, 'rechazado', 'pendiente', next);
+}));
+
+app.post('/api/admin/solicitudes-agente/:identificacion/revocar', authenticate, authorize('administrador'), asyncRoute(async (req, res, next) => {
+  await resolveAgentApproval(req, res, 'rechazado', 'aprobado', next);
+}));
+
 app.get('/api/admin/usuarios', authenticate, authorize('administrador'), asyncRoute(async (req, res) => {
   const role = req.query.rol ? String(req.query.rol).trim().toLowerCase() : null;
   if (role && !adminUserRoles.has(role)) {
@@ -1111,9 +1286,18 @@ app.post('/api/admin/usuarios', authenticate, authorize('administrador'), asyncR
         'INSERT INTO cliente (identificacion, cantidad_puntos) VALUES ($1, 0)',
         [user.identification]
       );
+    } else if (user.role === 'agente') {
+      await client.query(
+        `INSERT INTO agente
+           (identificacion, estado_aprobacion, fecha_resolucion, resuelto_por)
+         VALUES ($1, 'aprobado', CURRENT_TIMESTAMP, $2)`,
+        [user.identification, req.user.identificacion]
+      );
     } else {
-      const table = user.role === 'agente' ? 'agente' : 'administrador';
-      await client.query(`INSERT INTO ${table} (identificacion) VALUES ($1)`, [user.identification]);
+      await client.query(
+        'INSERT INTO administrador (identificacion) VALUES ($1)',
+        [user.identification]
+      );
     }
     await client.query('COMMIT');
     res.status(201).json({
@@ -1255,9 +1439,16 @@ app.put('/api/admin/usuarios/:identificacion', authenticate, authorize('administ
           'INSERT INTO cliente (identificacion, cantidad_puntos) VALUES ($1, 0)',
           [user.identification]
         );
+      } else if (newTable === 'agente') {
+        await client.query(
+          `INSERT INTO agente
+             (identificacion, estado_aprobacion, fecha_resolucion, resuelto_por)
+           VALUES ($1, 'aprobado', CURRENT_TIMESTAMP, $2)`,
+          [user.identification, req.user.identificacion]
+        );
       } else {
         await client.query(
-          `INSERT INTO ${newTable} (identificacion) VALUES ($1)`,
+          'INSERT INTO administrador (identificacion) VALUES ($1)',
           [user.identification]
         );
       }

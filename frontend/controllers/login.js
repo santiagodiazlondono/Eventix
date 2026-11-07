@@ -6,6 +6,11 @@
 
   var button = form.querySelector('button[type="submit"]');
   var message = document.getElementById("login-message");
+  var loginNotice = new URLSearchParams(window.location.search).get("mensaje");
+  if (loginNotice) {
+    message.textContent = loginNotice;
+    message.hidden = false;
+  }
   form.addEventListener("submit", async function (event) {
     event.preventDefault();
     message.hidden = true;

@@ -376,6 +376,25 @@ body.admin-body > * {
   font-weight: 600;
 }
 
+.admin-pending-count {
+  display: inline-flex;
+  min-width: 1.25rem;
+  height: 1.25rem;
+  align-items: center;
+  justify-content: center;
+  margin-left: 0.35rem;
+  padding: 0 0.35rem;
+  border-radius: 999px;
+  background: #fb7185;
+  color: #0a0d14;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.admin-pending-count[hidden] {
+  display: none;
+}
+
 .admin-avatar-circular {
   width: 1.75rem;
   height: 1.75rem;

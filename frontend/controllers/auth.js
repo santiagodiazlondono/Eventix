@@ -109,6 +109,16 @@
           contrasena: registrationForm.elements.contrasena.value,
           rol: roleSelect.value
         });
+        if (result.solicitud_enviada) {
+          var successMessage = registrationForm.querySelector("[data-auth-message]");
+          if (successMessage) {
+            successMessage.textContent = "Solicitud enviada. Un administrador la revisará antes de habilitar tu acceso.";
+            successMessage.dataset.type = "success";
+            successMessage.hidden = false;
+          }
+          submitButton.textContent = "Solicitud enviada";
+          return;
+        }
         window.location.replace(auth.roleHome(result.usuario.role));
       } catch (error) {
         report(registrationForm, error);

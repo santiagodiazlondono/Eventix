@@ -76,7 +76,7 @@
       result = await request("/auth/me");
     } catch (error) {
       if (error.status === 401) {
-        window.location.replace("Login.html");
+        window.location.replace("Login.html?mensaje=" + encodeURIComponent(error.message));
         return null;
       }
       throw error;
@@ -87,7 +87,18 @@
       return null;
     }
     showUser(result.usuario);
+    if (role === "administrador") await refreshPendingAgentCount();
     return result.usuario;
+  }
+
+  async function refreshPendingAgentCount() {
+    var badges = document.querySelectorAll("[data-pending-agent-count]");
+    if (!badges.length) return;
+    var result = await request("/admin/solicitudes-agente/contador");
+    badges.forEach(function (badge) {
+      badge.textContent = result.pendientes;
+      badge.hidden = !result.pendientes;
+    });
   }
 
   async function logout() {
@@ -117,6 +128,7 @@
     },
     logout: logout,
     requireRole: requireRole,
+    refreshPendingAgentCount: refreshPendingAgentCount,
     roleHome: roleHome,
     showUser: showUser
   };

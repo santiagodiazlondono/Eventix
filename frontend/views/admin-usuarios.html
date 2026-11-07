@@ -12,6 +12,7 @@
   <link rel="stylesheet" href="../css/admin-usuarios.css">
   <script src="../models/auth.js" defer></script>
   <script src="../controllers/auth.js" defer></script>
+  <script src="../controllers/admin-solicitudes-agente.js" defer></script>
   <script src="../controllers/admin-usuarios.js" defer></script>
 </head>
 <body class="admin-body" data-required-role="administrador">
@@ -40,7 +41,7 @@
       <nav class="main-nav" aria-label="Navegación de administración">
         <ul class="nav-links">
           <li><a href="admin-panel.html">Dashboard-Registros y Reportes</a></li>
-          <li><a href="admin-usuarios.html" class="is-active">Gestión de usuarios</a></li>
+          <li><a href="admin-usuarios.html" class="is-active">Gestión de usuarios <span class="admin-pending-count" data-pending-agent-count hidden aria-label="Solicitudes de agentes pendientes">0</span></a></li>
           <li><a href="admin-catalogos.html">Gestión de catálogos</a></li>
         </ul>
         <div class="nav-actions">
@@ -63,6 +64,38 @@
       <div class="admin-header-path">Administración del Sistema</div>
       <h1 class="admin-title">Gestión de Usuarios</h1>
       <p class="admin-lead">Consulta y administra cuentas de clientes, agentes y administradores.</p>
+
+      <section class="distribution-card agent-requests-card" aria-labelledby="solicitudes-agente-title">
+        <div class="distribution-header agent-requests-head">
+          <div>
+            <h2 id="solicitudes-agente-title">Solicitudes de agentes</h2>
+            <p class="users-card-sub">Revisa la información y decide si habilitas el acceso al panel de agente.</p>
+          </div>
+          <label class="agent-request-filter" for="filtro-solicitudes-agente">
+            Estado
+            <select id="filtro-solicitudes-agente">
+              <option value="pendiente">Pendientes</option>
+              <option value="aprobado">Aprobadas</option>
+              <option value="rechazado">Rechazadas</option>
+            </select>
+          </label>
+        </div>
+        <div class="admin-table-scroll">
+          <table class="report-table users-table">
+            <thead>
+              <tr>
+                <th>Solicitante</th>
+                <th>Identificación</th>
+                <th>Estado</th>
+                <th>Fecha de solicitud</th>
+                <th class="admin-text-right">Detalle</th>
+              </tr>
+            </thead>
+            <tbody id="solicitudes-agente-lista"></tbody>
+          </table>
+          <p id="solicitudes-agente-mensaje" role="status" aria-live="polite">Cargando solicitudes...</p>
+        </div>
+      </section>
 
       <!-- Barra de herramientas con buscador y filtro -->
       <div class="events-toolbar users-toolbar">
@@ -148,6 +181,34 @@
           <button id="guardar-usuario" type="submit" class="btn btn-primary">Guardar</button>
         </div>
       </form>
+    </section>
+  </div>
+
+  <div id="modal-solicitud-agente" class="agent-request-modal" aria-hidden="true">
+    <section class="agent-request-dialog" role="dialog" aria-modal="true" aria-labelledby="solicitud-agente-modal-titulo">
+      <button type="button" class="admin-crud-close" data-close-agent-request aria-label="Cerrar">×</button>
+      <h2 id="solicitud-agente-modal-titulo">Solicitud de agente</h2>
+      <p id="solicitud-agente-detalle-mensaje" role="status">Cargando detalle...</p>
+      <dl class="agent-request-details">
+        <div><dt>Nombre</dt><dd id="detalle-agente-nombre"></dd></div>
+        <div><dt>Identificación</dt><dd id="detalle-agente-identificacion"></dd></div>
+        <div><dt>Correo</dt><dd id="detalle-agente-correo"></dd></div>
+        <div><dt>Ciudad</dt><dd id="detalle-agente-ciudad"></dd></div>
+        <div><dt>Teléfonos</dt><dd id="detalle-agente-telefonos"></dd></div>
+        <div><dt>Experiencia</dt><dd id="detalle-agente-experiencia"></dd></div>
+        <div><dt>Comisión</dt><dd id="detalle-agente-comision"></dd></div>
+        <div><dt>Fecha de solicitud</dt><dd id="detalle-agente-fecha"></dd></div>
+        <div><dt>Estado</dt><dd id="detalle-agente-estado"></dd></div>
+        <div><dt>Motivo de rechazo o revocación</dt><dd id="detalle-agente-motivo"></dd></div>
+      </dl>
+      <label class="agent-request-reason" for="motivo-solicitud-agente">Motivo (opcional)</label>
+      <textarea id="motivo-solicitud-agente" maxlength="1000" rows="3"></textarea>
+      <p id="solicitud-agente-accion-mensaje" class="admin-crud-message" role="alert" hidden></p>
+      <div id="solicitud-agente-acciones" class="admin-crud-actions" hidden>
+        <button id="solicitud-agente-aceptar" type="button" class="btn btn-primary">Aceptar</button>
+        <button id="solicitud-agente-rechazar" type="button" class="btn btn-ghost">Rechazar</button>
+        <button id="solicitud-agente-revocar" type="button" class="btn btn-ghost user-delete-btn">Revocar acceso</button>
+      </div>
     </section>
   </div>
 
