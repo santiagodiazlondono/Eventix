@@ -10,12 +10,14 @@
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../css/styles.css">
   <link rel="stylesheet" href="../css/admin-usuarios.css">
+  <script src="../models/ui.js" defer></script>
   <script src="../models/auth.js" defer></script>
   <script src="../controllers/auth.js" defer></script>
   <script src="../controllers/admin-solicitudes-agente.js" defer></script>
+  <script src="../controllers/admin-reasignar-eventos.js" defer></script>
   <script src="../controllers/admin-usuarios.js" defer></script>
 </head>
-<body class="admin-body" data-required-role="administrador">
+<body class="admin-body admin-wide-layout" data-required-role="administrador">
 
   <!-- Iconos reutilizables -->
   <svg class="sprite" aria-hidden="true">
@@ -77,6 +79,7 @@
               <option value="pendiente">Pendientes</option>
               <option value="aprobado">Aprobadas</option>
               <option value="rechazado">Rechazadas</option>
+              <option value="todas">Todas</option>
             </select>
           </label>
         </div>
@@ -102,7 +105,7 @@
         <div class="search-field search-field--text users-search-box">
           <div class="input-icon">
             <svg aria-hidden="true"><use href="#i-search"/></svg>
-            <input id="buscar-usuarios" type="search" placeholder="Buscar por nombre, correo o identificación..." aria-label="Buscar usuarios">
+            <input id="buscar-usuarios" class="search-control" type="search" placeholder="Buscar por nombre, correo o identificación..." aria-label="Buscar usuarios">
           </div>
         </div>
         <div class="users-toolbar-actions">
@@ -120,7 +123,7 @@
       <section class="distribution-card admin-card-flat users-card-table" aria-labelledby="directorio-title">
         <div class="distribution-header users-card-head">
           <div>
-            <h2 id="directorio-title">Directorio de Cuentas</h2>
+            <h2 id="directorio-title" tabindex="-1">Directorio de Cuentas</h2>
             <p class="users-card-sub">Listado general de usuarios registrados en Eventix UCEVA</p>
           </div>
         </div>
@@ -132,6 +135,7 @@
                 <th>Usuario / Correo</th>
                 <th>Identificación</th>
                 <th>Rol</th>
+                <th>Eventos (activos / total)</th>
                 <th>Teléfono</th>
                 <th>Ubicación</th>
                 <th class="admin-text-right">Acciones</th>
@@ -177,17 +181,34 @@
         <input id="usuario-contrasena" name="contrasena" type="password" minlength="8" maxlength="72" autocomplete="new-password">
         <p id="usuario-form-mensaje" class="admin-crud-message" role="alert" hidden></p>
         <div class="admin-crud-actions">
-          <button type="button" class="btn btn-ghost" data-close-usuario>Cancelar</button>
-          <button id="guardar-usuario" type="submit" class="btn btn-primary">Guardar</button>
+          <button type="button" class="btn btn-ghost admin-action-btn admin-action-btn--neutral" data-close-usuario>Cancelar</button>
+          <button id="guardar-usuario" type="submit" class="btn btn-primary admin-action-btn admin-action-btn--neutral">Guardar</button>
         </div>
       </form>
+      <section id="usuario-eventos" class="user-agent-events" hidden aria-labelledby="usuario-eventos-titulo">
+        <h3 id="usuario-eventos-titulo">Eventos del agente</h3>
+        <button id="usuario-reasignar-eventos" type="button" class="btn btn-ghost admin-action-btn admin-action-btn--neutral">Reasignar eventos</button>
+        <div class="admin-table-scroll">
+          <table class="report-table users-table">
+            <thead>
+              <tr><th>Evento</th><th>Fecha</th><th>Estado</th><th>Reservas</th></tr>
+            </thead>
+            <tbody id="usuario-eventos-lista"></tbody>
+          </table>
+          <p id="usuario-eventos-mensaje" role="status"></p>
+        </div>
+      </section>
     </section>
   </div>
 
-  <div id="modal-solicitud-agente" class="agent-request-modal" aria-hidden="true">
-    <section class="agent-request-dialog" role="dialog" aria-modal="true" aria-labelledby="solicitud-agente-modal-titulo">
-      <button type="button" class="admin-crud-close" data-close-agent-request aria-label="Cerrar">×</button>
-      <h2 id="solicitud-agente-modal-titulo">Solicitud de agente</h2>
+  <section id="modal-solicitud-agente" class="agent-request-detail-panel admin-crud-dialog" hidden tabindex="-1" aria-labelledby="solicitud-agente-modal-titulo">
+      <div class="agent-request-detail-head">
+        <div>
+          <h2 id="solicitud-agente-modal-titulo">Solicitud de agente</h2>
+          <p id="detalle-agente-eventos-resumen"></p>
+        </div>
+        <button type="button" class="btn btn-ghost admin-action-btn admin-action-btn--neutral" data-close-agent-request>Cerrar detalle</button>
+      </div>
       <p id="solicitud-agente-detalle-mensaje" role="status">Cargando detalle...</p>
       <dl class="agent-request-details">
         <div><dt>Nombre</dt><dd id="detalle-agente-nombre"></dd></div>
@@ -205,12 +226,40 @@
       <textarea id="motivo-solicitud-agente" maxlength="1000" rows="3"></textarea>
       <p id="solicitud-agente-accion-mensaje" class="admin-crud-message" role="alert" hidden></p>
       <div id="solicitud-agente-acciones" class="admin-crud-actions" hidden>
-        <button id="solicitud-agente-aceptar" type="button" class="btn btn-primary">Aceptar</button>
-        <button id="solicitud-agente-rechazar" type="button" class="btn btn-ghost">Rechazar</button>
-        <button id="solicitud-agente-revocar" type="button" class="btn btn-ghost user-delete-btn">Revocar acceso</button>
+        <button id="solicitud-agente-aceptar" type="button" class="btn btn-primary admin-action-btn admin-action-btn--neutral">Aceptar</button>
+        <button id="solicitud-agente-rechazar" type="button" class="btn btn-ghost admin-action-btn admin-action-btn--danger">Rechazar</button>
+        <button id="solicitud-agente-revocar" type="button" class="btn btn-ghost admin-action-btn admin-action-btn--danger">Revocar acceso</button>
+        <button id="solicitud-agente-reactivar" type="button" class="btn btn-primary admin-action-btn admin-action-btn--neutral">Reactivar</button>
+        <button id="solicitud-agente-transferir" type="button" class="btn btn-ghost admin-action-btn admin-action-btn--neutral">Reasignar eventos</button>
       </div>
-    </section>
-  </div>
+  </section>
+
+  <section id="modal-reasignar-eventos" class="agent-transfer-section" hidden tabindex="-1" aria-hidden="true" aria-labelledby="reasignar-eventos-titulo">
+    <div class="admin-crud-dialog transfer-events-dialog">
+      <div class="agent-request-detail-head">
+      <h2 id="reasignar-eventos-titulo">Reasignar eventos</h2>
+      <button type="button" class="btn btn-ghost admin-action-btn admin-action-btn--neutral" data-close-transfer-events aria-label="Cerrar reasignación">Cancelar</button>
+      </div>
+      <p id="reasignar-eventos-mensaje" role="status"></p>
+      <label for="agente-destino-eventos">Agente aprobado de destino</label>
+      <select id="agente-destino-eventos">
+        <option value="">Cargando agentes...</option>
+      </select>
+      <div class="admin-table-scroll">
+        <table class="report-table users-table">
+          <thead>
+            <tr><th><input id="seleccionar-todos-eventos" type="checkbox" aria-label="Seleccionar todos los eventos"></th><th>Evento</th><th>Fecha</th><th>Estado</th><th>Reservas</th></tr>
+          </thead>
+          <tbody id="reasignar-eventos-lista"></tbody>
+        </table>
+      </div>
+      <p id="reasignar-eventos-accion-mensaje" class="admin-crud-message" role="alert" hidden></p>
+      <div class="admin-crud-actions admin-action-group">
+        <button id="reasignar-eventos-seleccionados" type="button" class="btn btn-ghost admin-action-btn admin-action-btn--neutral">Reasignar seleccionados</button>
+        <button id="reasignar-eventos-todos" type="button" class="btn btn-primary admin-action-btn admin-action-btn--neutral">Reasignar todos</button>
+      </div>
+    </div>
+  </section>
 
   <!-- ============ PIE DE PÁGINA ============ -->
   <footer class="site-footer">

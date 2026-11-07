@@ -10,7 +10,7 @@ API REST con Express y PostgreSQL para gestionar cuentas de clientes, agentes y 
 
 ## Migraciones
 
-Ejecuta en orden en el SQL Editor de Neon las migraciones [`001_event_locality_capacities.sql`](migrations/001_event_locality_capacities.sql), [`002_reservation_locality.sql`](migrations/002_reservation_locality.sql) y [`003_auth_and_reservation_states.sql`](migrations/003_auth_and_reservation_states.sql). Son idempotentes. La primera agrega capacidades por localidad; la segunda añade localidad a las reservas existentes; la tercera asegura columnas de sesión, correo único ignorando mayúsculas/minúsculas y estados `Confirmada`/`Cancelada`. No elimina datos.
+Ejecuta en orden en el SQL Editor de Neon las migraciones [`001_event_locality_capacities.sql`](migrations/001_event_locality_capacities.sql), [`002_reservation_locality.sql`](migrations/002_reservation_locality.sql), [`003_auth_and_reservation_states.sql`](migrations/003_auth_and_reservation_states.sql) y [`004_agent_approval.sql`](migrations/004_agent_approval.sql). Son idempotentes. La primera agrega capacidades por localidad; la segunda añade localidad a las reservas existentes; la tercera asegura columnas de sesión, correo único ignorando mayúsculas/minúsculas y estados `Confirmada`/`Cancelada`; la cuarta agrega estado y metadatos de resolución de solicitudes de agente. Los agentes existentes quedan aprobados para conservar su acceso. No elimina datos.
 
 ## Configuración
 

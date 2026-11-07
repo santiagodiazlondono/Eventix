@@ -27,6 +27,8 @@
     if (!response.ok) {
       var apiError = new Error(result.error || "No fue posible completar la solicitud.");
       apiError.status = response.status;
+      apiError.codigo = result.codigo;
+      apiError.eventos = result.eventos;
       throw apiError;
     }
     return result;
@@ -75,7 +77,7 @@
     try {
       result = await request("/auth/me");
     } catch (error) {
-      if (error.status === 401) {
+      if (error.status === 401 || error.status === 403) {
         window.location.replace("Login.html?mensaje=" + encodeURIComponent(error.message));
         return null;
       }
@@ -97,6 +99,10 @@
     var result = await request("/admin/solicitudes-agente/contador");
     badges.forEach(function (badge) {
       badge.textContent = result.pendientes;
+      badge.setAttribute(
+        "aria-label",
+        result.pendientes + " solicitudes de agentes pendientes"
+      );
       badge.hidden = !result.pendientes;
     });
   }

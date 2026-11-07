@@ -385,8 +385,8 @@ body.admin-body > * {
   margin-left: 0.35rem;
   padding: 0 0.35rem;
   border-radius: 999px;
-  background: #fb7185;
-  color: #0a0d14;
+  background: var(--accent);
+  color: #fff;
   font-size: 0.72rem;
   font-weight: 700;
 }

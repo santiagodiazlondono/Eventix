@@ -34,6 +34,14 @@
     element.dataset.type = isError ? "error" : "success";
   }
 
+  function redirectAgentToLogin(error) {
+    if (error.status !== 401 && error.status !== 403) return false;
+    window.location.replace(
+      "Login.html?mensaje=" + encodeURIComponent(error.message)
+    );
+    return true;
+  }
+
   async function loadClientReservations() {
     var body = document.getElementById("reservas-lista");
     if (!body) return;
@@ -150,8 +158,9 @@
           cell(row, currency.format(Number(reservation.valor_total)), "font-mono");
           cell(row, formatReservationDate(reservation.fecha_hora_reserva), "text-muted");
           var statusCell = document.createElement("td");
+          statusCell.className = "admin-action-group";
           var select = document.createElement("select");
-          select.className = "agent-status-select";
+          select.className = "agent-status-select admin-action-btn admin-action-btn--neutral";
           select.setAttribute("aria-label", "Actualizar estado de la reserva " + reservation.id_reserva);
           states.forEach(function (state) {
             select.add(new Option(state.nombre, state.nombre));
@@ -164,6 +173,7 @@
               reservation.estado = select.value;
               render();
             } catch (error) {
+              if (redirectAgentToLogin(error)) return;
               showMessage(message, error.message);
               select.value = reservation.estado;
               select.disabled = false;
@@ -185,6 +195,7 @@
       filterState.addEventListener("change", render);
       render();
     } catch (error) {
+      if (redirectAgentToLogin(error)) return;
       showMessage(message, error.message);
     }
   }

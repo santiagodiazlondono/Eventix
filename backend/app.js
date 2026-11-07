@@ -121,6 +121,19 @@ function asyncRoute(handler) {
   return (req, res, next) => Promise.resolve(handler(req, res, next)).catch(next);
 }
 
+function getAgentAccessError(role, approvalState) {
+  if (role !== 'agente' || approvalState === 'aprobado') {
+    return null;
+  }
+  if (approvalState === 'pendiente') {
+    return { status: 403, message: 'Tu solicitud está pendiente de aprobación.' };
+  }
+  if (approvalState === 'rechazado') {
+    return { status: 403, message: 'Tu solicitud fue rechazada.' };
+  }
+  return { status: 403, message: 'El acceso de agente no está aprobado.' };
+}
+
 async function authenticate(req, res, next) {
   const authorization = req.get('authorization');
   const token = req.cookies?.eventix_token ||
@@ -165,19 +178,15 @@ async function authenticate(req, res, next) {
       return;
     }
 
-    if (person.role === 'agente' && person.estado_aprobacion !== 'aprobado') {
+    const accessError = getAgentAccessError(person.role, person.estado_aprobacion);
+    if (accessError) {
       res.clearCookie('eventix_token', {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
         path: '/api'
       });
-      const message = person.estado_aprobacion === 'pendiente'
-        ? 'Tu solicitud está pendiente de aprobación.'
-        : person.estado_aprobacion === 'rechazado'
-          ? 'Tu solicitud fue rechazada.'
-          : 'El acceso de agente no está aprobado.';
-      res.status(401).json({ error: message });
+      res.status(accessError.status).json({ error: accessError.message });
       return;
     }
 
@@ -405,13 +414,18 @@ app.patch('/api/agente/eventos/:codigo/estado', authenticate, authorize('agente'
     [code, req.user.identificacion, stateId]
   );
   if (result.rowCount === 0) {
-    const ownedEvent = await pool.query(
-      `SELECT 1 FROM evento
-       WHERE codigo_evento = $1 AND identificacion_agente = $2`,
-      [code, req.user.identificacion]
+    const event = await pool.query(
+      `SELECT identificacion_agente
+       FROM evento
+       WHERE codigo_evento = $1`,
+      [code]
     );
-    if (ownedEvent.rowCount === 0) {
-      res.status(404).json({ error: 'No se encontró el evento o no tienes permiso para modificarlo.' });
+    if (event.rowCount === 0) {
+      res.status(404).json({ error: 'No se encontró el evento solicitado.' });
+      return;
+    }
+    if (event.rows[0].identificacion_agente !== req.user.identificacion) {
+      res.status(403).json({ error: 'No tienes permiso para modificar este evento.' });
       return;
     }
     res.status(400).json({ error: 'El estado seleccionado no existe.' });
@@ -432,15 +446,20 @@ app.delete('/api/agente/eventos/:codigo', authenticate, authorize('agente'), asy
   try {
     await client.query('BEGIN');
     const event = await client.query(
-      `SELECT codigo_evento
+      `SELECT codigo_evento, identificacion_agente
        FROM evento
-       WHERE codigo_evento = $1 AND identificacion_agente = $2
+       WHERE codigo_evento = $1
        FOR UPDATE`,
-      [code, req.user.identificacion]
+      [code]
     );
     if (event.rowCount === 0) {
       await client.query('ROLLBACK');
-      res.status(404).json({ error: 'No se encontró el evento o no tienes permiso para eliminarlo.' });
+      res.status(404).json({ error: 'No se encontró el evento solicitado.' });
+      return;
+    }
+    if (event.rows[0].identificacion_agente !== req.user.identificacion) {
+      await client.query('ROLLBACK');
+      res.status(403).json({ error: 'No tienes permiso para eliminar este evento.' });
       return;
     }
 
@@ -527,15 +546,20 @@ app.put('/api/agente/eventos/:codigo', authenticate, authorize('agente'), asyncR
     await client.query('BEGIN');
 
     const eventResult = await client.query(
-      `SELECT codigo_evento
+      `SELECT codigo_evento, identificacion_agente
        FROM evento
-       WHERE codigo_evento = $1 AND identificacion_agente = $2
+       WHERE codigo_evento = $1
        FOR UPDATE`,
-      [code, req.user.identificacion]
+      [code]
     );
     if (eventResult.rowCount === 0) {
       await client.query('ROLLBACK');
-      res.status(404).json({ error: 'No se encontró el evento o no tienes permiso para editarlo.' });
+      res.status(404).json({ error: 'No se encontró el evento solicitado.' });
+      return;
+    }
+    if (eventResult.rows[0].identificacion_agente !== req.user.identificacion) {
+      await client.query('ROLLBACK');
+      res.status(403).json({ error: 'No tienes permiso para editar este evento.' });
       return;
     }
 
@@ -929,13 +953,9 @@ app.post('/api/auth/login', loginLimiter, asyncRoute(async (req, res) => {
     return;
   }
 
-  if (person.role === 'agente' && person.estado_aprobacion !== 'aprobado') {
-    const message = person.estado_aprobacion === 'pendiente'
-      ? 'Tu solicitud está pendiente de aprobación.'
-      : person.estado_aprobacion === 'rechazado'
-        ? 'Tu solicitud fue rechazada.'
-        : 'El acceso de agente no está aprobado.';
-    res.status(403).json({ error: message });
+  const accessError = getAgentAccessError(person.role, person.estado_aprobacion);
+  if (accessError) {
+    res.status(accessError.status).json({ error: accessError.message });
     return;
   }
 
@@ -977,7 +997,9 @@ app.get('/api/agente/reservas', authenticate, authorize('agente'), asyncRoute(as
      JOIN estadoreserva er ON er.id_estado_reserva = r.id_estado_reserva
      JOIN evento e ON e.codigo_evento = r.codigo_evento
      JOIN persona p ON p.identificacion = r.identificacion_cliente
-     ORDER BY r.fecha_hora_reserva DESC`
+     WHERE e.identificacion_agente = $1
+     ORDER BY r.fecha_hora_reserva DESC`,
+    [req.user.identificacion]
   );
   res.json({ reservas: result.rows });
 }));
@@ -1009,10 +1031,12 @@ app.patch('/api/agente/reservas/:id', authenticate, authorize('agente'), asyncRo
      )
      UPDATE reserva r
      SET id_estado_reserva = selected_state.id_estado_reserva
-     FROM selected_state
+     FROM selected_state, evento e
      WHERE r.id_reserva = $1
+       AND e.codigo_evento = r.codigo_evento
+       AND e.identificacion_agente = $3
      RETURNING r.id_reserva, r.id_estado_reserva`,
-    [reservationId, state]
+    [reservationId, state, req.user.identificacion]
   );
   if (result.rowCount === 0) {
     res.status(404).json({ error: 'No se encontró la reserva o el estado solicitado.' });
@@ -1073,7 +1097,7 @@ function accountRoleSql(alias) {
   END`;
 }
 
-const agentApprovalStates = new Set(['pendiente', 'aprobado', 'rechazado']);
+const agentApprovalStates = new Set(['pendiente', 'aprobado', 'rechazado', 'todas']);
 
 const agentRequestSelect = `
   SELECT a.identificacion, p.nombres, p.apellidos,
@@ -1086,10 +1110,21 @@ const agentRequestSelect = `
          ) AS telefonos,
          a.experiencia, a.comision, a.estado_aprobacion,
          a.fecha_solicitud, a.fecha_resolucion, a.resuelto_por,
-         a.motivo_rechazo
+         a.motivo_rechazo,
+         COALESCE(event_counts.eventos_total, 0)::integer AS eventos_total,
+         COALESCE(event_counts.eventos_activos, 0)::integer AS eventos_activos
   FROM agente a
   JOIN persona p ON p.identificacion = a.identificacion
-  LEFT JOIN ciudad ci ON ci.id_ciudad = p.id_ciudad`;
+  LEFT JOIN ciudad ci ON ci.id_ciudad = p.id_ciudad
+  LEFT JOIN LATERAL (
+    SELECT COUNT(*)::integer AS eventos_total,
+           COUNT(*) FILTER (
+             WHERE LOWER(TRIM(ee.nombre)) NOT IN ('cancelado', 'cancelada', 'anulado', 'anulada')
+           )::integer AS eventos_activos
+    FROM evento e
+    JOIN estadoevento ee ON ee.id_estado_evento = e.id_estado_evento
+    WHERE e.identificacion_agente = a.identificacion
+  ) event_counts ON TRUE`;
 
 app.get('/api/admin/solicitudes-agente/contador', authenticate, authorize('administrador'), asyncRoute(async (req, res) => {
   const result = await pool.query(
@@ -1111,9 +1146,9 @@ app.get('/api/admin/solicitudes-agente', authenticate, authorize('administrador'
 
   const result = await pool.query(
     `${agentRequestSelect}
-     WHERE a.estado_aprobacion = $1
+     WHERE ($1::text IS NULL OR a.estado_aprobacion = $1)
      ORDER BY a.fecha_solicitud DESC, a.identificacion`,
-    [state]
+    [state === 'todas' ? null : state]
   );
   res.json({ solicitudes: result.rows });
 }));
@@ -1135,6 +1170,28 @@ app.get('/api/admin/solicitudes-agente/:identificacion', authenticate, authorize
     return;
   }
   res.json({ solicitud: result.rows[0] });
+}));
+
+app.get('/api/admin/usuarios/:identificacion/eventos', authenticate, authorize('administrador'), asyncRoute(async (req, res) => {
+  const identification = String(req.params.identificacion || '').trim();
+  if (!identification || identification.length > 20) {
+    res.status(400).json({ error: 'La identificación no es válida.' });
+    return;
+  }
+
+  const result = await pool.query(
+    `SELECT e.codigo_evento AS codigo, e.nombre_evento AS nombre,
+            e.fecha_hora_inicio, ee.nombre AS estado,
+            COUNT(r.id_reserva)::integer AS reservas
+     FROM evento e
+     JOIN estadoevento ee ON ee.id_estado_evento = e.id_estado_evento
+     LEFT JOIN reserva r ON r.codigo_evento = e.codigo_evento
+     WHERE e.identificacion_agente = $1
+     GROUP BY e.codigo_evento, ee.nombre
+     ORDER BY e.fecha_hora_inicio DESC, e.codigo_evento`,
+    [identification]
+  );
+  res.json({ eventos: result.rows });
 }));
 
 async function resolveAgentApproval(req, res, nextState, expectedState, nextHandler) {
@@ -1211,6 +1268,110 @@ app.post('/api/admin/solicitudes-agente/:identificacion/revocar', authenticate, 
   await resolveAgentApproval(req, res, 'rechazado', 'aprobado', next);
 }));
 
+app.post('/api/admin/solicitudes-agente/:identificacion/reactivar', authenticate, authorize('administrador'), asyncRoute(async (req, res, next) => {
+  await resolveAgentApproval(req, res, 'aprobado', 'rechazado', next);
+}));
+
+app.post('/api/admin/agentes/:identificacion/reasignar-eventos', authenticate, authorize('administrador'), asyncRoute(async (req, res) => {
+  const sourceId = String(req.params.identificacion || '').trim();
+  const body = req.body || {};
+  const destinationId = typeof body.identificacion_destino === 'string'
+    ? body.identificacion_destino.trim()
+    : '';
+  const selectedCodes = body.codigos_evento;
+  if (!sourceId || sourceId.length > 20 ||
+      !destinationId || destinationId.length > 20 ||
+      sourceId === destinationId ||
+      (selectedCodes !== undefined &&
+        (!Array.isArray(selectedCodes) || selectedCodes.length === 0 ||
+          selectedCodes.length > 500 ||
+          selectedCodes.some((code) => typeof code !== 'string' || !code.trim() || code.trim().length > 50) ||
+          new Set(selectedCodes.map((code) => code.trim())).size !== selectedCodes.length))) {
+    res.status(400).json({ error: 'El agente de destino o la selección de eventos no es válida.' });
+    return;
+  }
+
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const agents = await client.query(
+      `SELECT identificacion, estado_aprobacion
+       FROM agente
+       WHERE identificacion = ANY($1::varchar[])
+       ORDER BY identificacion
+       FOR UPDATE`,
+      [[sourceId, destinationId]]
+    );
+    const source = agents.rows.find((agent) => agent.identificacion === sourceId);
+    const destination = agents.rows.find((agent) => agent.identificacion === destinationId);
+    if (!source || !destination) {
+      await client.query('ROLLBACK');
+      res.status(404).json({ error: 'No se encontró el agente de origen o destino.' });
+      return;
+    }
+    if (destination.estado_aprobacion !== 'aprobado') {
+      await client.query('ROLLBACK');
+      res.status(409).json({ error: 'El agente de destino debe estar aprobado.' });
+      return;
+    }
+
+    const ownedEvents = await client.query(
+      `SELECT codigo_evento
+       FROM evento
+       WHERE identificacion_agente = $1
+         AND ($2::varchar[] IS NULL OR codigo_evento = ANY($2::varchar[]))
+       ORDER BY codigo_evento
+       FOR UPDATE`,
+      [sourceId, selectedCodes === undefined ? null : selectedCodes.map((code) => code.trim())]
+    );
+    if (selectedCodes !== undefined && ownedEvents.rowCount !== selectedCodes.length) {
+      await client.query('ROLLBACK');
+      res.status(409).json({ error: 'Uno o más eventos no pertenecen al agente de origen.' });
+      return;
+    }
+    if (ownedEvents.rowCount === 0) {
+      await client.query('ROLLBACK');
+      res.status(409).json({ error: 'El agente de origen no tiene eventos para reasignar.' });
+      return;
+    }
+
+    const codes = ownedEvents.rows.map((event) => event.codigo_evento);
+    const reassigned = await client.query(
+      `UPDATE evento
+       SET identificacion_agente = $2
+       WHERE identificacion_agente = $1
+         AND codigo_evento = ANY($3::varchar[])
+       RETURNING codigo_evento`,
+      [sourceId, destinationId, codes]
+    );
+    if (reassigned.rowCount !== codes.length) {
+      throw new Error('No fue posible reasignar todos los eventos seleccionados.');
+    }
+
+    const remaining = await client.query(
+      `SELECT COUNT(*)::integer AS total
+       FROM evento
+       WHERE identificacion_agente = $1
+         AND codigo_evento = ANY($2::varchar[])`,
+      [sourceId, codes]
+    );
+    if (remaining.rows[0].total !== 0) {
+      throw new Error('La reasignación dejó eventos vinculados al agente de origen.');
+    }
+
+    await client.query('COMMIT');
+    res.json({
+      eventos_reasignados: reassigned.rowCount,
+      codigos_evento: reassigned.rows.map((event) => event.codigo_evento)
+    });
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
+}));
+
 app.get('/api/admin/usuarios', authenticate, authorize('administrador'), asyncRoute(async (req, res) => {
   const role = req.query.rol ? String(req.query.rol).trim().toLowerCase() : null;
   if (role && !adminUserRoles.has(role)) {
@@ -1226,7 +1387,10 @@ app.get('/api/admin/usuarios', authenticate, authorize('administrador'), asyncRo
               d.nombre AS departamento,
               country.nombre AS pais,
               phone.telefono,
-              ${accountRoleSql('admin')} AS role
+              ${accountRoleSql('admin')} AS role,
+              agent.estado_aprobacion,
+              COALESCE(event_counts.eventos_total, 0)::integer AS eventos_total,
+              COALESCE(event_counts.eventos_activos, 0)::integer AS eventos_activos
        FROM persona p
        LEFT JOIN cliente client ON client.identificacion = p.identificacion
        LEFT JOIN agente agent ON agent.identificacion = p.identificacion
@@ -1241,6 +1405,16 @@ app.get('/api/admin/usuarios', authenticate, authorize('administrador'), asyncRo
          ORDER BY telefono
          LIMIT 1
        ) phone ON TRUE
+       LEFT JOIN LATERAL (
+         SELECT COUNT(*)::integer AS eventos_total,
+                COUNT(*) FILTER (
+                  WHERE LOWER(TRIM(event_state.nombre)) NOT IN ('cancelado', 'cancelada', 'anulado', 'anulada')
+                )::integer AS eventos_activos
+         FROM evento agent_event
+         JOIN estadoevento event_state
+           ON event_state.id_estado_evento = agent_event.id_estado_evento
+         WHERE agent_event.identificacion_agente = agent.identificacion
+       ) event_counts ON TRUE
      )
      SELECT * FROM usuarios
      WHERE role IS NOT NULL AND ($1::text IS NULL OR role = $1)
@@ -1532,12 +1706,16 @@ app.delete('/api/admin/usuarios/:identificacion', authenticate, authorize('admin
     }
     if (account.role === 'agente') {
       const events = await client.query(
-        'SELECT 1 FROM evento WHERE identificacion_agente = $1 LIMIT 1',
+        'SELECT COUNT(*)::integer AS total FROM evento WHERE identificacion_agente = $1',
         [identification]
       );
-      if (events.rowCount > 0) {
+      if (events.rows[0].total > 0) {
         await client.query('ROLLBACK');
-        res.status(409).json({ error: 'No se puede eliminar un agente con eventos asociados.' });
+        res.status(409).json({
+          codigo: 'TIENE_EVENTOS',
+          eventos: events.rows[0].total,
+          error: 'Reasigna los eventos asociados antes de eliminar este agente.'
+        });
         return;
       }
     }

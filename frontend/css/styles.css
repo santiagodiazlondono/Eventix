@@ -104,6 +104,16 @@ input, select, button { font: inherit; color: inherit; }
   padding-inline: var(--gutter);
 }
 
+body.admin-wide-layout .container {
+  max-width: 90rem;
+}
+
+@media (min-width: 80em) {
+  body.admin-body .nav-links a {
+    white-space: nowrap;
+  }
+}
+
 /* ---------- 3. Botones ---------- */
 .btn {
   display: inline-flex;
@@ -126,6 +136,55 @@ input, select, button { font: inherit; color: inherit; }
 .btn-accent { background: var(--accent-2); color: var(--bg); }
 .btn-accent:hover { background: #10B1A3; }
 .btn-block { width: 100%; }
+
+.admin-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 6rem;
+  min-height: 2.75rem;
+  padding: 0 0.75rem;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease,
+    color 0.15s ease;
+}
+.admin-action-btn--neutral {
+  background: var(--surface-2);
+  color: var(--text);
+}
+.admin-action-btn--neutral:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: var(--surface);
+}
+.admin-action-btn--danger {
+  background: transparent;
+  color: var(--danger);
+}
+.admin-action-btn--danger:hover:not(:disabled) {
+  border-color: var(--danger);
+  background: rgba(251, 113, 133, 0.12);
+}
+.admin-action-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.admin-action-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+.admin-action-group {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
 
 /* ---------- 4. Badges de estado ---------- */
 .badge {
@@ -299,7 +358,8 @@ input, select, button { font: inherit; color: inherit; }
   font-weight: 500;
 }
 .search input,
-.search select {
+.search select,
+.search-control {
   width: 100%;
   min-height: 2.75rem;
   padding: .6rem .8rem;
@@ -309,7 +369,8 @@ input, select, button { font: inherit; color: inherit; }
   color-scheme: dark;
 }
 .search input:focus,
-.search select:focus { border-color: var(--accent); outline: none; }
+.search select:focus,
+.search-control:focus { border-color: var(--accent); outline: none; }
 
 .input-icon { position: relative; }
 .input-icon svg {
@@ -2030,4 +2091,3 @@ body.admin-body > * {
     grid-template-columns: 100px 1fr 40px;
   }
 }
-

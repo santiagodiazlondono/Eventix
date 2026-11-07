@@ -129,9 +129,10 @@
 
       var actionsCell = document.createElement("td");
       if (event.puede_editar) {
+        actionsCell.className = "admin-action-group";
         var editButton = document.createElement("button");
         editButton.type = "button";
-        editButton.className = "btn btn-ghost agent-edit-event";
+        editButton.className = "btn btn-ghost agent-edit-event admin-action-btn admin-action-btn--neutral";
         editButton.textContent = "Editar";
         editButton.setAttribute("aria-label", "Editar " + event.nombre);
         editButton.addEventListener("click", function () {
@@ -141,7 +142,7 @@
 
         var saveStateButton = document.createElement("button");
         saveStateButton.type = "button";
-        saveStateButton.className = "btn btn-ghost agent-save-state";
+        saveStateButton.className = "btn btn-ghost agent-save-state admin-action-btn admin-action-btn--neutral";
         saveStateButton.textContent = "Guardar estado";
         saveStateButton.addEventListener("click", async function () {
           saveStateButton.disabled = true;
@@ -165,7 +166,7 @@
 
         var deleteButton = document.createElement("button");
         deleteButton.type = "button";
-        deleteButton.className = "btn btn-ghost agent-delete-event";
+        deleteButton.className = "btn btn-ghost agent-delete-event admin-action-btn admin-action-btn--danger";
         deleteButton.textContent = "Eliminar";
         deleteButton.setAttribute("aria-label", "Eliminar " + event.nombre);
         deleteButton.addEventListener("click", async function () {
@@ -186,7 +187,8 @@
         });
         actionsCell.appendChild(deleteButton);
       } else {
-        actionsCell.textContent = "—";
+        actionsCell.textContent = "Solo lectura";
+        actionsCell.className = "agent-readonly-indicator";
       }
       row.appendChild(actionsCell);
       tableBody.appendChild(row);
@@ -348,11 +350,14 @@
       }
     })
     .catch(function (error) {
-      if (error.status === 401) {
+      if (error.status === 401 || error.status === 403) {
         var page = document.getElementById("formulario-evento")
           ? "agente-registro.html"
           : "agente-mis-eventos.html";
-        window.location.replace("Login.html?next=" + page);
+        window.location.replace(
+          "Login.html?mensaje=" + encodeURIComponent(error.message) +
+            "&next=" + encodeURIComponent(page)
+        );
         return;
       }
 

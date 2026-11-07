@@ -83,8 +83,17 @@
   transition: border-color 0.2s ease, background-color 0.2s ease;
 }
 
-.agent-status-select:focus,
-.agent-status-select:hover {
+.agent-status-select.admin-action-btn {
+  min-width: 6rem;
+  min-height: 2.75rem;
+  padding: 0 2rem 0 0.75rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.agent-status-select:focus:not(.admin-action-btn),
+.agent-status-select:hover:not(.admin-action-btn) {
   border-color: rgba(255, 255, 255, 0.3);
   background-color: rgba(255, 255, 255, 0.06);
 }
@@ -93,4 +102,3 @@
   background-color: #0a0d14;
   color: var(--text);
 }
-

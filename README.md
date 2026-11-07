@@ -11,7 +11,7 @@ Eventix es un prototipo de una plataforma web para descubrir eventos y reservar 
 - Vista de detalle con información y precio base consultados desde la base de datos.
 - Selector de cantidad de entradas de 1 a 10 y cálculo del subtotal, cargo de servicio y total.
 - API para consultar eventos y ciudades, registrar e iniciar sesión como cliente y crear/consultar reservas.
-- Registro público de clientes y agentes, login por cookie segura y paneles con autorización por rol.
+- Registro público de clientes y solicitudes de agente sujetas a aprobación administrativa, login por cookie segura y paneles con autorización por rol.
 - Panel de cliente para consultar sus reservas, panel de agente para gestionar eventos y reservas, y dashboard administrativo con reportes reales.
 - Validación de capacidad y cálculo de precios en el servidor.
 

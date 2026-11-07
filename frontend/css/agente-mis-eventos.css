@@ -46,16 +46,6 @@
   margin-bottom: 0.5rem;
 }
 
-.agent-save-state,
-.agent-delete-event {
-  margin: 0.2rem;
-  white-space: nowrap;
-}
-
-.agent-delete-event {
-  color: #fb7185;
-}
-
 .agent-table tr:last-child td {
   border-bottom: none;
 }
@@ -327,4 +317,3 @@
   display: inline-flex;
   align-items: center;
 }
-

@@ -2,8 +2,9 @@
   "use strict";
 
   var auth = window.EventixAuth;
+  var ui = window.EventixUI;
   var form = document.getElementById("formulario-usuario");
-  if (!auth || !form) return;
+  if (!auth || !ui || !form) return;
 
   var tableBody = document.getElementById("usuarios-lista");
   var message = document.getElementById("usuarios-mensaje");
@@ -12,8 +13,13 @@
   var modal = document.getElementById("modal-usuario");
   var formMessage = document.getElementById("usuario-form-mensaje");
   var citySelect = document.getElementById("usuario-ciudad");
+  var agentEventsSection = document.getElementById("usuario-eventos");
+  var agentEventsBody = document.getElementById("usuario-eventos-lista");
+  var agentEventsMessage = document.getElementById("usuario-eventos-mensaje");
   var users = [];
   var isEditing = false;
+  var editorOriginButton = null;
+  var searchTimer = null;
 
   function showMessage(target, text, isError) {
     target.textContent = text;
@@ -45,6 +51,7 @@
     tableBody.replaceChildren();
     visibleUsers.forEach(function (user) {
       var row = document.createElement("tr");
+      row.dataset.userIdentification = user.identificacion;
       var identity = document.createElement("td");
       var name = document.createElement("div");
       name.className = "user-name";
@@ -58,6 +65,9 @@
       [
         user.identificacion,
         roleName(user.role),
+        user.role === "agente"
+          ? Number(user.eventos_activos || 0) + " / " + Number(user.eventos_total || 0)
+          : "—",
         user.telefono || "—",
         [user.ciudad, user.departamento, user.pais].filter(Boolean).join(", ") || "—"
       ].forEach(function (value) {
@@ -67,20 +77,20 @@
       });
 
       var actions = document.createElement("td");
-      actions.className = "admin-text-right";
+      actions.className = "admin-action-group";
       var editButton = document.createElement("button");
       editButton.type = "button";
-      editButton.className = "btn btn-ghost user-edit-btn";
+      editButton.className = "btn btn-ghost user-edit-btn admin-action-btn admin-action-btn--neutral";
       editButton.textContent = "Editar";
       editButton.addEventListener("click", function () {
-        openUserEditor(user);
+        openUserEditor(user, editButton);
       });
       var deleteButton = document.createElement("button");
       deleteButton.type = "button";
-      deleteButton.className = "btn btn-ghost user-delete-btn";
+      deleteButton.className = "btn btn-ghost user-delete-btn admin-action-btn admin-action-btn--danger";
       deleteButton.textContent = "Eliminar";
       deleteButton.addEventListener("click", function () {
-        deleteUser(user);
+        deleteUser(user, deleteButton);
       });
       actions.append(editButton, deleteButton);
       row.appendChild(actions);
@@ -115,15 +125,55 @@
     if (selectedCityId) citySelect.value = String(selectedCityId);
   }
 
-  function closeModal() {
-    modal.classList.remove("is-open");
-    modal.setAttribute("aria-hidden", "true");
+  function formatEventDate(value) {
+    if (!value) return "Fecha por confirmar";
+    return new Intl.DateTimeFormat("es-CO", {
+      dateStyle: "medium",
+      timeStyle: "short"
+    }).format(new Date(value));
   }
 
-  async function openUserEditor(user) {
+  async function loadAgentEvents(identification) {
+    agentEventsBody.replaceChildren();
+    showMessage(agentEventsMessage, "Cargando eventos...", false);
+    try {
+      var result = await auth.request(
+        "/admin/usuarios/" + encodeURIComponent(identification) + "/eventos"
+      );
+      (result.eventos || []).forEach(function (event) {
+        var row = document.createElement("tr");
+        [event.nombre, formatEventDate(event.fecha_hora_inicio), event.estado, event.reservas]
+          .forEach(function (value) {
+            var cell = document.createElement("td");
+            cell.textContent = String(value == null ? "—" : value);
+            row.appendChild(cell);
+          });
+        agentEventsBody.appendChild(row);
+      });
+      showMessage(
+        agentEventsMessage,
+        result.eventos && result.eventos.length ? "" : "Este agente no tiene eventos.",
+        false
+      );
+    } catch (error) {
+      showMessage(agentEventsMessage, error.message, true);
+    }
+  }
+
+  function closeModal(shouldReturnToOrigin) {
+    modal.classList.remove("is-open");
+    modal.setAttribute("aria-hidden", "true");
+    if (shouldReturnToOrigin !== false) {
+      ui.scrollToSection(editorOriginButton);
+    }
+  }
+
+  async function openUserEditor(user, sourceButton) {
     isEditing = Boolean(user);
+    editorOriginButton = sourceButton || null;
     form.reset();
     formMessage.hidden = true;
+    agentEventsSection.hidden = !user || user.role !== "agente";
     document.getElementById("modal-usuario-titulo").textContent =
       isEditing ? "Editar usuario" : "Nuevo usuario";
     document.getElementById("guardar-usuario").textContent =
@@ -146,14 +196,19 @@
     modal.classList.add("is-open");
     modal.setAttribute("aria-hidden", "false");
     try {
-      await loadCities(user && user.id_ciudad);
+      await Promise.all([
+        loadCities(user && user.id_ciudad),
+        user && user.role === "agente"
+          ? loadAgentEvents(user.identificacion)
+          : Promise.resolve()
+      ]);
       form.elements.nombres.focus();
     } catch (error) {
       showMessage(formMessage, error.message, true);
     }
   }
 
-  async function deleteUser(user) {
+  async function deleteUser(user, sourceButton) {
     var name = [user.nombres, user.apellidos].filter(Boolean).join(" ");
     if (!window.confirm('¿Eliminar la cuenta de "' + name + '"?')) return;
     try {
@@ -161,21 +216,52 @@
         method: "DELETE"
       });
       await loadUsers();
+      ui.scrollToSection(document.getElementById("directorio-title"));
     } catch (error) {
+      if (error.codigo === "TIENE_EVENTOS") {
+        window.EventixAdminAgentTransfer.open(
+          user.identificacion,
+          error.eventos,
+          sourceButton,
+          "users"
+        );
+        return;
+      }
       window.alert(error.message);
     }
   }
 
-  searchInput.addEventListener("input", renderUsers);
+  searchInput.addEventListener("input", function () {
+    window.clearTimeout(searchTimer);
+    searchTimer = window.setTimeout(renderUsers, 200);
+  });
   roleFilter.addEventListener("change", renderUsers);
   document.getElementById("agregar-usuario").addEventListener("click", function () {
-    openUserEditor(null);
+    openUserEditor(null, document.getElementById("agregar-usuario"));
+  });
+  document.getElementById("usuario-reasignar-eventos").addEventListener("click", function () {
+    if (form.elements.identificacion.value) {
+      var sourceId = form.elements.identificacion.value;
+      closeModal(false);
+      window.EventixAdminAgentTransfer.open(
+        sourceId,
+        undefined,
+        editorOriginButton,
+        "users"
+      );
+    }
   });
   modal.querySelectorAll("[data-close-usuario]").forEach(function (button) {
     button.addEventListener("click", closeModal);
   });
   modal.addEventListener("click", function (event) {
     if (event.target === modal) closeModal();
+  });
+  document.addEventListener("keydown", function (event) {
+    if (event.key === "Escape" && modal.classList.contains("is-open")) {
+      event.preventDefault();
+      closeModal();
+    }
   });
   form.addEventListener("submit", async function (event) {
     event.preventDefault();
@@ -204,5 +290,30 @@
 
   loadUsers().catch(function (error) {
     showMessage(message, error.message, true);
+  });
+
+  window.addEventListener("eventix:agent-events-reassigned", function (event) {
+    loadUsers().then(function () {
+      if (event.detail.returnList !== "users") return;
+      var row = Array.prototype.find.call(
+        tableBody.querySelectorAll("tr"),
+        function (item) {
+          return item.dataset.userIdentification === event.detail.identificacion;
+        }
+      );
+      var target = row && row.querySelector("button");
+      ui.scrollToSection(target || document.getElementById("directorio-title"));
+      showMessage(
+        message,
+        "Se reasignaron " + event.detail.eventosReasignados + " eventos correctamente.",
+        false
+      );
+    }).catch(function (error) {
+      showMessage(message, error.message, true);
+    });
+    if (modal.classList.contains("is-open") &&
+        !agentEventsSection.hidden && form.elements.identificacion.value) {
+      loadAgentEvents(form.elements.identificacion.value);
+    }
   });
 })();
