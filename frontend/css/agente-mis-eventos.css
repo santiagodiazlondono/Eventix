@@ -41,6 +41,15 @@
   white-space: nowrap;
 }
 
+.agent-table .admin-action-group {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.agent-table .admin-action-btn {
+  width: 100%;
+}
+
 .agent-status-select {
   min-width: 9rem;
   margin-bottom: 0.5rem;
