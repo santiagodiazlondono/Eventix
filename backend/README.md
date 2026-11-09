@@ -10,7 +10,7 @@ API REST con Express y PostgreSQL para gestionar cuentas de clientes, agentes y 
 
 ## Migraciones
 
-Ejecuta en orden en el SQL Editor de Neon las migraciones [`001_event_locality_capacities.sql`](migrations/001_event_locality_capacities.sql), [`002_reservation_locality.sql`](migrations/002_reservation_locality.sql), [`003_auth_and_reservation_states.sql`](migrations/003_auth_and_reservation_states.sql) y [`004_agent_approval.sql`](migrations/004_agent_approval.sql). Son idempotentes. La primera agrega capacidades por localidad; la segunda añade localidad a las reservas existentes; la tercera asegura columnas de sesión, correo único ignorando mayúsculas/minúsculas y estados `Confirmada`/`Cancelada`; la cuarta agrega estado y metadatos de resolución de solicitudes de agente. Los agentes existentes quedan aprobados para conservar su acceso. No elimina datos.
+Ejecuta en orden en el SQL Editor de Neon las migraciones [`001_event_locality_capacities.sql`](migrations/001_event_locality_capacities.sql), [`002_reservation_locality.sql`](migrations/002_reservation_locality.sql), [`003_auth_and_reservation_states.sql`](migrations/003_auth_and_reservation_states.sql), [`004_agent_approval.sql`](migrations/004_agent_approval.sql) y [`005_profile_account_deletion.sql`](migrations/005_profile_account_deletion.sql). Son idempotentes. La primera agrega capacidades por localidad; la segunda añade localidad a las reservas existentes; la tercera asegura columnas de sesión, correo único ignorando mayúsculas/minúsculas y estados `Confirmada`/`Cancelada`; la cuarta agrega estado y metadatos de resolución de solicitudes de agente; la quinta permite desactivar y anonimizar cuentas sin borrar reservas ni eventos relacionados. Los agentes existentes quedan aprobados para conservar su acceso. No elimina datos.
 
 ## Configuración
 
@@ -74,6 +74,7 @@ El seed es transaccional e idempotente. Si el correo ya pertenece a un administr
 | `POST` | `/api/auth/login` | Público | Inicia sesión con correo y contraseña. |
 | `POST` | `/api/auth/logout` | Público | Cierra la sesión eliminando la cookie `HttpOnly`. |
 | `GET` | `/api/auth/me` | Sesión | Devuelve la cuenta autenticada. |
+| `GET/PUT/DELETE` | `/api/perfil` | Sesión | Consulta/actualiza el perfil propio o desactiva la cuenta conservando su historial. |
 | `GET` | `/api/reservas` | Cliente | Consulta las reservas del cliente autenticado. |
 | `POST` | `/api/reservas` | Cliente | Crea una reserva y comprueba la capacidad. |
 | `DELETE` | `/api/reservas/:id` | Cliente | Cancela una reserva propia sin borrar su historial. |
@@ -87,6 +88,8 @@ El seed es transaccional e idempotente. Si el correo ya pertenece a un administr
 | `PUT/DELETE` | `/api/admin/catalogos/:tipo/:id` | Administrador | Actualiza o elimina un elemento geográfico. No permite borrar elementos con registros asociados. |
 
 El registro recibe `identificacion`, `nombre_completo`, `correo`, `numero_telefono`, `id_ciudad`, `direccion`, `contrasena` y `rol` (`cliente` o `agente`). La contraseña debe tener al menos 8 caracteres. El inicio de sesión recibe `correo` y `contrasena`; las sesiones usan una cookie `HttpOnly`, `SameSite=Lax` y `Secure` en producción. Las solicitudes del navegador incluyen credenciales.
+
+La eliminación desde el perfil requiere la contraseña actual. Desactiva el acceso, anonimiza nombre, correo, dirección y teléfono, y conserva las relaciones con reservas/eventos para mantener el historial. La identificación y ciudad se mantienen como referencias internas; no es posible eliminar al último administrador activo.
 
 Para crear una reserva se envía `codigo_evento`, `numero_entradas` (de 1 a 10) y la `localidad` (`General`, `VIP` o `Preferencial`). El servidor calcula el total con el precio de esa localidad más $4.000 de servicio por entrada, verifica su capacidad dentro de una transacción y no acepta un total enviado por el navegador.
 

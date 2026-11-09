@@ -10,10 +10,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../css/base.css">
     <link rel="stylesheet" href="../css/perfil.css">
+    <link rel="stylesheet" href="../css/perfil-cuenta.css">
 </head>
 <body data-required-role="cliente">
     <script src="../models/auth.js" defer></script>
     <script src="../controllers/auth.js" defer></script>
+    <script src="../controllers/perfil-cuenta.js" defer></script>
     <div class="app">
         <aside class="barra-lateral" aria-label="Navegación de cliente">
             <a class="marca" href="Index.html" aria-label="Eventix, inicio">
@@ -53,77 +55,82 @@
                 <span class="avatar-superior js-user-avatar" aria-hidden="true">U</span>
             </header>
 
-            <main class="contenido-principal">
-                <section class="identidad-cliente" aria-label="Resumen del perfil">
-                    <div class="avatar-cliente" aria-hidden="true">LR</div>
-                    <div>
-                        <h2 class="js-user-name">Mi perfil</h2>
-                        <p>Cliente <span aria-hidden="true">·</span> Miembro desde enero de 2025</p>
+            <main class="contenido-principal account-profile">
+                <header class="account-profile-heading">
+                    <h2>Datos de la cuenta</h2>
+                    <p>Consulta y actualiza la información asociada a tu perfil.</p>
+                </header>
+                <p id="perfil-mensaje" role="status" aria-live="polite" hidden></p>
+                <section class="account-profile-card" aria-labelledby="perfil-nombre">
+                    <div class="account-profile-identity">
+                        <span class="account-profile-avatar" data-perfil-iniciales aria-hidden="true">U</span>
+                        <div>
+                            <h2 id="perfil-nombre" data-perfil-nombre>Cargando perfil...</h2>
+                            <p data-perfil-rol>Cliente</p>
+                        </div>
                     </div>
-                </section>
-
-                <section class="estadisticas" aria-label="Actividad de la cuenta">
-                    <article class="tarjeta-estadistica">
-                        <p class="valor-estadistica">1.280</p>
-                        <h3>Puntos acumulados</h3>
-                    </article>
-                    <article class="tarjeta-estadistica">
-                        <p class="valor-estadistica">9</p>
-                        <h3>Reservas realizadas</h3>
-                    </article>
-                    <article class="tarjeta-estadistica">
-                        <p class="valor-estadistica">$643.000</p>
-                        <h3>Total invertido</h3>
-                    </article>
-                </section>
-
-                <section class="tarjeta-perfil" aria-labelledby="titulo-datos">
-                    <h2 class="titulo-seccion" id="titulo-datos">DATOS PERSONALES</h2>
-
-                    <form class="formulario-perfil" action="#" method="post">
-                        <div class="campo">
-                            <label for="nombre-completo">Nombre completo</label>
-                            <input id="nombre-completo" name="nombre_completo" type="text" value="Laura Ramírez Toro" autocomplete="name">
+                    <form id="perfil-formulario" class="account-profile-form">
+                        <div class="account-profile-field">
+                            <label for="perfil-nombres">Nombres</label>
+                            <input id="perfil-nombres" name="nombres" maxlength="100" autocomplete="given-name" required disabled>
                         </div>
-
-                        <div class="campo">
-                            <label for="identificacion">N.º de identificación</label>
-                            <input id="identificacion" name="identificacion" type="text" value="1 115 487 220" inputmode="numeric">
+                        <div class="account-profile-field">
+                            <label for="perfil-apellidos">Apellidos</label>
+                            <input id="perfil-apellidos" name="apellidos" maxlength="100" autocomplete="family-name" required disabled>
                         </div>
-
-                        <div class="campo">
-                            <label for="correo">Correo electrónico</label>
-                            <input id="correo" name="correo" type="email" value="laura.ramirez@correo.com" autocomplete="email">
+                        <div class="account-profile-field">
+                            <label for="perfil-identificacion">Identificación</label>
+                            <input id="perfil-identificacion" name="identificacion" readonly disabled>
                         </div>
-
-                        <div class="campo">
-                            <label for="ciudad">Ciudad</label>
-                            <input id="ciudad" name="ciudad" type="text" value="Tuluá, Valle del Cauca" autocomplete="address-level2">
+                        <div class="account-profile-field">
+                            <label for="perfil-correo">Correo electrónico</label>
+                            <input id="perfil-correo" name="correo_electronico" type="email" maxlength="150" autocomplete="email" required disabled>
                         </div>
-
-                        <div class="campo campo-ancho-completo">
-                            <label for="direccion">Dirección</label>
-                            <input id="direccion" name="direccion" type="text" value="Cra 25 #10-40" autocomplete="street-address">
+                        <div class="account-profile-field">
+                            <label for="perfil-telefono">Teléfono</label>
+                            <input id="perfil-telefono" name="telefono" maxlength="20" autocomplete="tel" required disabled>
                         </div>
-
-                        <div class="preferencias campo-ancho-completo">
-                            <label class="etiqueta-preferencia" for="novedades">
-                                Recibir publicidad y novedades de eventos
-                            </label>
-                            <span class="control-switch">
-                                <input id="novedades" name="novedades" type="checkbox" checked>
-                                <span class="switch-visual" aria-hidden="true"></span>
-                            </span>
+                        <div class="account-profile-field">
+                            <label for="perfil-ciudad">Ciudad</label>
+                            <select id="perfil-ciudad" name="id_ciudad" required disabled>
+                                <option value="">Cargando ciudades...</option>
+                            </select>
                         </div>
-
-                        <div class="acciones-formulario campo-ancho-completo">
-                            <button class="boton boton-secundario" type="reset">Cancelar</button>
-                            <button class="boton boton-principal" type="button">Guardar cambios</button>
+                        <div class="account-profile-field account-profile-field--wide">
+                            <label for="perfil-direccion">Dirección</label>
+                            <input id="perfil-direccion" name="calle" maxlength="150" autocomplete="street-address" disabled>
+                        </div>
+                        <div class="account-profile-actions">
+                            <button id="perfil-editar" class="account-profile-edit" type="button">Editar información</button>
+                            <button id="perfil-cancelar" class="account-profile-cancel" type="button" hidden>Cancelar</button>
+                            <button id="perfil-guardar" class="account-profile-save" type="submit" hidden>Guardar cambios</button>
                         </div>
                     </form>
                 </section>
+                <section class="account-profile-danger" aria-labelledby="perfil-eliminar-titulo">
+                    <h2 id="perfil-eliminar-titulo">Eliminar cuenta</h2>
+                    <p>Desactivaremos tu cuenta y eliminaremos tus datos de contacto. Las reservas se conservarán para mantener el historial.</p>
+                    <button id="perfil-eliminar" class="account-profile-delete" type="button">Eliminar mi cuenta</button>
+                </section>
             </main>
         </div>
+    </div>
+    <div id="perfil-eliminar-dialogo" class="account-delete-overlay" aria-hidden="true">
+        <section class="account-delete-dialog" role="dialog" aria-modal="true" aria-labelledby="perfil-eliminar-dialogo-titulo">
+            <h2 id="perfil-eliminar-dialogo-titulo">Confirmar eliminación</h2>
+            <p>Esta acción cerrará tu sesión y desactivará la cuenta. Escribe <strong>ELIMINAR</strong> e ingresa tu contraseña para continuar.</p>
+            <form id="perfil-eliminar-formulario" class="account-delete-form">
+                <label for="perfil-confirmacion">Confirmación</label>
+                <input id="perfil-confirmacion" name="confirmacion" autocomplete="off" required>
+                <label for="perfil-contrasena">Contraseña actual</label>
+                <input id="perfil-contrasena" name="contrasena" type="password" autocomplete="current-password" required>
+                <p id="perfil-eliminar-mensaje" role="alert" hidden></p>
+                <div class="account-delete-form-actions">
+                    <button class="account-delete-cancel" type="button" data-cerrar-eliminar>Volver</button>
+                    <button id="perfil-confirmar-eliminar" class="account-delete-confirm" type="submit">Eliminar cuenta</button>
+                </div>
+            </form>
+        </section>
     </div>
 </body>
 </html>

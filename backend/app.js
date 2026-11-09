@@ -3,6 +3,7 @@ require('dotenv').config({ path: require('path').join(__dirname, '.env') });
 const bcrypt = require('bcryptjs');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
+const crypto = require('crypto');
 const express = require('express');
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
@@ -168,7 +169,8 @@ async function authenticate(req, res, next) {
        LEFT JOIN cliente c ON c.identificacion = p.identificacion
        LEFT JOIN agente a ON a.identificacion = p.identificacion
        LEFT JOIN administrador ad ON ad.identificacion = p.identificacion
-       WHERE p.identificacion = $1`,
+       WHERE p.identificacion = $1
+         AND p.cuenta_eliminada_at IS NULL`,
       [claims.sub]
     );
 
@@ -942,7 +944,8 @@ app.post('/api/auth/login', loginLimiter, asyncRoute(async (req, res) => {
      LEFT JOIN cliente c ON c.identificacion = p.identificacion
      LEFT JOIN agente a ON a.identificacion = p.identificacion
      LEFT JOIN administrador ad ON ad.identificacion = p.identificacion
-     WHERE LOWER(TRIM(p.correo_electronico)) = $1`,
+     WHERE LOWER(TRIM(p.correo_electronico)) = $1
+       AND p.cuenta_eliminada_at IS NULL`,
     [email]
   );
   const person = result.rows[0];
@@ -985,6 +988,218 @@ app.get('/api/auth/me', authenticate, asyncRoute(async (req, res) => {
     return;
   }
   res.json({ usuario: publicPerson({ ...result.rows[0], role: req.user.role }) });
+}));
+
+app.get('/api/perfil', authenticate, asyncRoute(async (req, res) => {
+  const result = await pool.query(
+    `SELECT p.identificacion, p.nombres, p.apellidos,
+            p.correo_electronico, p.calle, p.id_ciudad,
+            ci.nombre AS ciudad, d.nombre AS departamento,
+            country.nombre AS pais, phone.telefono,
+            $2::text AS role
+     FROM persona p
+     LEFT JOIN ciudad ci ON ci.id_ciudad = p.id_ciudad
+     LEFT JOIN departamento d ON d.id_departamento = ci.id_departamento
+     LEFT JOIN pais country ON country.id_pais = d.id_pais
+     LEFT JOIN LATERAL (
+       SELECT telefono
+       FROM personatelefono
+       WHERE identificacion = p.identificacion
+       ORDER BY telefono
+       LIMIT 1
+     ) phone ON TRUE
+     WHERE p.identificacion = $1
+       AND p.cuenta_eliminada_at IS NULL`,
+    [req.user.identificacion, req.user.role]
+  );
+  if (result.rowCount === 0) {
+    res.status(404).json({ error: 'No se encontró la información del perfil.' });
+    return;
+  }
+  res.json({ perfil: result.rows[0] });
+}));
+
+app.put('/api/perfil', authenticate, asyncRoute(async (req, res) => {
+  const body = req.body || {};
+  const names = typeof body.nombres === 'string' ? body.nombres.trim() : '';
+  const surnames = typeof body.apellidos === 'string' ? body.apellidos.trim() : '';
+  const email = typeof body.correo_electronico === 'string'
+    ? body.correo_electronico.trim().toLowerCase()
+    : '';
+  const phone = typeof body.telefono === 'string' ? body.telefono.trim() : '';
+  const address = typeof body.calle === 'string' ? body.calle.trim() : '';
+  const cityId = parseInteger(body.id_ciudad);
+
+  if (!names || names.length > 100 || !surnames || surnames.length > 100 ||
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 150 ||
+      !phone || phone.length > 20 || address.length > 150 ||
+      !Number.isSafeInteger(cityId) || cityId < 1) {
+    res.status(400).json({
+      error: 'Revisa nombres, apellidos, correo, teléfono, dirección y ciudad.'
+    });
+    return;
+  }
+
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const account = await client.query(
+      `SELECT identificacion
+       FROM persona
+       WHERE identificacion = $1
+         AND cuenta_eliminada_at IS NULL
+       FOR UPDATE`,
+      [req.user.identificacion]
+    );
+    if (account.rowCount === 0) {
+      await client.query('ROLLBACK');
+      res.status(404).json({ error: 'La cuenta ya no está disponible.' });
+      return;
+    }
+
+    const city = await client.query(
+      'SELECT 1 FROM ciudad WHERE id_ciudad = $1',
+      [cityId]
+    );
+    if (city.rowCount === 0) {
+      await client.query('ROLLBACK');
+      res.status(400).json({ error: 'La ciudad seleccionada no existe.' });
+      return;
+    }
+
+    await client.query(
+      `UPDATE persona
+       SET nombres = $1,
+           apellidos = $2,
+           correo_electronico = $3,
+           calle = $4,
+           id_ciudad = $5
+       WHERE identificacion = $6`,
+      [names, surnames, email, address || null, cityId, req.user.identificacion]
+    );
+    await client.query(
+      'DELETE FROM personatelefono WHERE identificacion = $1',
+      [req.user.identificacion]
+    );
+    await client.query(
+      'INSERT INTO personatelefono (identificacion, telefono) VALUES ($1, $2)',
+      [req.user.identificacion, phone]
+    );
+    await client.query('COMMIT');
+
+    res.json({
+      perfil: {
+        identificacion: req.user.identificacion,
+        nombres: names,
+        apellidos: surnames,
+        correo_electronico: email,
+        telefono: phone,
+        calle: address || null,
+        id_ciudad: cityId,
+        role: req.user.role
+      }
+    });
+  } catch (error) {
+    await client.query('ROLLBACK');
+    if (error.code === '23505') {
+      res.status(409).json({ error: 'El correo electrónico ya está registrado.' });
+      return;
+    }
+    throw error;
+  } finally {
+    client.release();
+  }
+}));
+
+app.delete('/api/perfil', authenticate, asyncRoute(async (req, res) => {
+  const password = req.body && req.body.contrasena;
+  if (typeof password !== 'string' || !password ||
+      Buffer.byteLength(password, 'utf8') > 72) {
+    res.status(400).json({ error: 'Ingresa tu contraseña para confirmar la eliminación.' });
+    return;
+  }
+
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const accountResult = await client.query(
+      `SELECT p.password_hash,
+              CASE
+                WHEN ad.identificacion IS NOT NULL THEN 'administrador'
+                WHEN a.identificacion IS NOT NULL THEN 'agente'
+                WHEN c.identificacion IS NOT NULL THEN 'cliente'
+                ELSE NULL
+              END AS role
+       FROM persona p
+       LEFT JOIN administrador ad ON ad.identificacion = p.identificacion
+       LEFT JOIN agente a ON a.identificacion = p.identificacion
+       LEFT JOIN cliente c ON c.identificacion = p.identificacion
+       WHERE p.identificacion = $1
+         AND p.cuenta_eliminada_at IS NULL
+       FOR UPDATE OF p`,
+      [req.user.identificacion]
+    );
+    const account = accountResult.rows[0];
+    if (!account || account.role !== req.user.role) {
+      await client.query('ROLLBACK');
+      res.status(404).json({ error: 'La cuenta ya no está disponible.' });
+      return;
+    }
+    if (!account.password_hash || !(await bcrypt.compare(password, account.password_hash))) {
+      await client.query('ROLLBACK');
+      res.status(401).json({ error: 'La contraseña no es correcta.' });
+      return;
+    }
+
+    if (account.role === 'administrador') {
+      await client.query('LOCK TABLE administrador IN EXCLUSIVE MODE');
+      const admins = await client.query(
+        `SELECT COUNT(*)::int AS total
+         FROM administrador ad
+         JOIN persona p ON p.identificacion = ad.identificacion
+         WHERE p.cuenta_eliminada_at IS NULL`
+      );
+      if (admins.rows[0].total <= 1) {
+        await client.query('ROLLBACK');
+        res.status(409).json({
+          error: 'No puedes eliminar la cuenta del último administrador activo.'
+        });
+        return;
+      }
+    }
+
+    const anonymizedEmail = `eliminada+${crypto.randomUUID()}@eventix.invalid`;
+    await client.query(
+      `UPDATE persona
+       SET nombres = 'Cuenta eliminada',
+           apellidos = '',
+           correo_electronico = $1,
+           calle = NULL,
+           password_hash = NULL,
+           cuenta_eliminada_at = CURRENT_TIMESTAMP,
+           auth_version = auth_version + 1
+       WHERE identificacion = $2`,
+      [anonymizedEmail, req.user.identificacion]
+    );
+    await client.query(
+      'DELETE FROM personatelefono WHERE identificacion = $1',
+      [req.user.identificacion]
+    );
+    await client.query('COMMIT');
+
+    res.clearCookie('eventix_token', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/api'
+    });
+    res.status(204).end();
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
 }));
 
 app.get('/api/agente/reservas', authenticate, authorize('agente'), asyncRoute(async (req, res) => {
@@ -1129,8 +1344,10 @@ const agentRequestSelect = `
 app.get('/api/admin/solicitudes-agente/contador', authenticate, authorize('administrador'), asyncRoute(async (req, res) => {
   const result = await pool.query(
     `SELECT COUNT(*)::integer AS pendientes
-     FROM agente
-     WHERE estado_aprobacion = 'pendiente'`
+     FROM agente a
+     JOIN persona p ON p.identificacion = a.identificacion
+     WHERE a.estado_aprobacion = 'pendiente'
+       AND p.cuenta_eliminada_at IS NULL`
   );
   res.json({ pendientes: result.rows[0].pendientes });
 }));
@@ -1146,7 +1363,8 @@ app.get('/api/admin/solicitudes-agente', authenticate, authorize('administrador'
 
   const result = await pool.query(
     `${agentRequestSelect}
-     WHERE ($1::text IS NULL OR a.estado_aprobacion = $1)
+     WHERE p.cuenta_eliminada_at IS NULL
+       AND ($1::text IS NULL OR a.estado_aprobacion = $1)
      ORDER BY a.fecha_solicitud DESC, a.identificacion`,
     [state === 'todas' ? null : state]
   );
@@ -1162,7 +1380,8 @@ app.get('/api/admin/solicitudes-agente/:identificacion', authenticate, authorize
 
   const result = await pool.query(
     `${agentRequestSelect}
-     WHERE a.identificacion = $1`,
+     WHERE a.identificacion = $1
+       AND p.cuenta_eliminada_at IS NULL`,
     [identification]
   );
   if (result.rowCount === 0) {
@@ -1415,7 +1634,8 @@ app.get('/api/admin/usuarios', authenticate, authorize('administrador'), asyncRo
            ON event_state.id_estado_evento = agent_event.id_estado_evento
          WHERE agent_event.identificacion_agente = agent.identificacion
        ) event_counts ON TRUE
-     )
+       WHERE p.cuenta_eliminada_at IS NULL
+       )
      SELECT * FROM usuarios
      WHERE role IS NOT NULL AND ($1::text IS NULL OR role = $1)
      ORDER BY nombres, apellidos, identificacion`,
@@ -1521,6 +1741,7 @@ app.put('/api/admin/usuarios/:identificacion', authenticate, authorize('administ
        LEFT JOIN agente agent ON agent.identificacion = p.identificacion
        LEFT JOIN cliente customer ON customer.identificacion = p.identificacion
        WHERE p.identificacion = $1
+         AND p.cuenta_eliminada_at IS NULL
        FOR UPDATE OF p`,
       [user.identification]
     );
@@ -1539,7 +1760,12 @@ app.put('/api/admin/usuarios/:identificacion', authenticate, authorize('administ
     }
     if (roleChanged && current.role === 'administrador') {
       await client.query('LOCK TABLE administrador IN EXCLUSIVE MODE');
-      const admins = await client.query('SELECT COUNT(*)::int AS total FROM administrador');
+      const admins = await client.query(
+        `SELECT COUNT(*)::int AS total
+         FROM administrador ad
+         JOIN persona p ON p.identificacion = ad.identificacion
+         WHERE p.cuenta_eliminada_at IS NULL`
+      );
       if (admins.rows[0].total <= 1) {
         await client.query('ROLLBACK');
         res.status(409).json({ error: 'No puedes quitar el rol del último administrador.' });
@@ -1675,6 +1901,7 @@ app.delete('/api/admin/usuarios/:identificacion', authenticate, authorize('admin
        LEFT JOIN agente agent ON agent.identificacion = p.identificacion
        LEFT JOIN cliente customer ON customer.identificacion = p.identificacion
        WHERE p.identificacion = $1
+         AND p.cuenta_eliminada_at IS NULL
        FOR UPDATE OF p`,
       [identification]
     );
@@ -1686,7 +1913,12 @@ app.delete('/api/admin/usuarios/:identificacion', authenticate, authorize('admin
     }
     if (account.role === 'administrador') {
       await client.query('LOCK TABLE administrador IN EXCLUSIVE MODE');
-      const admins = await client.query('SELECT COUNT(*)::int AS total FROM administrador');
+      const admins = await client.query(
+        `SELECT COUNT(*)::int AS total
+         FROM administrador ad
+         JOIN persona p ON p.identificacion = ad.identificacion
+         WHERE p.cuenta_eliminada_at IS NULL`
+      );
       if (admins.rows[0].total <= 1) {
         await client.query('ROLLBACK');
         res.status(409).json({ error: 'No puedes eliminar el último administrador.' });
@@ -1965,9 +2197,12 @@ app.delete('/api/admin/catalogos/:tipo/:id', authenticate, authorize('administra
 app.get('/api/admin/reportes', authenticate, authorize('administrador'), asyncRoute(async (req, res) => {
   const [counts, reservationsByEventMonth, revenueByMonth] = await Promise.all([
     pool.query(
-      `SELECT (SELECT COUNT(*) FROM cliente)::int AS clientes,
-              (SELECT COUNT(*) FROM agente)::int AS agentes,
-              (SELECT COUNT(*) FROM administrador)::int AS administradores,
+      `SELECT (SELECT COUNT(*) FROM cliente c JOIN persona p ON p.identificacion = c.identificacion
+               WHERE p.cuenta_eliminada_at IS NULL)::int AS clientes,
+              (SELECT COUNT(*) FROM agente a JOIN persona p ON p.identificacion = a.identificacion
+               WHERE p.cuenta_eliminada_at IS NULL)::int AS agentes,
+              (SELECT COUNT(*) FROM administrador ad JOIN persona p ON p.identificacion = ad.identificacion
+               WHERE p.cuenta_eliminada_at IS NULL)::int AS administradores,
               (SELECT COUNT(*) FROM reserva)::int AS reservas,
               (SELECT COUNT(*) FROM evento)::int AS eventos`
     ),

@@ -1,0 +1,239 @@
+.account-profile {
+  max-width: 860px;
+  margin: 0 auto;
+  padding-bottom: 3rem;
+}
+
+.account-profile-heading {
+  margin-bottom: 1.25rem;
+}
+
+.account-profile-heading p,
+.account-profile-help {
+  color: #aab2c0;
+  line-height: 1.6;
+}
+
+.account-profile-card,
+.account-profile-danger {
+  margin-bottom: 1rem;
+  padding: clamp(1rem, 3vw, 1.5rem);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  background: #111827;
+  color: #f3f4f6;
+}
+
+.account-profile-identity {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.account-profile-avatar {
+  display: grid;
+  width: 3.5rem;
+  height: 3.5rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3d7eff, #24d8cc);
+  color: #fff;
+  font-weight: 700;
+}
+
+.account-profile-identity h2 {
+  margin: 0 0 0.25rem;
+}
+
+.account-profile-identity p {
+  margin: 0;
+  color: #aab2c0;
+}
+
+.account-profile-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.account-profile-field {
+  display: grid;
+  min-width: 0;
+  gap: 0.4rem;
+}
+
+.account-profile-field--wide {
+  grid-column: 1 / -1;
+}
+
+.account-profile-field label {
+  color: #c1c8d4;
+  font-size: 0.85rem;
+}
+
+.account-profile-field input,
+.account-profile-field select,
+.account-delete-dialog input {
+  width: 100%;
+  min-height: 2.7rem;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid #374151;
+  border-radius: 7px;
+  background: #0b1220;
+  color: #f3f4f6;
+  font: inherit;
+}
+
+.account-profile-field input:disabled,
+.account-profile-field select:disabled {
+  opacity: 0.82;
+}
+
+.account-profile-actions {
+  display: flex;
+  grid-column: 1 / -1;
+  justify-content: flex-end;
+  gap: 0.7rem;
+  margin-top: 0.5rem;
+}
+
+.account-profile-actions button,
+.account-profile-danger button,
+.account-delete-dialog button {
+  min-height: 2.5rem;
+  padding: 0.55rem 0.9rem;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.account-profile-actions button:disabled,
+.account-profile-danger button:disabled,
+.account-delete-dialog button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.account-profile-save,
+.account-profile-edit {
+  background: #5146e5;
+  color: #fff;
+}
+
+.account-profile-cancel {
+  border-color: #4b5563 !important;
+  background: transparent;
+  color: #e5e7eb;
+}
+
+.account-profile-danger {
+  border-color: rgba(242, 99, 120, 0.5);
+}
+
+.account-profile-danger h2 {
+  margin-top: 0;
+  color: #ff8291;
+}
+
+.account-profile-danger p {
+  color: #c1c8d4;
+  line-height: 1.6;
+}
+
+.account-profile-delete {
+  background: #9f1239;
+  color: #fff;
+}
+
+#perfil-mensaje {
+  margin: 0 0 1rem;
+  color: #8de2d7;
+}
+
+#perfil-mensaje[data-type="error"] {
+  color: #ff8291;
+}
+
+#perfil-eliminar-mensaje {
+  margin: 0;
+  color: #ff8291;
+}
+
+.account-delete-overlay {
+  position: fixed;
+  z-index: 1000;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.72);
+}
+
+.account-delete-overlay.is-open {
+  display: flex;
+}
+
+.account-delete-dialog {
+  width: min(100%, 30rem);
+  padding: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  background: #111827;
+  color: #f3f4f6;
+}
+
+.account-delete-dialog h2 {
+  margin-top: 0;
+}
+
+.account-delete-dialog p {
+  color: #c1c8d4;
+  line-height: 1.6;
+}
+
+.account-delete-form {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.account-delete-form label {
+  font-size: 0.85rem;
+}
+
+.account-delete-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  margin-top: 0.5rem;
+}
+
+.account-delete-cancel {
+  border-color: #4b5563 !important;
+  background: transparent;
+  color: #e5e7eb;
+}
+
+.account-delete-confirm {
+  background: #9f1239;
+  color: #fff;
+}
+
+@media (max-width: 600px) {
+  .account-profile-form {
+    grid-template-columns: 1fr;
+  }
+
+  .account-profile-field--wide,
+  .account-profile-actions {
+    grid-column: auto;
+  }
+
+  .account-profile-actions {
+    flex-wrap: wrap;
+  }
+}

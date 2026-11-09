@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Consulta y actualiza tu perfil de administrador en Eventix.">
+  <title>Eventix · Perfil de administrador</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/styles.css">
+  <link rel="stylesheet" href="../css/perfil-cuenta.css">
+  <script src="../models/auth.js" defer></script>
+  <script src="../controllers/auth.js" defer></script>
+  <script src="../controllers/perfil-cuenta.js" defer></script>
+</head>
+<body class="admin-body" data-required-role="administrador">
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="index.html" aria-label="Eventix, inicio">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M3 5h1v14H3zM6 5h2v14H6zM10 5h1v14h-1zM13 5h2v14h-2zM17 5h1v14h-1zM20 5h1v14h-1z"/></svg>
+        </span>
+        <span class="brand-name">Eventix</span>
+      </a>
+      <input type="checkbox" id="menu-toggle" class="menu-toggle" aria-label="Abrir menú">
+      <label for="menu-toggle" class="menu-button" aria-hidden="true"><span></span><span></span><span></span></label>
+      <nav class="main-nav" aria-label="Navegación de administración">
+        <ul class="nav-links">
+          <li><a href="admin-panel.html">Dashboard</a></li>
+          <li><a href="admin-usuarios.html">Gestión de usuarios</a></li>
+          <li><a href="admin-catalogos.html">Gestión de catálogos</a></li>
+          <li><a href="admin-perfil.html" class="is-active" aria-current="page">Mi perfil</a></li>
+        </ul>
+        <div class="nav-actions">
+          <div class="admin-user-badge">
+            <span class="brand-mark brand-mark--circular admin-avatar-circular" aria-hidden="true">
+              <span class="admin-avatar-text" data-perfil-iniciales>U</span>
+            </span>
+            <span data-perfil-nombre>Administrador</span>
+          </div>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main id="contenido" class="admin-content-wrap">
+    <div class="container account-profile">
+      <header class="account-profile-heading">
+        <span class="admin-header-path">Administración</span>
+        <h1 class="admin-title">Mi perfil</h1>
+        <p>Consulta y actualiza la información asociada a tu cuenta de administrador.</p>
+      </header>
+      <p id="perfil-mensaje" role="status" aria-live="polite" hidden></p>
+      <section class="account-profile-card" aria-labelledby="perfil-nombre">
+        <div class="account-profile-identity">
+          <span class="account-profile-avatar" data-perfil-iniciales aria-hidden="true">U</span>
+          <div>
+            <h2 id="perfil-nombre" data-perfil-nombre>Cargando perfil...</h2>
+            <p data-perfil-rol>Administrador</p>
+          </div>
+        </div>
+        <form id="perfil-formulario" class="account-profile-form">
+          <div class="account-profile-field">
+            <label for="perfil-nombres">Nombres</label>
+            <input id="perfil-nombres" name="nombres" maxlength="100" autocomplete="given-name" required disabled>
+          </div>
+          <div class="account-profile-field">
+            <label for="perfil-apellidos">Apellidos</label>
+            <input id="perfil-apellidos" name="apellidos" maxlength="100" autocomplete="family-name" required disabled>
+          </div>
+          <div class="account-profile-field">
+            <label for="perfil-identificacion">Identificación</label>
+            <input id="perfil-identificacion" name="identificacion" readonly disabled>
+          </div>
+          <div class="account-profile-field">
+            <label for="perfil-correo">Correo electrónico</label>
+            <input id="perfil-correo" name="correo_electronico" type="email" maxlength="150" autocomplete="email" required disabled>
+          </div>
+          <div class="account-profile-field">
+            <label for="perfil-telefono">Teléfono</label>
+            <input id="perfil-telefono" name="telefono" maxlength="20" autocomplete="tel" required disabled>
+          </div>
+          <div class="account-profile-field">
+            <label for="perfil-ciudad">Ciudad</label>
+            <select id="perfil-ciudad" name="id_ciudad" required disabled>
+              <option value="">Cargando ciudades...</option>
+            </select>
+          </div>
+          <div class="account-profile-field account-profile-field--wide">
+            <label for="perfil-direccion">Dirección</label>
+            <input id="perfil-direccion" name="calle" maxlength="150" autocomplete="street-address" disabled>
+          </div>
+          <div class="account-profile-actions">
+            <button id="perfil-editar" class="account-profile-edit" type="button">Editar información</button>
+            <button id="perfil-cancelar" class="account-profile-cancel" type="button" hidden>Cancelar</button>
+            <button id="perfil-guardar" class="account-profile-save" type="submit" hidden>Guardar cambios</button>
+          </div>
+        </form>
+      </section>
+      <section class="account-profile-danger" aria-labelledby="perfil-eliminar-titulo">
+        <h2 id="perfil-eliminar-titulo">Eliminar cuenta</h2>
+        <p>Desactivaremos tu cuenta y eliminaremos tus datos de contacto. Los registros asociados se conservarán. El último administrador activo no puede eliminar su cuenta.</p>
+        <button id="perfil-eliminar" class="account-profile-delete" type="button">Eliminar mi cuenta</button>
+      </section>
+    </div>
+  </main>
+
+  <div id="perfil-eliminar-dialogo" class="account-delete-overlay" aria-hidden="true">
+    <section class="account-delete-dialog" role="dialog" aria-modal="true" aria-labelledby="perfil-eliminar-dialogo-titulo">
+      <h2 id="perfil-eliminar-dialogo-titulo">Confirmar eliminación</h2>
+      <p>Esta acción cerrará tu sesión y desactivará la cuenta. Escribe <strong>ELIMINAR</strong> e ingresa tu contraseña para continuar.</p>
+      <form id="perfil-eliminar-formulario" class="account-delete-form">
+        <label for="perfil-confirmacion">Confirmación</label>
+        <input id="perfil-confirmacion" name="confirmacion" autocomplete="off" required>
+        <label for="perfil-contrasena">Contraseña actual</label>
+        <input id="perfil-contrasena" name="contrasena" type="password" autocomplete="current-password" required>
+        <p id="perfil-eliminar-mensaje" role="alert" hidden></p>
+        <div class="account-delete-form-actions">
+          <button class="account-delete-cancel" type="button" data-cerrar-eliminar>Volver</button>
+          <button id="perfil-confirmar-eliminar" class="account-delete-confirm" type="submit">Eliminar cuenta</button>
+        </div>
+      </form>
+    </section>
+  </div>
+
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div class="footer-brand">
+        <a class="brand" href="index.html"><span class="brand-name">Eventix</span></a>
+        <p>Plataforma de boletería para eventos y espectáculos.</p>
+      </div>
+      <nav class="footer-nav" aria-label="Contacto">
+        <h2>Contáctanos</h2>
+        <ul>
+          <li><a href="https://www.instagram.com/eventixoc2026/" target="_blank" rel="noopener noreferrer">Instagram</a></li>
+          <li><a href="mailto:eventixoc@gmail.com">eventixoc@gmail.com</a></li>
+          <li><a href="https://wa.me/573167110623" target="_blank" rel="noopener noreferrer">WhatsApp: +57 316 711 0623</a></li>
+        </ul>
+      </nav>
+    </div>
+  </footer>
+</body>
+</html>
