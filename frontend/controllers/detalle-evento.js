@@ -13,6 +13,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   var currentEvent = null;
   var selectedLocality = "General";
   var availableForLocality = 0;
+  var isFinalized = false;
 
   function setText(id, value) {
     var element = document.getElementById(id);
@@ -42,8 +43,9 @@ document.addEventListener("DOMContentLoaded", async function () {
     setText("subtotal-val", formatCurrency(subtotal));
     setText("service-val", formatCurrency(serviceTotal));
     setText("grand-total-val", formatCurrency(subtotal + serviceTotal));
-    minusButton.disabled = quantity <= 1;
-    plusButton.disabled = quantity >= Math.min(10, availableForLocality);
+    minusButton.disabled = isFinalized || quantity <= 1;
+    plusButton.disabled = isFinalized ||
+      quantity >= Math.min(10, availableForLocality);
   }
 
   function selectLocality(locality) {
@@ -79,7 +81,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     });
     document.getElementById("selected-zone-label").textContent =
       "Precio " + locality;
-    confirmButton.disabled = availableForLocality < 1;
+    confirmButton.disabled = isFinalized || availableForLocality < 1;
     updateSummary();
   }
 
@@ -150,8 +152,12 @@ document.addEventListener("DOMContentLoaded", async function () {
           : "Agotada"
       );
       var card = document.querySelector('[data-zone="' + locality.name + '"]');
-      card.disabled = capacity < 1;
-      if (card.disabled) card.setAttribute("aria-label", locality.name + ", agotada");
+      card.disabled = isFinalized || capacity < 1;
+      if (isFinalized) {
+        card.setAttribute("aria-label", locality.name + ", reservas cerradas");
+      } else if (card.disabled) {
+        card.setAttribute("aria-label", locality.name + ", agotada");
+      }
     });
     setText(
       "localidad-general",
@@ -175,6 +181,13 @@ document.addEventListener("DOMContentLoaded", async function () {
       .normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "")
       .toLowerCase();
+    isFinalized = ["finalizado", "finalizada"].includes(normalizedStatus.trim());
+    var reservationStatus = document.getElementById("event-reservation-status");
+    if (isFinalized) {
+      reservationStatus.textContent = "Este evento ya finalizó. No se pueden reservar entradas.";
+      reservationStatus.hidden = false;
+      confirmButton.textContent = "Reservas cerradas";
+    }
     if (normalizedStatus.includes("boleteria")) badge.classList.add("badge-boleteria");
     if (normalizedStatus.includes("programado")) badge.classList.add("badge-programado");
     if (normalizedStatus.includes("vivo")) badge.classList.add("badge-envivo");
@@ -209,6 +222,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   });
 
   confirmButton.addEventListener("click", async function () {
+    if (isFinalized) return;
     confirmButton.disabled = true;
     confirmButton.textContent = "Procesando reserva...";
     try {

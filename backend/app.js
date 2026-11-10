@@ -2333,11 +2333,16 @@ app.post('/api/reservas', authenticate, authorize('cliente'), asyncRoute(async (
       return;
     }
 
-    if (['cancelado', 'cancelada', 'anulado', 'anulada'].includes(
-      String(event.estado).trim().toLowerCase()
-    )) {
+    const eventStatus = String(event.estado).trim().toLowerCase();
+    if (['cancelado', 'cancelada', 'anulado', 'anulada'].includes(eventStatus)) {
       await client.query('ROLLBACK');
       res.status(409).json({ error: 'No se pueden reservar entradas para un evento cancelado.' });
+      return;
+    }
+
+    if (['finalizado', 'finalizada'].includes(eventStatus)) {
+      await client.query('ROLLBACK');
+      res.status(409).json({ error: 'No se pueden reservar entradas para un evento finalizado.' });
       return;
     }
 

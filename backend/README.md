@@ -91,7 +91,7 @@ El registro recibe `identificacion`, `nombre_completo`, `correo`, `numero_telefo
 
 La eliminación desde el perfil requiere la contraseña actual. Desactiva el acceso, anonimiza nombre, correo, dirección y teléfono, y conserva las relaciones con reservas/eventos para mantener el historial. La identificación y ciudad se mantienen como referencias internas; no es posible eliminar al último administrador activo.
 
-Para crear una reserva se envía `codigo_evento`, `numero_entradas` (de 1 a 10) y la `localidad` (`General`, `VIP` o `Preferencial`). El servidor calcula el total con el precio de esa localidad más $4.000 de servicio por entrada, verifica su capacidad dentro de una transacción y no acepta un total enviado por el navegador.
+Para crear una reserva se envía `codigo_evento`, `numero_entradas` (de 1 a 10) y la `localidad` (`General`, `VIP` o `Preferencial`). El servidor calcula el total con el precio de esa localidad más $4.000 de servicio por entrada, verifica su capacidad dentro de una transacción y no acepta un total enviado por el navegador. No permite reservar eventos cancelados, finalizados o que ya hayan iniciado.
 
 Al crear o cancelar una reserva, el backend envía un comprobante al correo asociado a la cuenta. La operación en la base de datos se confirma antes del envío para que un problema SMTP no revierta ni duplique el cambio; si falla el correo, se informa explícitamente en la respuesta.
 
