@@ -145,6 +145,20 @@
         saveStateButton.className = "btn btn-ghost agent-save-state admin-action-btn admin-action-btn--neutral";
         saveStateButton.textContent = "Guardar estado";
         saveStateButton.addEventListener("click", async function () {
+          var selectedOption = stateSelect.options[stateSelect.selectedIndex];
+          var selectedState = String(selectedOption ? selectedOption.text : "").toLowerCase();
+          var currentState = String(event.estado || "").toLowerCase();
+          var reason = "";
+          if ((selectedState.includes("cancel") || selectedState.includes("anulad")) &&
+              !currentState.includes("cancel") && !currentState.includes("anulad")) {
+            reason = window.prompt(
+              'Vas a cancelar el evento "' + event.nombre +
+                '".\nSi quieres, escribe el motivo (opcional):',
+              ""
+            );
+            if (reason === null) return;
+            reason = reason.trim().slice(0, 500);
+          }
           saveStateButton.disabled = true;
           try {
             await window.Eventix.get(
@@ -152,7 +166,10 @@
               {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ id_estado_evento: stateSelect.value })
+                body: JSON.stringify({
+                  id_estado_evento: stateSelect.value,
+                  motivo: reason
+                })
               }
             );
             await refreshAgentEvents();

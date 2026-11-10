@@ -17,11 +17,10 @@
     getClientReservations: function () {
       return get("/reservas");
     },
-    cancelClientReservation: function (id) {
-      return window.EventixAuth.request(
-        "/reservas/" + encodeURIComponent(id),
-        { method: "DELETE" }
-      );
+    cancelClientReservation: function (id, reason) {
+      return send("/reservas/" + encodeURIComponent(id), "DELETE", {
+        motivo: reason || ""
+      });
     },
     getAgentReservations: function () {
       return get("/agente/reservas");
@@ -29,9 +28,10 @@
     getReservationStates: function () {
       return get("/agente/estados-reserva");
     },
-    setReservationState: function (id, state) {
+    setReservationState: function (id, state, reason) {
       return send("/agente/reservas/" + encodeURIComponent(id), "PATCH", {
-        estado: state
+        estado: state,
+        motivo: reason || ""
       });
     },
     getAdminReports: function () {

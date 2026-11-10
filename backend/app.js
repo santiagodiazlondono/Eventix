@@ -234,6 +234,15 @@ function isValidLocalDateTime(value) {
     seconds < 60;
 }
 
+// Motivo opcional de una cancelación: null si no se envía, undefined si no es válido.
+function parseCancellationReason(value) {
+  if (value === undefined || value === null) return null;
+  if (typeof value !== 'string') return undefined;
+  const reason = value.trim();
+  if (reason.length > 500) return undefined;
+  return reason || null;
+}
+
 function parsePrice(value) {
   const parsed = Number(value);
   if (!Number.isFinite(parsed) || parsed <= 0 || parsed > 99999999.99) {
@@ -400,20 +409,37 @@ app.get('/api/estados-evento', asyncRoute(async (req, res) => {
 app.patch('/api/agente/eventos/:codigo/estado', authenticate, authorize('agente'), asyncRoute(async (req, res) => {
   const code = String(req.params.codigo || '').trim();
   const stateId = parseInteger(req.body && req.body.id_estado_evento);
+  const reason = parseCancellationReason(req.body && req.body.motivo);
   if (!code || code.length > 50 || !Number.isSafeInteger(stateId) || stateId < 1) {
     res.status(400).json({ error: 'El código o estado del evento no es válido.' });
     return;
   }
+  if (reason === undefined) {
+    res.status(400).json({ error: 'El motivo debe ser un texto de máximo 500 caracteres.' });
+    return;
+  }
 
+  // Al cancelar se guarda el motivo y la fecha; al salir de Cancelado se limpian.
   const result = await pool.query(
     `UPDATE evento e
-     SET id_estado_evento = ee.id_estado_evento
+     SET id_estado_evento = ee.id_estado_evento,
+         motivo_cancelacion = CASE
+           WHEN LOWER(TRIM(ee.nombre)) IN ('cancelado', 'cancelada', 'anulado', 'anulada')
+             THEN COALESCE($4, e.motivo_cancelacion)
+           ELSE NULL
+         END,
+         fecha_cancelacion = CASE
+           WHEN LOWER(TRIM(ee.nombre)) IN ('cancelado', 'cancelada', 'anulado', 'anulada')
+             THEN COALESCE(e.fecha_cancelacion, CURRENT_TIMESTAMP)
+           ELSE NULL
+         END
      FROM estadoevento ee
      WHERE e.codigo_evento = $1
        AND e.identificacion_agente = $2
        AND ee.id_estado_evento = $3
-     RETURNING e.codigo_evento AS codigo, ee.id_estado_evento, ee.nombre AS estado`,
-    [code, req.user.identificacion, stateId]
+     RETURNING e.codigo_evento AS codigo, ee.id_estado_evento, ee.nombre AS estado,
+               e.motivo_cancelacion, e.fecha_cancelacion`,
+    [code, req.user.identificacion, stateId, reason]
   );
   if (result.rowCount === 0) {
     const event = await pool.query(
@@ -1278,27 +1304,42 @@ app.get('/api/agente/estados-reserva', authenticate, authorize('agente'), asyncR
 app.patch('/api/agente/reservas/:id', authenticate, authorize('agente'), asyncRoute(async (req, res) => {
   const reservationId = parseInteger(req.params.id);
   const state = typeof req.body?.estado === 'string' ? req.body.estado.trim() : '';
+  const reason = parseCancellationReason(req.body?.motivo);
   if (!reservationId || reservationId < 1 || !state || state.length > 50) {
     res.status(400).json({ error: 'El identificador o el estado de la reserva no es válido.' });
     return;
   }
+  if (reason === undefined) {
+    res.status(400).json({ error: 'El motivo debe ser un texto de máximo 500 caracteres.' });
+    return;
+  }
 
+  // Al cancelar se guarda el motivo y la fecha; al reactivar se limpian.
   const result = await pool.query(
     `WITH selected_state AS (
-       SELECT id_estado_reserva
+       SELECT id_estado_reserva,
+              LOWER(TRIM(nombre)) IN ('cancelada', 'cancelado', 'anulada', 'anulado') AS cancelada
        FROM estadoreserva
        WHERE LOWER(TRIM(nombre)) = LOWER(TRIM($2))
        ORDER BY id_estado_reserva
        LIMIT 1
      )
      UPDATE reserva r
-     SET id_estado_reserva = selected_state.id_estado_reserva
+     SET id_estado_reserva = selected_state.id_estado_reserva,
+         motivo_cancelacion = CASE
+           WHEN selected_state.cancelada THEN COALESCE($4, r.motivo_cancelacion)
+           ELSE NULL
+         END,
+         fecha_cancelacion = CASE
+           WHEN selected_state.cancelada THEN COALESCE(r.fecha_cancelacion, CURRENT_TIMESTAMP)
+           ELSE NULL
+         END
      FROM selected_state, evento e
      WHERE r.id_reserva = $1
        AND e.codigo_evento = r.codigo_evento
        AND e.identificacion_agente = $3
-     RETURNING r.id_reserva, r.id_estado_reserva`,
-    [reservationId, state, req.user.identificacion]
+     RETURNING r.id_reserva, r.id_estado_reserva, r.motivo_cancelacion, r.fecha_cancelacion`,
+    [reservationId, state, req.user.identificacion, reason]
   );
   if (result.rowCount === 0) {
     res.status(404).json({ error: 'No se encontró la reserva o el estado solicitado.' });
@@ -2241,8 +2282,22 @@ app.delete('/api/admin/catalogos/:tipo/:id', authenticate, authorize('administra
   }
 }));
 
+// Fragmentos SQL de los reportes. fecha_hora_reserva es TIMESTAMP sin zona y se
+// llena en UTC; para agrupar por mes se pasa a la hora de Colombia.
+const reportReservationInstant = "(r.fecha_hora_reserva AT TIME ZONE 'UTC')";
+const reportReservationLocal = `(${reportReservationInstant} AT TIME ZONE 'America/Bogota')`;
+const reportActiveReservation =
+  "LOWER(TRIM(er.nombre)) NOT IN ('cancelada', 'cancelado', 'anulada', 'anulado')";
+const reportCancelledEvent =
+  "LOWER(TRIM(ee.nombre)) IN ('cancelado', 'cancelada', 'anulado', 'anulada')";
+
 app.get('/api/admin/reportes', authenticate, authorize('administrador'), asyncRoute(async (req, res) => {
-  const [counts, reservationsByEventMonth, revenueByMonth] = await Promise.all([
+  // Los ingresos y los conteos por mes solo incluyen reservas no canceladas.
+  const [
+    counts, reservationsByEventMonth, revenueByMonth, averages,
+    eventsByAgent, eventsByCity, reservationHistory,
+    cancelledReservations, cancelledEvents
+  ] = await Promise.all([
     pool.query(
       `SELECT (SELECT COUNT(*) FROM cliente c JOIN persona p ON p.identificacion = c.identificacion
                WHERE p.cuenta_eliminada_at IS NULL)::int AS clientes,
@@ -2251,36 +2306,138 @@ app.get('/api/admin/reportes', authenticate, authorize('administrador'), asyncRo
               (SELECT COUNT(*) FROM administrador ad JOIN persona p ON p.identificacion = ad.identificacion
                WHERE p.cuenta_eliminada_at IS NULL)::int AS administradores,
               (SELECT COUNT(*) FROM reserva)::int AS reservas,
-              (SELECT COUNT(*) FROM evento)::int AS eventos`
+              (SELECT COUNT(*) FROM reserva r
+               JOIN estadoreserva er ON er.id_estado_reserva = r.id_estado_reserva
+               WHERE ${reportActiveReservation})::int AS reservas_activas,
+              (SELECT COUNT(*) FROM evento)::int AS eventos,
+              (SELECT COUNT(*) FROM evento e
+               JOIN estadoevento ee ON ee.id_estado_evento = e.id_estado_evento
+               WHERE ${reportCancelledEvent})::int AS eventos_cancelados`
     ),
     pool.query(
       `SELECT e.codigo_evento AS codigo, e.nombre_evento AS evento,
-              EXTRACT(YEAR FROM r.fecha_hora_reserva)::int AS anio,
-              EXTRACT(MONTH FROM r.fecha_hora_reserva)::int AS mes,
+              EXTRACT(YEAR FROM ${reportReservationLocal})::int AS anio,
+              EXTRACT(MONTH FROM ${reportReservationLocal})::int AS mes,
               COUNT(*)::int AS reservas,
               COALESCE(SUM(r.valor_total), 0)::numeric AS ingresos
        FROM reserva r
+       JOIN estadoreserva er ON er.id_estado_reserva = r.id_estado_reserva
        JOIN evento e ON e.codigo_evento = r.codigo_evento
+       WHERE ${reportActiveReservation}
        GROUP BY e.codigo_evento, e.nombre_evento,
-                EXTRACT(YEAR FROM r.fecha_hora_reserva),
-                EXTRACT(MONTH FROM r.fecha_hora_reserva)
+                EXTRACT(YEAR FROM ${reportReservationLocal}),
+                EXTRACT(MONTH FROM ${reportReservationLocal})
        ORDER BY anio DESC, mes DESC, evento`
     ),
     pool.query(
-      `SELECT EXTRACT(YEAR FROM fecha_hora_reserva)::int AS anio,
-              EXTRACT(MONTH FROM fecha_hora_reserva)::int AS mes,
+      `SELECT EXTRACT(YEAR FROM ${reportReservationLocal})::int AS anio,
+              EXTRACT(MONTH FROM ${reportReservationLocal})::int AS mes,
               COUNT(*)::int AS reservas,
-              COALESCE(SUM(valor_total), 0)::numeric AS ingresos
-       FROM reserva
-       GROUP BY EXTRACT(YEAR FROM fecha_hora_reserva),
-                EXTRACT(MONTH FROM fecha_hora_reserva)
+              COALESCE(SUM(r.valor_total), 0)::numeric AS ingresos
+       FROM reserva r
+       JOIN estadoreserva er ON er.id_estado_reserva = r.id_estado_reserva
+       WHERE ${reportActiveReservation}
+       GROUP BY EXTRACT(YEAR FROM ${reportReservationLocal}),
+                EXTRACT(MONTH FROM ${reportReservationLocal})
        ORDER BY anio DESC, mes DESC`
+    ),
+    // Promedios: ingresos entre los agentes que tienen eventos y entre los
+    // clientes que tienen al menos una reserva no cancelada.
+    pool.query(
+      `WITH ventas AS (
+         SELECT r.valor_total, r.identificacion_cliente
+         FROM reserva r
+         JOIN estadoreserva er ON er.id_estado_reserva = r.id_estado_reserva
+         WHERE ${reportActiveReservation}
+       ),
+       totales AS (
+         SELECT COALESCE(SUM(valor_total), 0)::numeric AS ingresos_totales,
+                COUNT(DISTINCT identificacion_cliente)::int AS clientes_con_reservas,
+                (SELECT COUNT(DISTINCT identificacion_agente) FROM evento)::int AS agentes_con_eventos
+         FROM ventas
+       )
+       SELECT ingresos_totales, clientes_con_reservas, agentes_con_eventos,
+              COALESCE(ROUND(ingresos_totales / NULLIF(agentes_con_eventos, 0), 2), 0)::numeric
+                AS promedio_por_agente,
+              COALESCE(ROUND(ingresos_totales / NULLIF(clientes_con_reservas, 0), 2), 0)::numeric
+                AS promedio_por_cliente
+       FROM totales`
+    ),
+    pool.query(
+      `SELECT e.identificacion_agente AS identificacion,
+              TRIM(p.nombres || ' ' || p.apellidos) AS agente,
+              COUNT(*)::int AS eventos
+       FROM evento e
+       JOIN persona p ON p.identificacion = e.identificacion_agente
+       GROUP BY e.identificacion_agente, p.nombres, p.apellidos
+       ORDER BY eventos DESC, agente`
+    ),
+    pool.query(
+      `SELECT ci.id_ciudad, ci.nombre AS ciudad, d.nombre AS departamento,
+              COUNT(*)::int AS eventos
+       FROM evento e
+       JOIN ciudad ci ON ci.id_ciudad = e.id_ciudad
+       JOIN departamento d ON d.id_departamento = ci.id_departamento
+       GROUP BY ci.id_ciudad, ci.nombre, d.nombre
+       ORDER BY eventos DESC, ciudad`
+    ),
+    pool.query(
+      `SELECT r.id_reserva, r.identificacion_cliente,
+              TRIM(p.nombres || ' ' || p.apellidos) AS cliente,
+              e.nombre_evento AS evento,
+              ${reportReservationInstant} AS fecha_hora_reserva,
+              er.nombre AS estado, r.valor_total, r.numero_entradas, r.localidad
+       FROM reserva r
+       JOIN estadoreserva er ON er.id_estado_reserva = r.id_estado_reserva
+       JOIN persona p ON p.identificacion = r.identificacion_cliente
+       JOIN evento e ON e.codigo_evento = r.codigo_evento
+       ORDER BY r.fecha_hora_reserva DESC, r.id_reserva DESC
+       LIMIT 300`
+    ),
+    pool.query(
+      `SELECT r.id_reserva,
+              TRIM(p.nombres || ' ' || p.apellidos) AS cliente,
+              e.nombre_evento AS evento,
+              ${reportReservationInstant} AS fecha_hora_reserva,
+              r.fecha_cancelacion, r.motivo_cancelacion AS motivo, r.valor_total
+       FROM reserva r
+       JOIN estadoreserva er ON er.id_estado_reserva = r.id_estado_reserva
+       JOIN persona p ON p.identificacion = r.identificacion_cliente
+       JOIN evento e ON e.codigo_evento = r.codigo_evento
+       WHERE NOT (${reportActiveReservation})
+       ORDER BY r.fecha_cancelacion DESC NULLS LAST, r.fecha_hora_reserva DESC, r.id_reserva DESC
+       LIMIT 50`
+    ),
+    pool.query(
+      `SELECT e.codigo_evento AS codigo, e.nombre_evento AS evento,
+              ci.nombre AS ciudad,
+              e.fecha_hora_inicio AT TIME ZONE 'America/Bogota' AS fecha_hora_inicio,
+              e.fecha_cancelacion, e.motivo_cancelacion AS motivo,
+              TRIM(p.nombres || ' ' || p.apellidos) AS agente
+       FROM evento e
+       JOIN estadoevento ee ON ee.id_estado_evento = e.id_estado_evento
+       JOIN ciudad ci ON ci.id_ciudad = e.id_ciudad
+       JOIN persona p ON p.identificacion = e.identificacion_agente
+       WHERE ${reportCancelledEvent}
+       ORDER BY e.fecha_cancelacion DESC NULLS LAST, e.fecha_hora_inicio DESC, e.codigo_evento
+       LIMIT 50`
     )
   ]);
+  const summary = counts.rows[0];
+  res.set('Cache-Control', 'no-store');
   res.json({
-    resumen: counts.rows[0],
+    resumen: {
+      ...summary,
+      reservas_canceladas: summary.reservas - summary.reservas_activas
+    },
     reservasPorEventoMes: reservationsByEventMonth.rows,
-    ingresosPorMes: revenueByMonth.rows
+    ingresosPorMes: revenueByMonth.rows,
+    promedios: averages.rows[0],
+    eventosPorAgente: eventsByAgent.rows,
+    eventosPorCiudad: eventsByCity.rows,
+    historialReservas: reservationHistory.rows,
+    reservasCanceladas: cancelledReservations.rows,
+    eventosCancelados: cancelledEvents.rows
   });
 }));
 
@@ -2513,8 +2670,13 @@ app.post('/api/reservas', authenticate, authorize('cliente'), asyncRoute(async (
 
 app.delete('/api/reservas/:id', authenticate, authorize('cliente'), asyncRoute(async (req, res) => {
   const reservationId = parseInteger(req.params.id);
+  const reason = parseCancellationReason(req.body && req.body.motivo);
   if (!reservationId || reservationId < 1) {
     res.status(400).json({ error: 'El identificador de la reserva no es válido.' });
+    return;
+  }
+  if (reason === undefined) {
+    res.status(400).json({ error: 'El motivo debe ser un texto de máximo 500 caracteres.' });
     return;
   }
 
@@ -2567,9 +2729,11 @@ app.delete('/api/reservas/:id', authenticate, authorize('cliente'), asyncRoute(a
 
     await client.query(
       `UPDATE reserva
-       SET id_estado_reserva = $1
+       SET id_estado_reserva = $1,
+           motivo_cancelacion = $3,
+           fecha_cancelacion = CURRENT_TIMESTAMP
        WHERE id_reserva = $2`,
-      [cancelledState.rows[0].id_estado_reserva, reservationId]
+      [cancelledState.rows[0].id_estado_reserva, reservationId, reason]
     );
     reservation = await getReservationEmailDetails(client, reservationId);
     await client.query('COMMIT');

@@ -441,3 +441,158 @@ body.admin-body > * {
     grid-template-columns: 100px 1fr 40px;
   }
 }
+/* ---------- Reportes con datos reales ---------- */
+.admin-report-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.admin-report-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.admin-report-select {
+  background: var(--surface-2);
+  color: var(--text);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  padding: 0.45rem 0.75rem;
+  font: inherit;
+  font-weight: 500;
+  max-width: 16rem;
+}
+
+.admin-report-select:focus {
+  border-color: var(--accent);
+  outline: none;
+}
+
+.admin-report-note,
+.admin-empty {
+  color: var(--text-muted);
+  font-size: 0.82rem;
+}
+
+.admin-report-note {
+  margin-top: 0.85rem;
+}
+
+.admin-report-note:empty {
+  display: none;
+}
+
+/* Las tarjetas con listas crecen desde arriba, no reparten el espacio. */
+.admin-card-top {
+  justify-content: flex-start;
+}
+
+/* Gráfico de ingresos: los doce meses del año */
+.chart-bars-container--year {
+  grid-template-columns: repeat(12, minmax(2.5rem, 1fr));
+  gap: 0.5rem;
+  min-width: 36rem;
+}
+
+.chart-bars-container--year .chart-bar-fill {
+  min-height: 2px;
+}
+
+.chart-bars-container--year .chart-bar-fill--empty {
+  background: var(--surface-3);
+}
+
+.chart-bars-container--year .chart-bar-fill span {
+  font-size: 0.68rem;
+}
+
+/* Listas de barras (eventos por agente y por ciudad) */
+.admin-bar-list .role-row {
+  grid-template-columns: minmax(0, 11rem) 1fr 2.5rem;
+}
+
+.admin-bar-list .role-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-history-scroll {
+  max-height: 26rem;
+  overflow-y: auto;
+}
+
+.admin-history-scroll thead th {
+  position: sticky;
+  top: 0;
+  background: var(--surface);
+}
+
+/* Listas de cancelaciones */
+.admin-cancel-list--scroll {
+  justify-content: flex-start;
+  gap: 0.75rem;
+  max-height: 26rem;
+  overflow-y: auto;
+}
+
+.admin-cancel-list--scroll .cancel-item {
+  align-items: flex-start;
+}
+
+.admin-cancel-list--scroll .cancel-badge {
+  white-space: normal;
+  max-width: 55%;
+  text-align: right;
+  border-radius: var(--radius-sm);
+  overflow-wrap: anywhere;
+}
+
+.cancel-badge--none {
+  background: var(--surface-3);
+  color: var(--text-muted);
+  border-color: var(--border-strong);
+}
+
+@media (max-width: 640px) {
+  .admin-bar-list .role-row {
+    grid-template-columns: minmax(0, 7rem) 1fr 2rem;
+  }
+  .admin-cancel-list--scroll .cancel-item {
+    flex-direction: column;
+  }
+  .admin-cancel-list--scroll .cancel-badge {
+    max-width: 100%;
+    text-align: left;
+  }
+}
+
+/* Las parejas de tarjetas ocupan dos columnas (la regla general de
+   .metrics-grid, definida más abajo en la hoja, las dejaba en cinco). */
+.metrics-grid.admin-metrics-duo {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (max-width: 768px) {
+  .metrics-grid.admin-metrics-duo {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .chart-bars-container--year {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 0.2rem;
+    min-width: 0;
+  }
+  .chart-bars-container--year .chart-bar-label {
+    font-size: 0.62rem;
+  }
+}

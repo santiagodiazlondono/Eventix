@@ -82,10 +82,17 @@
           cancelButton.className = "boton-cancelar";
           cancelButton.textContent = "Cancelar";
           cancelButton.addEventListener("click", async function () {
-            if (!window.confirm("¿Quieres cancelar esta reserva?")) return;
+            var reason = window.prompt(
+              "¿Quieres cancelar esta reserva?\nSi quieres, escribe el motivo (opcional):",
+              ""
+            );
+            if (reason === null) return;
             cancelButton.disabled = true;
             try {
-              var cancellation = await panels.cancelClientReservation(reservation.id_reserva);
+              var cancellation = await panels.cancelClientReservation(
+                reservation.id_reserva,
+                reason.trim().slice(0, 500)
+              );
               await loadClientReservations();
               showMessage(
                 message,
@@ -372,10 +379,23 @@
         });
         select.value = reservation.estado;
         select.addEventListener("change", async function () {
+          var reason = "";
+          if (isCancelled(select.value) && !isCancelled(reservation.estado)) {
+            reason = window.prompt(
+              "Vas a cancelar la reserva de " + reservation.cliente +
+                ".\nSi quieres, escribe el motivo (opcional):",
+              ""
+            );
+            if (reason === null) {
+              select.value = reservation.estado;
+              return;
+            }
+            reason = reason.trim().slice(0, 500);
+          }
           select.disabled = true;
           saving++;
           try {
-            await panels.setReservationState(reservation.id_reserva, select.value);
+            await panels.setReservationState(reservation.id_reserva, select.value, reason);
             reservation.estado = select.value;
           } catch (error) {
             saving--;
@@ -493,75 +513,145 @@
     refresh(true);
   }
 
-  function renderAdminReports(report) {
-    var counts = report.resumen || {};
-    document.querySelectorAll("[data-admin-metric]").forEach(function (item) {
-      item.textContent = Number(counts[item.dataset.adminMetric] || 0).toLocaleString("es-CO");
-    });
-    document.querySelectorAll("[data-demo-report]").forEach(function (section) {
-      section.hidden = true;
-    });
+  var MONTH_NAMES = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+  var compactNumber = new Intl.NumberFormat("es-CO", {
+    notation: "compact",
+    maximumFractionDigits: 1
+  });
+  var shortDate = new Intl.DateTimeFormat("es-CO", {
+    dateStyle: "medium",
+    timeZone: "America/Bogota"
+  });
+  var adminReport = null;
 
-    var roleCounts = [
-      Number(counts.clientes || 0),
-      Number(counts.agentes || 0),
-      Number(counts.administradores || 0)
-    ];
-    var roleRows = document.querySelectorAll(".role-list .role-row");
-    var totalRoles = roleCounts.reduce(function (sum, count) { return sum + count; }, 0);
-    var totalBadge = document.querySelector(".total-badge");
-    if (totalBadge) totalBadge.textContent = "Total: " + totalRoles.toLocaleString("es-CO");
-    Array.prototype.slice.call(roleRows, 0, 3).forEach(function (row, index) {
-      var count = row.querySelector(".role-count");
-      var bar = row.querySelector(".progress-bar-fill");
-      if (count) count.textContent = roleCounts[index].toLocaleString("es-CO");
-      if (bar) {
-        bar.style.width = (totalRoles ? roleCounts[index] / totalRoles * 100 : 0) + "%";
-      }
-    });
+  function formatShortDate(value) {
+    return value ? shortDate.format(new Date(value)) : "";
+  }
 
-    var incomeByMonth = report.ingresosPorMes || [];
-    var chart = document.querySelector(".chart-bars-container");
+  function isCancelledState(state) {
+    var normalized = String(state || "")
+      .normalize("NFD")
+      .replace(/[̀-ͯ]/g, "")
+      .toLowerCase();
+    return normalized.includes("cancel") || normalized.includes("anulad");
+  }
+
+  function emptyNote(container, text) {
+    var note = document.createElement("p");
+    note.className = "admin-empty";
+    note.textContent = text;
+    container.appendChild(note);
+  }
+
+  function renderBarList(container, items, emptyText) {
+    if (!container) return;
+    container.replaceChildren();
+    if (!items.length) {
+      emptyNote(container, emptyText);
+      return;
+    }
+    var max = Math.max.apply(null, items.map(function (item) { return item.value; }).concat([1]));
+    items.forEach(function (item) {
+      var row = document.createElement("div");
+      row.className = "role-row";
+      var name = document.createElement("span");
+      name.className = "role-name";
+      name.textContent = item.label;
+      name.title = item.label;
+      var track = document.createElement("div");
+      track.className = "progress-bar-bg";
+      track.setAttribute("aria-hidden", "true");
+      var fill = document.createElement("div");
+      fill.className = "progress-bar-fill";
+      fill.style.width = (item.value / max * 100) + "%";
+      track.appendChild(fill);
+      var count = document.createElement("span");
+      count.className = "role-count";
+      count.textContent = item.value.toLocaleString("es-CO");
+      row.append(name, track, count);
+      container.appendChild(row);
+    });
+  }
+
+  function renderCancelList(container, items, emptyText) {
+    if (!container) return;
+    container.replaceChildren();
+    if (!items.length) {
+      emptyNote(container, emptyText);
+      return;
+    }
+    items.forEach(function (item) {
+      var card = document.createElement("div");
+      card.className = "cancel-item";
+      var info = document.createElement("div");
+      var title = document.createElement("div");
+      title.className = "cancel-item-title";
+      title.textContent = item.title;
+      var date = document.createElement("div");
+      date.className = "cancel-item-date";
+      date.textContent = item.detail;
+      info.append(title, date);
+      var badge = document.createElement("span");
+      badge.className = "cancel-badge" + (item.reason ? "" : " cancel-badge--none");
+      badge.textContent = item.reason || "Sin causa registrada";
+      card.append(info, badge);
+      container.appendChild(card);
+    });
+  }
+
+  function reportYears(report) {
+    var years = {};
+    (report.ingresosPorMes || []).concat(report.reservasPorEventoMes || [])
+      .forEach(function (item) { years[item.anio] = true; });
+    var list = Object.keys(years).map(Number).sort(function (a, b) { return b - a; });
+    return list.length ? list : [new Date().getFullYear()];
+  }
+
+  function renderYearReports(report, year) {
+    var months = Array(12).fill(0);
+    (report.ingresosPorMes || []).forEach(function (item) {
+      if (item.anio === year) months[item.mes - 1] = Number(item.ingresos);
+    });
+    var total = months.reduce(function (sum, value) { return sum + value; }, 0);
+    var totalBadge = document.querySelector("[data-report-revenue-total]");
+    if (totalBadge) totalBadge.textContent = year + " · " + currency.format(total);
+
+    var chart = document.querySelector("[data-report-revenue-chart]");
     if (chart) {
-      var months = incomeByMonth.slice(0, 12).reverse();
-      var maxRevenue = Math.max.apply(null, months.map(function (item) {
-        return Number(item.ingresos);
-      }).concat([1]));
+      var maxRevenue = Math.max.apply(null, months.concat([1]));
       chart.replaceChildren();
-      months.forEach(function (item) {
+      months.forEach(function (revenue, index) {
         var barItem = document.createElement("div");
         barItem.className = "chart-bar-item";
+        barItem.title = MONTH_NAMES[index] + " " + year + ": " + currency.format(revenue);
         var bar = document.createElement("div");
-        bar.className = "chart-bar-fill";
-        bar.style.height = (Number(item.ingresos) / maxRevenue * 100) + "%";
-        var label = document.createElement("span");
-        label.textContent = currency.format(Number(item.ingresos));
-        bar.appendChild(label);
+        bar.className = "chart-bar-fill" + (revenue > 0 ? "" : " chart-bar-fill--empty");
+        bar.style.height = (revenue / maxRevenue * 100) + "%";
+        if (revenue > 0) {
+          var label = document.createElement("span");
+          label.textContent = compactNumber.format(revenue);
+          bar.appendChild(label);
+        }
         var monthLabel = document.createElement("span");
         monthLabel.className = "chart-bar-label";
-        monthLabel.textContent = item.mes + "/" + item.anio;
+        monthLabel.textContent = MONTH_NAMES[index];
         barItem.append(bar, monthLabel);
         chart.appendChild(barItem);
       });
     }
+    var revenueEmpty = document.querySelector("[data-report-revenue-empty]");
+    if (revenueEmpty) revenueEmpty.hidden = total > 0;
 
     var tableBody = document.querySelector("[data-report-monthly]");
     if (tableBody) {
       tableBody.replaceChildren();
       var rows = new Map();
-      var values = report.reservasPorEventoMes || [];
-      var year = values.length ? values[0].anio : new Date().getFullYear();
-      var reportTitle = tableBody.closest(".distribution-card")
-        .querySelector(".distribution-header h2");
-      if (reportTitle) {
-        reportTitle.textContent = "Número de reservas por evento y por mes — " + year;
-      }
-      values.filter(function (item) { return item.anio === year; }).forEach(function (item) {
-        var key = item.codigo;
-        if (!rows.has(key)) {
-          rows.set(key, { name: item.evento, months: Array(12).fill(0), total: 0 });
+      (report.reservasPorEventoMes || []).forEach(function (item) {
+        if (item.anio !== year) return;
+        if (!rows.has(item.codigo)) {
+          rows.set(item.codigo, { name: item.evento, months: Array(12).fill(0), total: 0 });
         }
-        var event = rows.get(key);
+        var event = rows.get(item.codigo);
         event.months[item.mes - 1] = Number(item.reservas);
         event.total += Number(item.reservas);
       });
@@ -574,25 +664,227 @@
       });
       if (!rows.size) {
         var empty = document.createElement("tr");
-        cell(empty, "Todavía no hay reservas para reportar.", null).colSpan = 14;
+        cell(empty, "Todavía no hay reservas para reportar en " + year + ".", null).colSpan = 14;
         tableBody.appendChild(empty);
       }
     }
   }
 
+  function renderReservationHistory(report) {
+    var body = document.querySelector("[data-report-history]");
+    if (!body) return;
+    var filter = document.querySelector("[data-report-history-client]");
+    var note = document.querySelector("[data-report-history-note]");
+    var history = report.historialReservas || [];
+    var selected = filter ? filter.value : "";
+    var visible = history.filter(function (item) {
+      return !selected || item.identificacion_cliente === selected;
+    }).slice().sort(function (a, b) {
+      return String(a.cliente).localeCompare(String(b.cliente), "es") ||
+        new Date(b.fecha_hora_reserva) - new Date(a.fecha_hora_reserva);
+    });
+
+    body.replaceChildren();
+    visible.forEach(function (item) {
+      var row = document.createElement("tr");
+      cell(row, item.cliente);
+      cell(row, item.evento);
+      cell(row, item.localidad);
+      cell(row, item.numero_entradas);
+      cell(row, formatShortDate(item.fecha_hora_reserva));
+      var stateCell = document.createElement("td");
+      var state = document.createElement("span");
+      state.className = isCancelledState(item.estado) ? "admin-status-err" : "admin-status-ok";
+      state.textContent = item.estado || "Sin estado";
+      stateCell.appendChild(state);
+      row.appendChild(stateCell);
+      cell(row, currency.format(Number(item.valor_total)), "admin-text-right font-weight-bold");
+      body.appendChild(row);
+    });
+    if (!visible.length) {
+      var empty = document.createElement("tr");
+      cell(empty, "Todavía no hay reservas registradas.", null).colSpan = 7;
+      body.appendChild(empty);
+    }
+    if (note) {
+      note.textContent = visible.length
+        ? visible.length.toLocaleString("es-CO") +
+          (visible.length === 1 ? " reserva" : " reservas") +
+          (history.length >= 300 ? " · se muestran las 300 más recientes" : "")
+        : "";
+    }
+  }
+
+  function renderAdminReports(report) {
+    adminReport = report;
+    var counts = report.resumen || {};
+    document.querySelectorAll("[data-admin-metric]").forEach(function (item) {
+      item.textContent = Number(counts[item.dataset.adminMetric] || 0).toLocaleString("es-CO");
+    });
+    var details = {
+      reservas: Number(counts.reservas_activas || 0).toLocaleString("es-CO") + " activas · " +
+        Number(counts.reservas_canceladas || 0).toLocaleString("es-CO") + " canceladas",
+      eventos: Number(counts.eventos_cancelados || 0).toLocaleString("es-CO") +
+        (Number(counts.eventos_cancelados) === 1 ? " cancelado" : " cancelados")
+    };
+    document.querySelectorAll("[data-admin-metric-detail]").forEach(function (item) {
+      item.textContent = details[item.dataset.adminMetricDetail] || "Conteo actual";
+    });
+
+    var roleCounts = [
+      Number(counts.clientes || 0),
+      Number(counts.agentes || 0),
+      Number(counts.administradores || 0)
+    ];
+    var roleRows = document.querySelectorAll(".role-list:not(.admin-bar-list) .role-row");
+    var totalRoles = roleCounts.reduce(function (sum, count) { return sum + count; }, 0);
+    var totalBadge = document.querySelector(".total-badge");
+    if (totalBadge) totalBadge.textContent = "Total: " + totalRoles.toLocaleString("es-CO");
+    Array.prototype.slice.call(roleRows, 0, 3).forEach(function (row, index) {
+      var count = row.querySelector(".role-count");
+      var bar = row.querySelector(".progress-bar-fill");
+      var track = row.querySelector(".progress-bar-bg");
+      if (count) count.textContent = roleCounts[index].toLocaleString("es-CO");
+      if (bar) {
+        bar.style.width = (totalRoles ? roleCounts[index] / totalRoles * 100 : 0) + "%";
+      }
+      if (track) {
+        track.setAttribute("aria-valuenow", roleCounts[index]);
+        track.setAttribute("aria-valuemax", totalRoles);
+      }
+    });
+
+    // Reportes mensuales: gráfico de ingresos y reservas por evento.
+    var years = reportYears(report);
+    var yearSelect = document.querySelector("[data-report-year]");
+    var year = years[0];
+    if (yearSelect) {
+      var previous = Number(yearSelect.value);
+      yearSelect.replaceChildren();
+      years.forEach(function (item) {
+        yearSelect.add(new Option(item, item));
+      });
+      if (years.indexOf(previous) !== -1) year = previous;
+      yearSelect.value = String(year);
+      var yearFilter = document.querySelector("[data-report-year-filter]");
+      if (yearFilter) yearFilter.hidden = years.length < 2;
+    }
+    renderYearReports(report, year);
+
+    // Promedios de ingresos.
+    var averages = report.promedios || {};
+    var averageValues = {
+      agente: averages.promedio_por_agente,
+      cliente: averages.promedio_por_cliente
+    };
+    var agentsWithEvents = Number(averages.agentes_con_eventos || 0);
+    var clientsWithReservations = Number(averages.clientes_con_reservas || 0);
+    var averageDetails = {
+      agente: agentsWithEvents
+        ? "Entre " + agentsWithEvents.toLocaleString("es-CO") +
+          (agentsWithEvents === 1 ? " agente con eventos" : " agentes con eventos")
+        : "Todavía no hay agentes con eventos",
+      cliente: clientsWithReservations
+        ? "Entre " + clientsWithReservations.toLocaleString("es-CO") +
+          (clientsWithReservations === 1 ? " cliente con reservas" : " clientes con reservas")
+        : "Todavía no hay clientes con reservas"
+    };
+    document.querySelectorAll("[data-report-average]").forEach(function (item) {
+      item.textContent = currency.format(Number(averageValues[item.dataset.reportAverage] || 0));
+    });
+    document.querySelectorAll("[data-report-average-detail]").forEach(function (item) {
+      item.textContent = averageDetails[item.dataset.reportAverageDetail] || "";
+    });
+
+    // Eventos por agente y por ciudad.
+    renderBarList(
+      document.querySelector("[data-report-events-agent]"),
+      (report.eventosPorAgente || []).map(function (item) {
+        return { label: item.agente || item.identificacion, value: Number(item.eventos) };
+      }),
+      "Todavía no hay eventos publicados."
+    );
+    renderBarList(
+      document.querySelector("[data-report-events-city]"),
+      (report.eventosPorCiudad || []).map(function (item) {
+        return {
+          label: [item.ciudad, item.departamento].filter(Boolean).join(", "),
+          value: Number(item.eventos)
+        };
+      }),
+      "Todavía no hay eventos publicados."
+    );
+
+    // Historial de reservas por cliente.
+    var clientFilter = document.querySelector("[data-report-history-client]");
+    if (clientFilter) {
+      var selectedClient = clientFilter.value;
+      var clients = {};
+      (report.historialReservas || []).forEach(function (item) {
+        clients[item.identificacion_cliente] = item.cliente;
+      });
+      var clientIds = Object.keys(clients).sort(function (a, b) {
+        return String(clients[a]).localeCompare(String(clients[b]), "es");
+      });
+      clientFilter.replaceChildren(new Option("Todos los clientes", ""));
+      clientIds.forEach(function (id) {
+        clientFilter.add(new Option(clients[id], id));
+      });
+      clientFilter.value = clientIds.indexOf(selectedClient) !== -1 ? selectedClient : "";
+    }
+    renderReservationHistory(report);
+
+    // Cancelaciones y su causa.
+    renderCancelList(
+      document.querySelector("[data-report-cancelled-reservations]"),
+      (report.reservasCanceladas || []).map(function (item) {
+        return {
+          title: item.cliente + " — " + item.evento,
+          detail: (item.fecha_cancelacion
+            ? "Cancelada el " + formatShortDate(item.fecha_cancelacion)
+            : "Reservada el " + formatShortDate(item.fecha_hora_reserva) +
+              " · fecha de cancelación no registrada") +
+            " · " + currency.format(Number(item.valor_total)),
+          reason: item.motivo
+        };
+      }),
+      "No hay reservas canceladas."
+    );
+    renderCancelList(
+      document.querySelector("[data-report-cancelled-events]"),
+      (report.eventosCancelados || []).map(function (item) {
+        return {
+          title: item.evento + " — " + item.ciudad,
+          detail: (item.fecha_cancelacion
+            ? "Cancelado el " + formatShortDate(item.fecha_cancelacion)
+            : "Programado para el " + formatShortDate(item.fecha_hora_inicio) +
+              " · fecha de cancelación no registrada") +
+            " · Agente: " + item.agente,
+          reason: item.motivo
+        };
+      }),
+      "No hay eventos cancelados."
+    );
+  }
+
   async function loadAdminReports() {
     var message = document.querySelector("[data-admin-report-message]");
-    document.querySelectorAll("[data-demo-report]").forEach(function (section) {
-      section.hidden = true;
-    });
-    var chart = document.querySelector(".chart-bars-container");
-    if (chart) chart.replaceChildren();
-    var tableBody = document.querySelector("[data-report-monthly]");
-    if (tableBody) tableBody.replaceChildren();
+    var yearSelect = document.querySelector("[data-report-year]");
+    if (yearSelect) {
+      yearSelect.addEventListener("change", function () {
+        if (adminReport) renderYearReports(adminReport, Number(yearSelect.value));
+      });
+    }
+    var clientFilter = document.querySelector("[data-report-history-client]");
+    if (clientFilter) {
+      clientFilter.addEventListener("change", function () {
+        if (adminReport) renderReservationHistory(adminReport);
+      });
+    }
     try {
       renderAdminReports(await panels.getAdminReports());
     } catch (error) {
-      showMessage(message, error.message);
+      showMessage(message, error.message, true);
     }
   }
 

@@ -86,12 +86,12 @@
         <article class="metric-card">
           <span class="metric-label">Eventos</span>
           <span class="metric-value" data-admin-metric="eventos">0</span>
-          <span class="metric-trend">Conteo actual</span>
+          <span class="metric-trend" data-admin-metric-detail="eventos">Conteo actual</span>
         </article>
         <article class="metric-card">
           <span class="metric-label">Reservas</span>
           <span class="metric-value" data-admin-metric="reservas">0</span>
-          <span class="metric-trend">Conteo actual</span>
+          <span class="metric-trend" data-admin-metric-detail="reservas">Conteo actual</span>
         </article>
       </div>
     </section>
@@ -100,97 +100,77 @@
     <section class="distribution-card admin-mb-lg">
       <div class="distribution-header">
         <h2>Distribución de usuarios por rol</h2>
-        <span class="total-badge">Total: 1.326</span>
+        <span class="total-badge">Total: 0</span>
       </div>
 
       <div class="role-list">
         <div class="role-row">
           <span class="role-name">Clientes</span>
-          <div class="progress-bar-bg" role="progressbar" aria-valuenow="1284" aria-valuemin="0" aria-valuemax="1326">
-            <div class="progress-bar-fill" style="width: 96%;"></div>
+          <div class="progress-bar-bg" role="progressbar" aria-label="Clientes" aria-valuenow="0" aria-valuemin="0" aria-valuemax="0">
+            <div class="progress-bar-fill" style="width: 0%;"></div>
           </div>
-          <span class="role-count">1.284</span>
+          <span class="role-count">0</span>
         </div>
 
         <div class="role-row">
           <span class="role-name">Agentes</span>
-          <div class="progress-bar-bg" role="progressbar" aria-valuenow="37" aria-valuemin="0" aria-valuemax="1326">
-            <div class="progress-bar-fill progress-bar-fill--accent" style="width: 3%;"></div>
+          <div class="progress-bar-bg" role="progressbar" aria-label="Agentes" aria-valuenow="0" aria-valuemin="0" aria-valuemax="0">
+            <div class="progress-bar-fill progress-bar-fill--accent" style="width: 0%;"></div>
           </div>
-          <span class="role-count">37</span>
+          <span class="role-count">0</span>
         </div>
 
         <div class="role-row">
           <span class="role-name">Administradores</span>
-          <div class="progress-bar-bg" role="progressbar" aria-valuenow="5" aria-valuemin="0" aria-valuemax="1326">
-            <div class="progress-bar-fill progress-bar-fill--warn" style="width: 1%;"></div>
+          <div class="progress-bar-bg" role="progressbar" aria-label="Administradores" aria-valuenow="0" aria-valuemin="0" aria-valuemax="0">
+            <div class="progress-bar-fill progress-bar-fill--warn" style="width: 0%;"></div>
           </div>
-          <span class="role-count">5</span>
+          <span class="role-count">0</span>
         </div>
       </div>
     </section>
 
     <!-- ============ PARTE 2: REPORTES COMERCIALES Y DE OPERACIÓN ============ -->
     <section class="section admin-section-border">
-      <div class="section-head admin-head-gap">
+      <div class="section-head admin-head-gap admin-report-head">
         <h2>Reportes comerciales y de operación</h2>
+        <label class="admin-report-filter" data-report-year-filter hidden>
+          <span>Año</span>
+          <select class="admin-report-select" data-report-year aria-label="Año de los reportes mensuales"></select>
+        </label>
       </div>
-      <p class="admin-lead">Indicadores calculados a partir de los datos guardados en Eventix.</p>
+      <p class="admin-lead">Indicadores calculados a partir de los datos guardados en Eventix. Los ingresos y los conteos por mes no incluyen reservas canceladas.</p>
 
       <!-- Gráfico de Ingresos totales por mes -->
       <div class="distribution-card admin-mb-md">
         <div class="distribution-header">
           <h2>Ingresos totales por mes</h2>
-          <span class="total-badge">2026 · COP</span>
+          <span class="total-badge" data-report-revenue-total>COP</span>
         </div>
-        <div class="chart-bars-container">
-          <div class="chart-bar-item">
-            <div class="chart-bar-fill" style="height: 45%;"><span>3.456.353</span></div>
-            <span class="chart-bar-label">Jun</span>
-          </div>
-          <div class="chart-bar-item">
-            <div class="chart-bar-fill" style="height: 55%;"><span>4.246.343</span></div>
-            <span class="chart-bar-label">Jul</span>
-          </div>
-          <div class="chart-bar-item">
-            <div class="chart-bar-fill" style="height: 48%;"><span>3.676.765</span></div>
-            <span class="chart-bar-label">Ago</span>
-          </div>
-          <div class="chart-bar-item">
-            <div class="chart-bar-fill" style="height: 62%;"><span>4.763.673</span></div>
-            <span class="chart-bar-label">Sep</span>
-          </div>
-          <div class="chart-bar-item">
-            <div class="chart-bar-fill" style="height: 75%;"><span>5.086.624</span></div>
-            <span class="chart-bar-label">Oct</span>
-          </div>
-          <div class="chart-bar-item">
-            <div class="chart-bar-fill" style="height: 68%;"><span>4.897.325</span></div>
-            <span class="chart-bar-label">Nov</span>
-          </div>
-          <div class="chart-bar-item">
-            <div class="chart-bar-fill" style="height: 85%;"><span>5.140.245</span></div>
-            <span class="chart-bar-label">Dic</span>
-          </div>
+        <div class="admin-table-scroll">
+          <div class="chart-bars-container chart-bars-container--year" data-report-revenue-chart></div>
         </div>
+        <p class="admin-empty" data-report-revenue-empty hidden>Todavía no hay ingresos para reportar.</p>
       </div>
 
       <!-- Promedios -->
-      <div class="metrics-grid admin-metrics-duo admin-mb-md" data-demo-report>
+      <div class="metrics-grid admin-metrics-duo admin-mb-md">
         <article class="metric-card">
           <span class="metric-label">Promedio de ingresos por agente</span>
-          <span class="metric-value admin-val-accent">6.245.642</span>
+          <span class="metric-value admin-val-accent" data-report-average="agente">$ 0</span>
+          <span class="metric-trend metric-trend--neutral" data-report-average-detail="agente">Sin datos</span>
         </article>
         <article class="metric-card">
           <span class="metric-label">Promedio de ingresos por cliente</span>
-          <span class="metric-value admin-val-accent">356.245</span>
+          <span class="metric-value admin-val-accent" data-report-average="cliente">$ 0</span>
+          <span class="metric-trend metric-trend--neutral" data-report-average-detail="cliente">Sin datos</span>
         </article>
       </div>
 
-      <!-- Número de reservas por eventos y por mes - 2026 -->
+      <!-- Número de reservas por eventos y por mes -->
       <div class="distribution-card admin-mb-md admin-table-scroll">
         <div class="distribution-header admin-head-sm">
-          <h2>Número de reservas por eventos y por mes - 2026</h2>
+          <h2>Número de reservas por evento y por mes</h2>
         </div>
         <table class="report-table">
           <thead>
@@ -200,190 +180,63 @@
               <th class="admin-text-right">Total</th>
             </tr>
           </thead>
-          <tbody data-report-monthly>
-            <tr>
-              <td>Noche Sinfónica</td>
-              <td>23</td><td>54</td><td>34</td><td>56</td><td>46</td><td>54</td><td>36</td><td>42</td><td>67</td><td>54</td><td>34</td><td>29</td>
-              <td class="admin-text-right admin-val-accent font-weight-bold">529</td>
-            </tr>
-            <tr>
-              <td>Stand Up Comedia</td>
-              <td>53</td><td>24</td><td>64</td><td>36</td><td>65</td><td>33</td><td>43</td><td>76</td><td>55</td><td>45</td><td>20</td><td>30</td>
-              <td class="admin-text-right admin-val-accent font-weight-bold">544</td>
-            </tr>
-            <tr>
-              <td>Ritmos Pacífico</td>
-              <td>40</td><td>22</td><td>44</td><td>31</td><td>55</td><td>45</td><td>65</td><td>32</td><td>32</td><td>19</td><td>24</td><td>55</td>
-              <td class="admin-text-right admin-val-accent font-weight-bold">464</td>
-            </tr>
-            <tr>
-              <td>Tributo Rock 90s</td>
-              <td>50</td><td>20</td><td>28</td><td>36</td><td>27</td><td>50</td><td>66</td><td>48</td><td>32</td><td>50</td><td>44</td><td>27</td>
-              <td class="admin-text-right admin-val-accent font-weight-bold">478</td>
-            </tr>
-          </tbody>
+          <tbody data-report-monthly></tbody>
         </table>
       </div>
 
       <!-- Eventos por agente y Eventos por ciudad -->
-      <div class="metrics-grid admin-metrics-duo admin-mb-md" data-demo-report>
-        <div class="distribution-card admin-card-flat">
+      <div class="metrics-grid admin-metrics-duo admin-mb-md">
+        <div class="distribution-card admin-card-flat admin-card-top">
           <h2 class="admin-card-title">Eventos por agente</h2>
-          <div class="role-list">
-            <div class="role-row">
-              <span class="role-name">Camila R.</span>
-              <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 85%;"></div></div>
-              <span class="role-count">312</span>
-            </div>
-            <div class="role-row">
-              <span class="role-name">Julián P.</span>
-              <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 50%;"></div></div>
-              <span class="role-count">180</span>
-            </div>
-            <div class="role-row">
-              <span class="role-name">Marcela T.</span>
-              <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 65%;"></div></div>
-              <span class="role-count">224</span>
-            </div>
-            <div class="role-row">
-              <span class="role-name">Diego H.</span>
-              <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 35%;"></div></div>
-              <span class="role-count">121</span>
-            </div>
-          </div>
+          <div class="role-list admin-bar-list" data-report-events-agent></div>
         </div>
 
-        <div class="distribution-card admin-card-flat">
+        <div class="distribution-card admin-card-flat admin-card-top">
           <h2 class="admin-card-title">Eventos por ciudad</h2>
-          <div class="role-list">
-            <div class="role-row">
-              <span class="role-name">Tuluá</span>
-              <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 85%;"></div></div>
-              <span class="role-count">312</span>
-            </div>
-            <div class="role-row">
-              <span class="role-name">Cali</span>
-              <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 50%;"></div></div>
-              <span class="role-count">180</span>
-            </div>
-            <div class="role-row">
-              <span class="role-name">Bogotá</span>
-              <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 65%;"></div></div>
-              <span class="role-count">224</span>
-            </div>
-          </div>
+          <div class="role-list admin-bar-list" data-report-events-city></div>
         </div>
       </div>
 
       <!-- Historial de reservas por cliente -->
-      <div class="distribution-card admin-mb-md admin-table-scroll" data-demo-report>
-        <div class="distribution-header admin-head-sm">
+      <div class="distribution-card admin-mb-md">
+        <div class="distribution-header admin-head-sm admin-report-head">
           <h2>Historial de reservas por cliente</h2>
+          <label class="admin-report-filter">
+            <span>Cliente</span>
+            <select class="admin-report-select" data-report-history-client aria-label="Filtrar el historial por cliente">
+              <option value="">Todos los clientes</option>
+            </select>
+          </label>
         </div>
-        <table class="report-table">
-          <thead>
-            <tr>
-              <th>Cliente</th>
-              <th>Evento</th>
-              <th>Fecha</th>
-              <th>Estado</th>
-              <th class="admin-text-right">Valor</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Laura Gómez</td>
-              <td>Noche Sinfónica</td>
-              <td>12 mar 2026</td>
-              <td><span class="admin-status-ok">Confirmada</span></td>
-              <td class="admin-text-right font-weight-bold">$420.000</td>
-            </tr>
-            <tr>
-              <td>Laura Gómez</td>
-              <td>Ritmos Pacífico</td>
-              <td>02 jun 2026</td>
-              <td><span class="admin-status-ok">Confirmada</span></td>
-              <td class="admin-text-right font-weight-bold">$310.000</td>
-            </tr>
-            <tr>
-              <td>Andrés Ibarra</td>
-              <td>Stand Up Comedia</td>
-              <td>18 abr 2026</td>
-              <td><span class="admin-status-err">Cancelada</span></td>
-              <td class="admin-text-right font-weight-bold">$180.000</td>
-            </tr>
-            <tr>
-              <td>Paula Cárdenas</td>
-              <td>Tributo Rock 90s</td>
-              <td>05 may 2026</td>
-              <td><span class="admin-status-ok">Confirmada</span></td>
-              <td class="admin-text-right font-weight-bold">$250.000</td>
-            </tr>
-            <tr>
-              <td>Andrés Ibarra</td>
-              <td>Noche Sinfónica</td>
-              <td>22 ene 2026</td>
-              <td><span class="admin-status-ok">Confirmada</span></td>
-              <td class="admin-text-right font-weight-bold">$420.000</td>
-            </tr>
-          </tbody>
-        </table>
+        <div class="admin-table-scroll admin-history-scroll">
+          <table class="report-table">
+            <thead>
+              <tr>
+                <th>Cliente</th>
+                <th>Evento</th>
+                <th>Localidad</th>
+                <th>Entradas</th>
+                <th>Fecha</th>
+                <th>Estado</th>
+                <th class="admin-text-right">Valor</th>
+              </tr>
+            </thead>
+            <tbody data-report-history></tbody>
+          </table>
+        </div>
+        <p class="admin-report-note" data-report-history-note></p>
       </div>
 
       <!-- Reservas canceladas y Eventos cancelados -->
-      <div class="metrics-grid admin-metrics-duo" data-demo-report>
-        <div class="distribution-card admin-card-flat">
+      <div class="metrics-grid admin-metrics-duo">
+        <div class="distribution-card admin-card-flat admin-card-top">
           <h2 class="admin-card-title">Reservas canceladas y su causa</h2>
-          <div class="admin-cancel-list">
-            <div class="cancel-item">
-              <div>
-                <div class="cancel-item-title">Andrés Ibarra — Stand Up Comedia</div>
-                <div class="cancel-item-date">18 abr 2026</div>
-              </div>
-              <span class="cancel-badge">No pagó a tiempo</span>
-            </div>
-            <div class="cancel-item">
-              <div>
-                <div class="cancel-item-title">María Rojas — Tributo Rock 90s</div>
-                <div class="cancel-item-date">03 may 2026</div>
-              </div>
-              <span class="cancel-badge">Cambio de planes</span>
-            </div>
-            <div class="cancel-item">
-              <div>
-                <div class="cancel-item-title">Carlos Peña — Ritmos Pacífico</div>
-                <div class="cancel-item-date">21 may 2026</div>
-              </div>
-              <span class="cancel-badge">Doble reserva</span>
-            </div>
-          </div>
+          <div class="admin-cancel-list admin-cancel-list--scroll" data-report-cancelled-reservations></div>
         </div>
 
-        <div class="distribution-card admin-card-flat">
+        <div class="distribution-card admin-card-flat admin-card-top">
           <h2 class="admin-card-title">Eventos cancelados y su causa</h2>
-          <div class="admin-cancel-list">
-            <div class="cancel-item">
-              <div>
-                <div class="cancel-item-title">Noche Sinfónica — Bogotá</div>
-                <div class="cancel-item-date">10 jun 2026</div>
-              </div>
-              <span class="cancel-badge">Poca demanda</span>
-            </div>
-            <div class="cancel-item">
-              <div>
-                <div class="cancel-item-title">Stand Up Comedia — Tuluá</div>
-                <div class="cancel-item-date">14 jun 2026</div>
-              </div>
-              <span class="cancel-badge">Artista no disponible</span>
-            </div>
-            <div class="cancel-item">
-              <div>
-                <div class="cancel-item-title">Ritmos Pacífico — Cali</div>
-                <div class="cancel-item-date">29 jun 2026</div>
-              </div>
-              <span class="cancel-badge">Fuerza mayor</span>
-            </div>
-          </div>
+          <div class="admin-cancel-list admin-cancel-list--scroll" data-report-cancelled-events></div>
         </div>
       </div>
     </section>
