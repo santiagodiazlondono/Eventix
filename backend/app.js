@@ -1350,6 +1350,27 @@ app.patch('/api/agente/reservas/:id', authenticate, authorize('agente'), asyncRo
 
 const adminUserRoles = new Set(['cliente', 'agente', 'administrador']);
 
+// Desactiva una cuenta sin borrar sus registros: quita los datos personales,
+// la contraseña y los teléfonos, e invalida las sesiones abiertas.
+async function deactivateAccount(client, identification) {
+  await client.query(
+    `UPDATE persona
+     SET nombres = 'Cuenta eliminada',
+         apellidos = '',
+         correo_electronico = $1,
+         calle = NULL,
+         password_hash = NULL,
+         cuenta_eliminada_at = CURRENT_TIMESTAMP,
+         auth_version = auth_version + 1
+     WHERE identificacion = $2`,
+    [`eliminada+${crypto.randomUUID()}@eventix.invalid`, identification]
+  );
+  await client.query(
+    'DELETE FROM personatelefono WHERE identificacion = $1',
+    [identification]
+  );
+}
+
 function validateAdminUser(body, isNew) {
   const identification = String(body.identificacion || '').trim();
   const names = String(body.nombres || '').trim();
@@ -1361,22 +1382,34 @@ function validateAdminUser(body, isNew) {
   const cityId = parseInteger(body.id_ciudad);
   const password = body.contrasena;
 
-  if ((!identification && isNew) || identification.length > 20 ||
-      !names || names.length > 100 || !surnames || surnames.length > 100 ||
-      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 150 ||
-      !phone || phone.length > 20 || address.length > 150 ||
-      !adminUserRoles.has(role) || !Number.isSafeInteger(cityId) || cityId < 1 ||
-      (isNew && (typeof password !== 'string' ||
-        Array.from(password).length < 8 ||
-        Buffer.byteLength(password, 'utf8') < 8 ||
-        Buffer.byteLength(password, 'utf8') > 72)) ||
-      (!isNew && password !== undefined && password !== '' &&
-        (typeof password !== 'string' ||
-          Array.from(password).length < 8 ||
-          Buffer.byteLength(password, 'utf8') < 8 ||
-          Buffer.byteLength(password, 'utf8') > 72))) {
-    return { error: 'Revisa identificación, nombres, apellidos, correo, teléfono, ciudad, rol y contraseña.' };
+  const invalidPassword = (value) => typeof value !== 'string' ||
+    Array.from(value).length < 8 ||
+    Buffer.byteLength(value, 'utf8') < 8 ||
+    Buffer.byteLength(value, 'utf8') > 72;
+
+  let error = null;
+  if ((!identification && isNew) || identification.length > 20) {
+    error = 'Ingresa una identificación de hasta 20 caracteres.';
+  } else if (!names || names.length > 100) {
+    error = 'Ingresa los nombres (máximo 100 caracteres).';
+  } else if (!surnames || surnames.length > 100) {
+    error = 'Ingresa los apellidos (máximo 100 caracteres).';
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 150) {
+    error = 'Ingresa un correo electrónico válido de máximo 150 caracteres.';
+  } else if (!phone || phone.length > 20) {
+    error = 'Ingresa un teléfono de hasta 20 caracteres.';
+  } else if (address.length > 150) {
+    error = 'La dirección no puede superar los 150 caracteres.';
+  } else if (!Number.isSafeInteger(cityId) || cityId < 1) {
+    error = 'Selecciona una ciudad válida.';
+  } else if (!adminUserRoles.has(role)) {
+    error = 'Selecciona un rol válido.';
+  } else if (isNew && invalidPassword(password)) {
+    error = 'La contraseña debe tener al menos 8 caracteres y máximo 72 bytes.';
+  } else if (!isNew && password !== undefined && password !== '' && invalidPassword(password)) {
+    error = 'La nueva contraseña debe tener al menos 8 caracteres y máximo 72 bytes.';
   }
+  if (error) return { error };
 
   return {
     identification,
@@ -1860,6 +1893,19 @@ app.put('/api/admin/usuarios/:identificacion', authenticate, authorize('administ
         return;
       }
     }
+    if (roleChanged && current.role === 'administrador') {
+      const resolved = await client.query(
+        'SELECT 1 FROM agente WHERE resuelto_por = $1 LIMIT 1',
+        [user.identification]
+      );
+      if (resolved.rowCount > 0) {
+        await client.query('ROLLBACK');
+        res.status(409).json({
+          error: 'No se puede cambiar el rol de un administrador que resolvió solicitudes de agente. Elimina la cuenta para desactivarla.'
+        });
+        return;
+      }
+    }
     if (roleChanged && current.role === 'cliente') {
       const reservations = await client.query(
         'SELECT 1 FROM reserva WHERE identificacion_cliente = $1 LIMIT 1',
@@ -1957,6 +2003,10 @@ app.put('/api/admin/usuarios/:identificacion', authenticate, authorize('administ
       res.status(409).json({ error: 'El correo electrónico ya está registrado.' });
       return;
     }
+    if (error.code === '23503') {
+      res.status(409).json({ error: 'No se puede cambiar el rol porque la cuenta tiene registros asociados.' });
+      return;
+    }
     throw error;
   } finally {
     client.release();
@@ -2013,16 +2063,22 @@ app.delete('/api/admin/usuarios/:identificacion', authenticate, authorize('admin
         return;
       }
     }
+    // Una cuenta con historial no se puede borrar sin perder registros:
+    // se desactiva y se anonimiza, igual que cuando el titular elimina su perfil.
+    let history = null;
     if (account.role === 'cliente') {
       const reservations = await client.query(
         'SELECT 1 FROM reserva WHERE identificacion_cliente = $1 LIMIT 1',
         [identification]
       );
-      if (reservations.rowCount > 0) {
-        await client.query('ROLLBACK');
-        res.status(409).json({ error: 'No se puede eliminar un cliente con reservas asociadas.' });
-        return;
-      }
+      if (reservations.rowCount > 0) history = 'sus reservas';
+    }
+    if (account.role === 'administrador') {
+      const resolved = await client.query(
+        'SELECT 1 FROM agente WHERE resuelto_por = $1 LIMIT 1',
+        [identification]
+      );
+      if (resolved.rowCount > 0) history = 'las solicitudes de agente que resolvió';
     }
     if (account.role === 'agente') {
       const events = await client.query(
@@ -2038,6 +2094,16 @@ app.delete('/api/admin/usuarios/:identificacion', authenticate, authorize('admin
         });
         return;
       }
+    }
+
+    if (history) {
+      await deactivateAccount(client, identification);
+      await client.query('COMMIT');
+      res.json({
+        cuenta_desactivada: true,
+        mensaje: `La cuenta se desactivó y sus datos personales se borraron. Se conservaron ${history}.`
+      });
+      return;
     }
 
     const subtype = account.role === 'cliente'

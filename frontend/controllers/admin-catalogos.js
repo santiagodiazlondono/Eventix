@@ -300,12 +300,16 @@
     var name = currentTab === "administradores"
       ? [record.nombres, record.apellidos].filter(Boolean).join(" ")
       : record.nombre;
-    if (!window.confirm('¿Eliminar "' + name + '"? La operación no se podrá realizar si hay registros asociados.')) return;
+    if (!window.confirm(currentTab === "administradores"
+      ? '¿Eliminar la cuenta de "' + name + '"? Perderá el acceso de inmediato. ' +
+        "Si resolvió solicitudes de agente, la cuenta se desactiva y se conserva ese historial."
+      : '¿Eliminar "' + name + '"? La operación no se podrá realizar si hay registros asociados.')) return;
     try {
       if (currentTab === "administradores") {
-        await auth.request("/admin/usuarios/" + encodeURIComponent(id), {
+        var result = await auth.request("/admin/usuarios/" + encodeURIComponent(id), {
           method: "DELETE"
         });
+        if (result && result.cuenta_desactivada) window.alert(result.mensaje);
       } else {
         await auth.request(
           "/admin/catalogos/" + currentTab + "/" + encodeURIComponent(id),

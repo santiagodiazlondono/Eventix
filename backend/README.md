@@ -81,7 +81,7 @@ El seed es transaccional e idempotente. Si el correo ya pertenece a un administr
 | `DELETE` | `/api/reservas/:id` | Cliente | Cancela una reserva propia sin borrar su historial. |
 | `GET` | `/api/admin/reportes` | Administrador | Conteos, ingresos y reservas por mes (sin reservas canceladas, en hora de Colombia), promedios de ingresos por agente y por cliente, eventos por agente y por ciudad, historial de reservas y cancelaciones de reservas y eventos con su causa. |
 | `GET/POST` | `/api/admin/usuarios` | Administrador | Lista cuentas y crea clientes, agentes o administradores. |
-| `PUT/DELETE` | `/api/admin/usuarios/:identificacion` | Administrador | Actualiza o elimina una cuenta respetando reservas, eventos y el último administrador. |
+| `PUT/DELETE` | `/api/admin/usuarios/:identificacion` | Administrador | Actualiza o elimina una cuenta. Un agente con eventos debe reasignarlos antes. Si la cuenta tiene historial (cliente con reservas o administrador que resolvió solicitudes de agente), no se borra: se desactiva, se anonimiza y pierde el acceso, y la respuesta trae `cuenta_desactivada: true`. No permite quitar al último administrador. |
 | `GET` | `/api/admin/catalogos/paises` | Administrador | Lista países con sus departamentos. |
 | `GET` | `/api/admin/catalogos/departamentos` | Administrador | Lista departamentos con país y cantidad de ciudades. |
 | `GET` | `/api/admin/catalogos/ciudades` | Administrador | Lista ciudades con su departamento y país. |

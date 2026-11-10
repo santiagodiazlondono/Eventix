@@ -210,13 +210,26 @@
 
   async function deleteUser(user, sourceButton) {
     var name = [user.nombres, user.apellidos].filter(Boolean).join(" ");
-    if (!window.confirm('¿Eliminar la cuenta de "' + name + '"?')) return;
+    if (!window.confirm(
+      '¿Eliminar la cuenta de "' + name + '"?\n\n' +
+        "La persona perderá el acceso de inmediato. Si la cuenta tiene historial " +
+        "(reservas o solicitudes resueltas), se desactiva y se borran sus datos " +
+        "personales, pero el historial se conserva."
+    )) return;
     try {
-      await auth.request("/admin/usuarios/" + encodeURIComponent(user.identificacion), {
+      var result = await auth.request("/admin/usuarios/" + encodeURIComponent(user.identificacion), {
         method: "DELETE"
       });
       await loadUsers();
       ui.scrollToSection(document.getElementById("directorio-title"));
+      showMessage(
+        message,
+        result && result.cuenta_desactivada
+          ? 'La cuenta de "' + name + '" tenía historial: ' +
+            "se desactivó y se borraron sus datos personales. Ya no puede iniciar sesión."
+          : 'La cuenta de "' + name + '" se eliminó.',
+        false
+      );
     } catch (error) {
       if (error.codigo === "TIENE_EVENTOS") {
         window.EventixAdminAgentTransfer.open(
