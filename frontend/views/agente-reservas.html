@@ -62,122 +62,119 @@
   <!-- ============ CONTENIDO PRINCIPAL ============ -->
   <main id="contenido" class="admin-content-wrap">
     <div class="container">
-      
+
       <!-- Encabezado superior -->
-      <div class="agent-section-header">
-        <span class="agent-subtitle">Agente</span>
-        <h1 class="admin-title">Gestión de reservas</h1>
+      <div class="agent-reservations-top">
+        <div class="agent-section-header">
+          <span class="agent-subtitle">Agente</span>
+          <h1 class="admin-title">Gestión de reservas</h1>
+          <p class="admin-lead">Consulta global de las reservas de tus eventos, su ocupación y sus ventas.</p>
+        </div>
+        <div class="agent-live">
+          <span id="reservas-actualizado" class="agent-live-status" role="status" aria-live="polite">Cargando datos...</span>
+          <button id="reservas-actualizar" type="button" class="btn btn-ghost">Actualizar</button>
+        </div>
       </div>
 
-      <!-- Tarjeta contenedora principal -->
+      <!-- Filtro general: aplica al resumen, la ocupación y la lista -->
+      <div class="agent-filter-row agent-global-filter">
+        <div class="agent-filter-group">
+          <label for="filter-evento">Evento:</label>
+          <select id="filter-evento" class="agent-filter-select">
+            <option value="">Todos mis eventos</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Resumen de ventas -->
+      <section class="agent-summary" aria-labelledby="resumen-title">
+        <h2 id="resumen-title" class="agent-summary-title">
+          Resumen de ventas · <span id="resumen-alcance">Todos mis eventos</span>
+        </h2>
+        <div class="metrics-grid agent-metrics-grid">
+          <article class="metric-card">
+            <span class="metric-label">Reservas activas</span>
+            <span class="metric-value" id="resumen-reservas">0</span>
+            <span class="metric-trend metric-trend--neutral" id="resumen-canceladas">0 canceladas</span>
+          </article>
+          <article class="metric-card">
+            <span class="metric-label">Entradas vendidas</span>
+            <span class="metric-value" id="resumen-entradas">0</span>
+            <span class="metric-trend metric-trend--neutral" id="resumen-capacidad">de 0 entradas</span>
+          </article>
+          <article class="metric-card">
+            <span class="metric-label">Ocupación</span>
+            <span class="metric-value" id="resumen-ocupacion">0 %</span>
+            <div class="progress-bar-bg" aria-hidden="true">
+              <div class="progress-bar-fill" id="resumen-ocupacion-barra"></div>
+            </div>
+          </article>
+          <article class="metric-card">
+            <span class="metric-label">Ingresos</span>
+            <span class="metric-value" id="resumen-ingresos">$ 0</span>
+            <span class="metric-trend metric-trend--neutral">Sin reservas canceladas</span>
+          </article>
+        </div>
+      </section>
+
+      <!-- Ocupación por evento -->
+      <section class="distribution-card admin-card-flat agent-reservations-card" aria-labelledby="ocupacion-title">
+        <div class="agent-reservations-header">
+          <h2 id="ocupacion-title">Ocupación por evento</h2>
+          <p>Entradas vendidas frente a la capacidad de cada localidad. Las reservas canceladas no ocupan cupo.</p>
+        </div>
+        <div class="admin-table-scroll">
+          <table class="report-table agent-table">
+            <thead>
+              <tr>
+                <th>EVENTO</th>
+                <th>ESTADO</th>
+                <th>GENERAL</th>
+                <th>VIP</th>
+                <th>PREFERENCIAL</th>
+                <th>OCUPACIÓN TOTAL</th>
+                <th>RESERVAS</th>
+                <th>INGRESOS</th>
+              </tr>
+            </thead>
+            <tbody id="ocupacion-agente-lista"></tbody>
+          </table>
+          <p id="ocupacion-agente-mensaje" class="agent-table-message" role="status" hidden></p>
+        </div>
+      </section>
+
+      <!-- Lista de reservas -->
       <section class="distribution-card admin-card-flat agent-reservations-card" aria-labelledby="reservas-title">
-        
-        <!-- Título y Filtros -->
         <div class="agent-reservations-header">
           <h2 id="reservas-title">Reservas solicitadas</h2>
           <p>Consulta todas las reservas y actualiza su estado.</p>
-
           <div class="agent-filter-row">
-            <div class="agent-filter-group">
-              <label for="filter-evento">Evento:</label>
-              <select id="filter-evento" class="agent-filter-select">
-                <option value="">Todos</option>
-                <option value="sinfonica">Noche sinfónica de Verano</option>
-                <option value="standup">Stand Up: Noche de Comedia</option>
-                <option value="jardin">Obra: El Jardín de los Espejos</option>
-                <option value="feria">Feria Gastronómica y Cultural</option>
-              </select>
-            </div>
-
             <div class="agent-filter-group">
               <label for="filter-estado">Estado:</label>
               <select id="filter-estado" class="agent-filter-select">
                 <option value="">Todos</option>
-                <option value="confirmada">Confirmada</option>
-                <option value="cancelada">Cancelada</option>
-                <option value="pendiente">Pendiente</option>
               </select>
             </div>
+            <span id="reservas-conteo" class="agent-count"></span>
           </div>
         </div>
 
-        <!-- Tabla de Reservas -->
         <div class="admin-table-scroll">
           <table class="report-table agent-table">
             <thead>
               <tr>
                 <th>CLIENTE</th>
                 <th>EVENTO</th>
+                <th>LOCALIDAD</th>
                 <th>ENTRADAS</th>
                 <th>VALOR</th>
                 <th>FECHA RESERVA</th>
                 <th>ESTADO</th>
               </tr>
             </thead>
-            <tbody id="reservas-agente-lista">
-              <!-- Fila 1 -->
-              <tr>
-                <td class="font-weight-500">Laura Ramirez T..</td>
-                <td class="text-muted">Noche sinfónica de Verano</td>
-                <td class="font-mono">2</td>
-                <td class="font-mono">$178000</td>
-                <td class="text-muted">01 oct 2026</td>
-                <td>
-                  <select class="agent-status-select">
-                    <option value="confirmada" selected>Confirmada</option>
-                    <option value="cancelada">Cancelada</option>
-                    <option value="pendiente">Pendiente</option>
-                  </select>
-                </td>
-              </tr>
-              <!-- Fila 2 -->
-              <tr>
-                <td class="font-weight-500">Andrés Felipe S..</td>
-                <td class="text-muted">Stand Up: Noche de Comedia</td>
-                <td class="font-mono">3</td>
-                <td class="font-mono">$135000</td>
-                <td class="text-muted">29 sep 2026</td>
-                <td>
-                  <select class="agent-status-select">
-                    <option value="confirmada">Confirmada</option>
-                    <option value="cancelada" selected>Cancelada</option>
-                    <option value="pendiente">Pendiente</option>
-                  </select>
-                </td>
-              </tr>
-              <!-- Fila 3 -->
-              <tr>
-                <td class="font-weight-500">Maria Jose Sala..</td>
-                <td class="text-muted">Obra: El Jardín de los Espejos</td>
-                <td class="font-mono">1</td>
-                <td class="font-mono">$85000</td>
-                <td class="text-muted">27 sep 2026</td>
-                <td>
-                  <select class="agent-status-select">
-                    <option value="confirmada" selected>Confirmada</option>
-                    <option value="cancelada">Cancelada</option>
-                    <option value="pendiente">Pendiente</option>
-                  </select>
-                </td>
-              </tr>
-              <!-- Fila 4 -->
-              <tr>
-                <td class="font-weight-500">Camilo Restrepo</td>
-                <td class="text-muted">Feria Gastronómica y Cultural</td>
-                <td class="font-mono">4</td>
-                <td class="font-mono">$80000</td>
-                <td class="text-muted">10 sep 2026</td>
-                <td>
-                  <select class="agent-status-select">
-                    <option value="confirmada" selected>Confirmada</option>
-                    <option value="cancelada">Cancelada</option>
-                    <option value="pendiente">Pendiente</option>
-                  </select>
-                </td>
-              </tr>
-            </tbody>
+            <tbody id="reservas-agente-lista"></tbody>
           </table>
-          <p id="reservas-agente-mensaje" role="status" hidden></p>
+          <p id="reservas-agente-mensaje" class="agent-table-message" role="status" hidden></p>
         </div>
       </section>
 

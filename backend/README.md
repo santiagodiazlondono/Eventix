@@ -68,6 +68,7 @@ El seed es transaccional e idempotente. Si el correo ya pertenece a un administr
 | `PUT` | `/api/agente/eventos/:codigo` | Agente | Actualiza los datos y la ubicación de un evento propio. |
 | `PATCH` | `/api/agente/eventos/:codigo/estado` | Agente | Cambia el estado de un evento propio. |
 | `DELETE` | `/api/agente/eventos/:codigo` | Agente | Elimina un evento propio si aún no tiene reservas. |
+| `GET` | `/api/agente/reservas` | Agente | Reservas de los eventos del agente y, por evento, entradas vendidas por localidad, capacidad, reservas activas/canceladas e ingresos. Las reservas canceladas no cuentan como ocupación ni ingreso. |
 | `GET` | `/api/estados-evento` | Público | Estados disponibles para eventos. |
 | `POST` | `/api/eventos` | Agente | Publica un evento en estado `Programado`. |
 | `POST` | `/api/auth/registro` | Público | Crea una cuenta de cliente o agente. |

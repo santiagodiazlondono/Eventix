@@ -102,3 +102,158 @@
   background-color: #0a0d14;
   color: var(--text);
 }
+
+/* ---------- Consulta global: encabezado, resumen y ocupación ---------- */
+.agent-reservations-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.25rem;
+}
+
+.agent-live {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.agent-live-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+.agent-live-status::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-faint);
+}
+
+.agent-live-status[data-state="live"]::before {
+  background: var(--success);
+}
+
+.agent-live-status[data-state="error"] {
+  color: var(--danger);
+}
+
+.agent-live-status[data-state="error"]::before {
+  background: var(--danger);
+}
+
+.agent-global-filter {
+  margin-bottom: 1.5rem;
+}
+
+.agent-summary {
+  margin-bottom: 1.5rem;
+}
+
+.agent-summary-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 0.75rem;
+}
+
+.agent-summary-title span {
+  color: var(--text);
+}
+
+.agent-metrics-grid {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.agent-metrics-grid .metric-value {
+  overflow-wrap: anywhere;
+}
+
+.agent-reservations-card + .agent-reservations-card {
+  margin-top: 1.5rem;
+}
+
+.agent-reservations-header p:last-child {
+  margin-bottom: 0;
+}
+
+.agent-count {
+  align-self: flex-end;
+  padding-bottom: 0.55rem;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+.agent-table-message {
+  padding: 1.25rem 1.5rem;
+  color: var(--text-muted);
+  font-size: 0.88rem;
+}
+
+.agent-table-message[data-type="error"] {
+  color: var(--danger);
+}
+
+/* Celda de ocupación: "vendidas / capacidad" con barra */
+.agent-occupancy {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 6.5rem;
+}
+
+.agent-occupancy-text {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+
+.agent-occupancy-text small {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+
+.agent-occupancy .progress-bar-bg {
+  height: 6px;
+}
+
+.agent-occupancy--total {
+  min-width: 9rem;
+}
+
+.agent-occupancy--total .agent-occupancy-text {
+  font-weight: 600;
+}
+
+.agent-event-name {
+  display: block;
+  min-width: 10rem;
+  font-weight: 500;
+}
+
+.agent-event-meta {
+  display: block;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+}
+
+.agent-row-cancelled td {
+  color: var(--text-muted);
+}
+
+@media (max-width: 1024px) {
+  .agent-metrics-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .agent-metrics-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1203,20 +1203,67 @@ app.delete('/api/perfil', authenticate, asyncRoute(async (req, res) => {
 }));
 
 app.get('/api/agente/reservas', authenticate, authorize('agente'), asyncRoute(async (req, res) => {
-  const result = await pool.query(
-    `SELECT r.id_reserva, r.fecha_hora_reserva, r.valor_total,
-            r.numero_entradas, r.localidad, er.id_estado_reserva,
-            er.nombre AS estado, e.codigo_evento AS codigo,
-            e.nombre_evento AS evento, p.nombres || ' ' || p.apellidos AS cliente
-     FROM reserva r
-     JOIN estadoreserva er ON er.id_estado_reserva = r.id_estado_reserva
-     JOIN evento e ON e.codigo_evento = r.codigo_evento
-     JOIN persona p ON p.identificacion = r.identificacion_cliente
-     WHERE e.identificacion_agente = $1
-     ORDER BY r.fecha_hora_reserva DESC`,
-    [req.user.identificacion]
-  );
-  res.json({ reservas: result.rows });
+  // fecha_hora_reserva es TIMESTAMP sin zona y se llena con CURRENT_TIMESTAMP
+  // en una base configurada en UTC; se convierte para enviar el instante real.
+  const [reservations, occupancy] = await Promise.all([
+    pool.query(
+      `SELECT r.id_reserva,
+              r.fecha_hora_reserva AT TIME ZONE 'UTC' AS fecha_hora_reserva,
+              r.valor_total, r.numero_entradas, r.localidad,
+              er.id_estado_reserva, er.nombre AS estado,
+              e.codigo_evento AS codigo, e.nombre_evento AS evento,
+              TRIM(p.nombres || ' ' || p.apellidos) AS cliente
+       FROM reserva r
+       JOIN estadoreserva er ON er.id_estado_reserva = r.id_estado_reserva
+       JOIN evento e ON e.codigo_evento = r.codigo_evento
+       JOIN persona p ON p.identificacion = r.identificacion_cliente
+       WHERE e.identificacion_agente = $1
+       ORDER BY r.fecha_hora_reserva DESC, r.id_reserva DESC`,
+      [req.user.identificacion]
+    ),
+    // Ocupación y ventas por evento. Las reservas canceladas no ocupan cupo
+    // ni cuentan como ingreso; se informan aparte.
+    pool.query(
+      `SELECT e.codigo_evento AS codigo, e.nombre_evento AS evento,
+              ee.nombre AS estado,
+              e.fecha_hora_inicio AT TIME ZONE 'America/Bogota' AS fecha_hora_inicio,
+              e.capacidad_total, e.capacidad_general,
+              e.capacidad_vip, e.capacidad_preferencial,
+              COALESCE(ventas.vendidas_general, 0)::int AS vendidas_general,
+              COALESCE(ventas.vendidas_vip, 0)::int AS vendidas_vip,
+              COALESCE(ventas.vendidas_preferencial, 0)::int AS vendidas_preferencial,
+              COALESCE(ventas.reservas_activas, 0)::int AS reservas_activas,
+              COALESCE(ventas.reservas_canceladas, 0)::int AS reservas_canceladas,
+              COALESCE(ventas.ingresos, 0)::numeric AS ingresos
+       FROM evento e
+       JOIN estadoevento ee ON ee.id_estado_evento = e.id_estado_evento
+       LEFT JOIN LATERAL (
+         SELECT
+           SUM(x.numero_entradas) FILTER (WHERE x.activa AND x.localidad = 'General') AS vendidas_general,
+           SUM(x.numero_entradas) FILTER (WHERE x.activa AND x.localidad = 'VIP') AS vendidas_vip,
+           SUM(x.numero_entradas) FILTER (WHERE x.activa AND x.localidad = 'Preferencial') AS vendidas_preferencial,
+           COUNT(*) FILTER (WHERE x.activa) AS reservas_activas,
+           COUNT(*) FILTER (WHERE NOT x.activa) AS reservas_canceladas,
+           SUM(x.valor_total) FILTER (WHERE x.activa) AS ingresos
+         FROM (
+           SELECT r.numero_entradas, r.localidad, r.valor_total,
+                  LOWER(TRIM(er.nombre)) NOT IN ('cancelada', 'cancelado', 'anulada', 'anulado') AS activa
+           FROM reserva r
+           JOIN estadoreserva er ON er.id_estado_reserva = r.id_estado_reserva
+           WHERE r.codigo_evento = e.codigo_evento
+         ) x
+       ) ventas ON TRUE
+       WHERE e.identificacion_agente = $1
+       ORDER BY e.fecha_hora_inicio, e.codigo_evento`,
+      [req.user.identificacion]
+    )
+  ]);
+  res.set('Cache-Control', 'no-store');
+  res.json({
+    reservas: reservations.rows,
+    eventos: occupancy.rows,
+    actualizado_en: new Date().toISOString()
+  });
 }));
 
 app.get('/api/agente/estados-reserva', authenticate, authorize('agente'), asyncRoute(async (req, res) => {
