@@ -34,6 +34,14 @@
     element.dataset.type = isError ? "error" : "success";
   }
 
+  // Cuadro de motivo de la página; si ui.js no cargó, se confirma sin motivo.
+  function askCancellationReason(options) {
+    if (window.EventixUI && window.EventixUI.askReason) {
+      return window.EventixUI.askReason(options);
+    }
+    return Promise.resolve(window.confirm(options.message) ? "" : null);
+  }
+
   function redirectAgentToLogin(error) {
     if (error.status !== 401 && error.status !== 403) return false;
     window.location.replace(
@@ -82,16 +90,18 @@
           cancelButton.className = "boton-cancelar";
           cancelButton.textContent = "Cancelar";
           cancelButton.addEventListener("click", async function () {
-            var reason = window.prompt(
-              "¿Quieres cancelar esta reserva?\nSi quieres, escribe el motivo (opcional):",
-              ""
-            );
+            var reason = await askCancellationReason({
+              title: "Cancelar reserva",
+              message: "Vas a cancelar tu reserva para " + reservation.evento +
+                ". Esta acción no se puede deshacer.",
+              confirmLabel: "Cancelar reserva"
+            });
             if (reason === null) return;
             cancelButton.disabled = true;
             try {
               var cancellation = await panels.cancelClientReservation(
                 reservation.id_reserva,
-                reason.trim().slice(0, 500)
+                reason
               );
               await loadClientReservations();
               showMessage(
@@ -381,16 +391,19 @@
         select.addEventListener("change", async function () {
           var reason = "";
           if (isCancelled(select.value) && !isCancelled(reservation.estado)) {
-            reason = window.prompt(
-              "Vas a cancelar la reserva de " + reservation.cliente +
-                ".\nSi quieres, escribe el motivo (opcional):",
-              ""
-            );
+            // Mientras el cuadro está abierto no se refresca la lista.
+            saving++;
+            reason = await askCancellationReason({
+              title: "Cancelar reserva",
+              message: "Vas a cancelar la reserva de " + reservation.cliente +
+                " para " + reservation.evento + ".",
+              confirmLabel: "Cancelar reserva"
+            });
+            saving--;
             if (reason === null) {
               select.value = reservation.estado;
               return;
             }
-            reason = reason.trim().slice(0, 500);
           }
           select.disabled = true;
           saving++;

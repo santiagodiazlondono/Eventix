@@ -14,6 +14,14 @@
   var agentEvents = [];
   var eventStates = [];
 
+  // Cuadro de motivo de la página; si ui.js no cargó, se confirma sin motivo.
+  function askCancellationReason(options) {
+    if (window.EventixUI && window.EventixUI.askReason) {
+      return window.EventixUI.askReason(options);
+    }
+    return Promise.resolve(window.confirm(options.message) ? "" : null);
+  }
+
   function updateCapacityTotal() {
     if (!form) return 0;
     var total = [
@@ -151,13 +159,13 @@
           var reason = "";
           if ((selectedState.includes("cancel") || selectedState.includes("anulad")) &&
               !currentState.includes("cancel") && !currentState.includes("anulad")) {
-            reason = window.prompt(
-              'Vas a cancelar el evento "' + event.nombre +
-                '".\nSi quieres, escribe el motivo (opcional):',
-              ""
-            );
+            reason = await askCancellationReason({
+              title: "Cancelar evento",
+              message: 'Vas a cancelar el evento "' + event.nombre +
+                '". Dejará de aparecer en el catálogo.',
+              confirmLabel: "Cancelar evento"
+            });
             if (reason === null) return;
-            reason = reason.trim().slice(0, 500);
           }
           saveStateButton.disabled = true;
           try {
